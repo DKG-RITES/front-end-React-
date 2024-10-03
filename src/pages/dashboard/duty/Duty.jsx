@@ -6,59 +6,59 @@ const dutyItemTabs = [
   {
     id: 1,
     title: 'SMS',
-    icon: <HomeOutlined />,
+    icon: <MessageOutlined />,
     link: '/sms/dutyStart'
   },
   {
     id: 2,
     title: 'Rolling Stage',
-    icon: <HomeOutlined />,
+    icon: <AuditOutlined />,
     link: 'stage/startDuty'
   },
   {
     id: 3,
     title: 'NDT',
-    icon: <HomeOutlined />,
+    icon: <RadarChartOutlined />,
     link: 'ndt/startDuty'
   },
   {
     id: 4,
     title: 'Testing',
-    icon: <HomeOutlined />
+    icon: <DoubleRightOutlined />
   },
   {
     id: 5,
     title: 'Visual Inspection',
-    icon: <HomeOutlined />,
+    icon: <HddOutlined />,
     link: '/visual/startDuty'
   },
   {
     id: 6,
     title: 'Welding Inspection',
-    icon: <HomeOutlined />
+    icon: <DeploymentUnitOutlined />
   },
   {
     id: 7,
     title: 'Short Rail Inspection',
-    icon: <HomeOutlined />,
+    icon: <CompassOutlined />,
     link: 'srInspection'
   },
   {
     id: 8,
     title: 'QCT',
-    icon: <HomeOutlined />,
+    icon: <DatabaseOutlined />,
     link: 'qct/sampleList'
   },
   {
     id: 9,
     title: 'Calibration',
-    icon: <HomeOutlined />,
+    icon: <ToolOutlined />,
     link: 'calibration/list'
   },
   {
     id: 10,
     title: 'Info',
-    icon: <HomeOutlined />
+    icon: <TeamOutlined />
   },
 ]
 
