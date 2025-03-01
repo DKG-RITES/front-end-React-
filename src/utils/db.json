@@ -13,6 +13,48 @@
       "value": "C"
     }
   ],
+  "millList": [
+        {
+          "key": "URM",
+          "value": "URM"
+        },
+        {
+          "key": "RSM",
+          "value": "RSM"
+        }
+    ],
+    "railSectionList": [
+      {
+          "key": "60E1",
+          "value": "60E1"
+      },
+      {
+          "key": "IRS52",
+          "value": "IRS52"
+      },
+      {
+          "key": "60E1A1",
+          "value": "60E1A1"
+      }
+  ],
+  "railGradeList": [
+    {
+      "key": "R260",
+      "value": "R260"
+    },
+    {
+      "key": "880",
+      "value": "880"
+    },
+    {
+      "key": "1175HT",
+      "value": "1175HT"
+    },
+    {
+      "key": "1080HH",
+      "value": "1080HH"
+    }
+  ],
   "smsList": [
     {
       "key": "SMS 2",

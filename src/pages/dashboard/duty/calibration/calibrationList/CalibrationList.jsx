@@ -106,7 +106,6 @@ const CalibrationList = () => {
         title: "Instrument",
         dataIndex: "instrument",
         key: "instrument",
-        fixed: "left",
         align: "center",
         filterable: true
     },

@@ -51,48 +51,57 @@ const SmsHeatReport = () => {
       dataIndex: "isHydrisMeasuredBw80To100mOfCasting",
       key: "isHydrisMeasuredBw80To100mOfCasting",
       filterable: true,
+      render: (value) => value ? "Yes" : "No"
     },
     {
       title: "Probe Dipped (Below 300mm)",
       dataIndex: "isProbeDippedBelow300mmFromSlagMetalInterface",
       key: "isProbeDippedBelow300mmFromSlagMetalInterface",
       filterable: true,
+      render: (value) => value ? "Yes" : "No"
     },
     {
       title: "EMS Functioning",
       dataIndex: "isEmsFunctioning",
       key: "isEmsFunctioning",
       filterable: true,
+      render: (value) => value ? "Yes" : "No"
     },
     {
       title: "Slag Detector Functioning",
       dataIndex: "isSlagDetectorFunctioning",
       key: "isSlagDetectorFunctioning",
       filterable: true,
+      render: (value) => value ? "Yes" : "No"
     },
+
     {
       title: "AMLC Functioning",
       dataIndex: "isAmlcFunctioning",
       key: "isAmlcFunctioning",
       filterable: true,
+      render: (value) => value ? "Yes" : "No"
     },
     {
       title: "Hydrogen Measurement Automatic",
       dataIndex: "isHydrogenMeasurementAutomatic",
       key: "isHydrogenMeasurementAutomatic",
       filterable: true,
+      render: (value) => value ? "Yes" : "No"
     },
     {
       title: "Ladle to Tundish Used",
       dataIndex: "isLadleToTundishUsed",
       key: "isLadleToTundishUsed",
       filterable: true,
+      render: (value) => value ? "Yes" : "No"
     },
     {
       title: "Tundish to Mould Used",
       dataIndex: "isTundishToMouldUsed",
       key: "isTundishToMouldUsed",
       filterable: true,
+      render: (value) => value ? "Yes" : "No"
     },
 
     // Non-Filterable Columns

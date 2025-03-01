@@ -3,8 +3,8 @@ import FormContainer from "../../../../../../components/DKG_FormContainer";
 import SubHeader from "../../../../../../components/DKG_SubHeader";
 import GeneralInfo from "../../../../../../components/DKG_GeneralInfo";
 import data from "../../../../../../utils/frontSharedData/rollingStage/Stage.json";
-import { Checkbox, Divider, Form, Modal, Table } from "antd";
-import { PlusOutlined, EditOutlined } from "@ant-design/icons";
+import { Checkbox, Divider, Form, message, Modal, Table } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import IconBtn from "../../../../../../components/DKG_IconBtn";
 import FormInputItem from "../../../../../../components/DKG_FormInputItem";
 import Btn from "../../../../../../components/DKG_Btn";
@@ -24,6 +24,16 @@ import {
 const { bloomQualityList, htStatusList } = data;
 
 const HtSequence = () => {
+  const [edit, setEdit] = useState(false);
+
+  const handleDelete = async (railId) => {
+    try{
+      await apiCall("POST", "/rolling/htSequence/deleteRailById", token, {railId})
+      message.success("Rail ID deleted successfully.")
+      populateData();
+    }
+    catch(error){}
+  }
   const handleRowClick = (record) => {
     setFormData({
       railId: record.railId,
@@ -32,7 +42,7 @@ const HtSequence = () => {
       bloomQuality: record.bloomQuality,
       testSampleMarked: record.testMarked,
     });
-
+    setEdit(true)
     setIsModalOpen(true);
   };
 
@@ -64,13 +74,16 @@ const HtSequence = () => {
       title: "Test Sample Marked",
       dataIndex: "testMarked",
       key: "testMarked",
-      render: (testMarked) => testMarked.join(", "),
+      render: (testMarked) => testMarked?.join(", "),
     },
     {
       title: "Actions",
       fixed: "right",
       render: (_, record) => (
+        <>
         <IconBtn icon={EditOutlined} onClick={() => handleRowClick(record)} />
+        <IconBtn icon={DeleteOutlined} onClick={() => handleDelete(record.railId)} />
+        </>
       ),
     },
   ];
@@ -100,12 +113,12 @@ const HtSequence = () => {
     try {
       const { data } = await apiCall(
         "GET",
-        "/rolling/htSequence/getOpenBatchDtls",
+        "/rolling/htSequence/getOpenBatchDtlsV2",
         token
       );
-      setTableData(data.responseData?.railIdDtlList || []);
+      setTableData(data.responseData || []);
 
-      const batch = data.responseData?.railIdDtlList;
+      const batch = data.responseData || [];
       const tensileBatchCount = batch.length % 128;
       const phMicroBatchCount = batch.length % 12;
       const decarbBatchCount = batch.length % 64;
@@ -173,11 +186,26 @@ const HtSequence = () => {
       bloomQuality: formData.bloomQuality,
     };
     try {
-      await apiCall("POST", "/rolling/testing/saveRailDtls", token, payload);
-      setIsModalOpen(false);
-      populateData();
+      if(edit){
+        await apiCall("POST", "/rolling/htSequence/updateHtSequenceRail", token, payload);
+        setIsModalOpen(false);
+        populateData();
+        setEdit(false)
+      }
+      else{
+        await apiCall("POST", "/rolling/htSequence/saveHtSequenceRail", token, payload);
+        setIsModalOpen(false);
+        populateData();
+      }
+      setFormData({railId: null,
+        bloomQuality: null,
+        htStatus: null,
+        htStatusDesc: null,
+        testSampleMarked: null})
     } catch (error) {}
   };
+
+  console.log("FPRMDTA: ", formData)
 
   const handleRailIdSearch = async () => {
     try {
@@ -205,11 +233,25 @@ const HtSequence = () => {
     navigate("/stage/home");
   };
 
+  const handleModalClose = () => {
+
+    console.log("MODAL CLOSE CALLED")
+    setIsModalOpen(false);
+    setFormData({railId: null,
+      bloomQuality: null,
+      htStatus: null,
+      htStatusDesc: null,
+      testSampleMarked: null})
+
+      setEdit(false)
+  }
+
   useEffect(() => {
     populateData();
   }, [populateData]);
 
   useEffect(() => {
+    console.log("GETTING CALLED")
     form.setFieldsValue(formData);
   }, [form, formData]);
 
@@ -253,7 +295,7 @@ const HtSequence = () => {
       </Checkbox>
 
       <div className="relative">
-        <Table dataSource={tableData} columns={columns} />
+        <Table dataSource={tableData} columns={columns} scroll={{x: "auto"}} />
         <IconBtn
           icon={PlusOutlined}
           text="add"
@@ -269,7 +311,8 @@ const HtSequence = () => {
         open={isModalOpen}
         title="Add a new Rail"
         footer={null}
-        onCancel={() => setIsModalOpen(false)}
+        onCancel={handleModalClose}
+        onClose={handleModalClose}
       >
         <Form
           form={form}
@@ -277,23 +320,24 @@ const HtSequence = () => {
           layout="vertical"
           onFinish={addData}
         >
-          <FormSearchItem
+          <FormInputItem
             label="Rail ID"
             name="railId"
-            onSearch={handleRailIdSearch}
+            // onSearch={handleRailIdSearch}
             onChange={(fieldName, value) =>
               handleChange(fieldName, value, setFormData)
             }
+            disabled={edit}
             required
           />
 
-          <FormInputItem
+          {/* <FormInputItem
             label="Test Sample Marked"
             name="testSampleMarked"
             onChange={(name, value) => handleChange(name, value, setFormData)}
             required
             disabled
-          />
+          /> */}
 
           <FormDropdownItem
             label="Bloom Quality"
@@ -316,8 +360,9 @@ const HtSequence = () => {
             required
           />
           <Btn htmlType="submit" className="flex mx-auto">
-            {" "}
-            Save{" "}
+            {
+              edit ? "Update" : "Save"
+            }
           </Btn>
         </Form>
       </Modal>

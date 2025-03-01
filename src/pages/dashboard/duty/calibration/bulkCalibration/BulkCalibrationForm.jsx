@@ -109,8 +109,6 @@ const BulkCalibrationForm = () => {
     });
   };
 
-  console.log("Formdata: ", formData);
-
   const bulkColumns = [
     {
       title: "S.No.",
@@ -165,8 +163,6 @@ const BulkCalibrationForm = () => {
   const handleFinish = () => {
     let updatedClbList = [];
 
-    console.log("inst cat: ", filters.instrumentCategory);
-
     if (filters.instrumentCategory) {
       updatedClbList = clbList.filter(
         (record) => record.instrumentCategory === filters.instrumentCategory
@@ -179,16 +175,15 @@ const BulkCalibrationForm = () => {
       );
     }
 
+    
     if (filters.railSection) {
       updatedClbList = updatedClbList.filter(
         (record) => record.railSection === filters.railSection
       );
     }
-
+  
     setFilteredClbList(updatedClbList);
   };
-
-  console.log("filters: ", filters);
 
   useEffect(() => {
     getClbDtls();
@@ -236,6 +231,7 @@ const BulkCalibrationForm = () => {
               <FormDropdownItem
                 label="Rail Section"
                 name="railSection"
+                formField="railSection"
                 dropdownArray={railSectionList}
                 visibleField="value"
                 valueField="key"

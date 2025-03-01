@@ -13,7 +13,7 @@ const SRIPrivateRoute = () => {
 
   return (
     <>
-        {(dutyId) ? <Outlet /> : <Navigate to='/srInspection/startDuty' />}
+      {(dutyId) ? <Outlet /> : <Navigate to='/srInspection/startDuty' />}
     </>
   )
 }

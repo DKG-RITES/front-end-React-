@@ -16,6 +16,7 @@ const NewWeldingReport = () => {
       title: 'Date & Shift',
       dataIndex: 'dateAndShift',
       key: 'dateAndShift',
+      render: (_, record) => record.date + " - " + record.shift,
       filterable: true
     },
     {

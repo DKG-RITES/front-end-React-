@@ -32,6 +32,7 @@ const NewWeldInspection = () => {
   const { state } = location;
   const id = state?.id || null;
   const weldingGeneralInfo = useSelector((state) => state.weldingDuty);
+  const isPanelIdRequired = weldingGeneralInfo.mill !== "RSM";
 
   const [info, setInfo] = useState([
     {
@@ -109,15 +110,61 @@ const NewWeldInspection = () => {
 
   const { token } = useSelector((state) => state.auth);
 
+  // const handleFormSubmit = async () => {
+  //   try {
+  //     await apiCall("POST", "welding/saveWeldInspection", token, {
+  //       ...formData,
+  //       dutyId: weldingGeneralInfo.dutyId,
+  //     });
+  //     message.success("Data saved successfully.");
+  //     navigate("/welding/home");
+  //   } catch (error) {}
+  // };
+
+  // const updateData = async () => {
+  //   console.log("Update data called")
+  //   try {
+  //     await apiCall("POST", "/welding/updateWeldInspection", token, {
+  //       ...formData,
+  //       dutyId: weldingGeneralInfo.dutyId,
+  //       // id: formData.inspectionMasterId
+  //     });
+  //     message.success("Data updated successfully.");
+  //     navigate("/welding/home");
+  //   } catch (error) {}
+  // };
+
   const handleFormSubmit = async () => {
     try {
+      const adjustedNoOfJoints = calculateAdjustedJoints();
       await apiCall("POST", "welding/saveWeldInspection", token, {
         ...formData,
         dutyId: weldingGeneralInfo.dutyId,
+        noOfJoints: adjustedNoOfJoints,
       });
       message.success("Data saved successfully.");
       navigate("/welding/home");
     } catch (error) {}
+  };
+
+const updateData = async () => {
+    console.log("Update data called");
+    try {
+      const adjustedNoOfJoints = calculateAdjustedJoints();
+      await apiCall("POST", "/welding/updateWeldInspection", token, {
+        ...formData,
+        dutyId: weldingGeneralInfo.dutyId,
+        noOfJoints: adjustedNoOfJoints,
+      });
+      message.success("Data updated successfully.");
+      navigate("/welding/home");
+    } catch (error) {}
+  };
+
+  const calculateAdjustedJoints = () => {
+    const totalJoints = formData.noOfJoints || 0;
+    const cutAndReweldCount = formData.weldList?.filter(weld => weld.result === "Cut & Reweld").length || 0;
+    return totalJoints - cutAndReweldCount;
   };
 
   const handleChange = (fieldName, value) => {
@@ -295,10 +342,33 @@ const NewWeldInspection = () => {
 
   console.log("Fromdata joins: ", formData);
 
-  const handleWeldListChange = (fieldName, value, index) => {
+  const getAcptLengthDtls = async (railId) => {
+    try{
+      const {data} = await apiCall("GET", `/vi/getActOffLengthByRailId?railId=${railId}`, token)
+      return data?.responseData?.length || 0;
+    }
+    catch(error){
+
+    }
+  }
+
+  const handleWeldListChange = async (fieldName, value, index) => {
+    if(fieldName === "railId1" || fieldName === "railId2"){
+      const length = await getAcptLengthDtls(value);
+
+      setFormData(prev => {
+        const prevWeldList = prev.weldList || [];
+        prevWeldList[index][fieldName] = value;
+        prevWeldList[index][`${fieldName}Length`] = length;
+        return {
+          ...prev,
+          weldList: prevWeldList
+        }
+      })
+      return;
+    }
     setFormData((prev) => {
       const updatedWeldList = prev.weldList || [];
-      console.log("prev.weldList: ", prev.weldList);
       updatedWeldList[index][fieldName] = value;
 
       if (
@@ -316,19 +386,6 @@ const NewWeldInspection = () => {
         weldList: updatedWeldList,
       };
     });
-  };
-
-  const updateData = async () => {
-    console.log("Update data called")
-    try {
-      await apiCall("POST", "/welding/updateWeldInspection", token, {
-        ...formData,
-        dutyId: weldingGeneralInfo.dutyId,
-        // id: formData.inspectionMasterId
-      });
-      message.success("Data updated successfully.");
-      navigate("/welding/home");
-    } catch (error) {}
   };
 
   return (
@@ -352,11 +409,11 @@ const NewWeldInspection = () => {
             label="Panel ID"
             name="panelId"
             onChange={handleChange}
-            required
+            required={isPanelIdRequired}
             readOnly={id ? true : false}
           />
           <FormInputItem
-            label="No. of Joints"
+            label="Joints Count"
             name="noOfJoints"
             onChange={(name, value) => handleNoOfJointsChange(name, value)}
             required
@@ -364,7 +421,7 @@ const NewWeldInspection = () => {
           />
         </div>
 
-        {formData.weldList.map((item, index) => (
+        {formData.weldList?.map((item, index) => (
           <div
             key={index}
             className="grid grid-cols-2 gap-x-2 md:gap-x-8 border p-4"
@@ -559,7 +616,7 @@ const NewWeldInspection = () => {
           <div className="text-center">Front</div>
           <FormDropdownItem
             name="frontResultDesc"
-            formField="frontResult"
+            formField="frontResultDesc"
             dropdownArray={weldResultList}
             onChange={handleChange}
             visibleField="value"
@@ -574,6 +631,7 @@ const NewWeldInspection = () => {
             visibleField="value"
             valueField="key"
             className="no-border"
+            disabled={formData.frontResultDesc == "OK"}
           />
           <FormInputItem
             name="frontRemark"
@@ -584,7 +642,7 @@ const NewWeldInspection = () => {
           <div className="text-center">Back</div>
           <FormDropdownItem
             name="backResultDesc"
-            formField="backResult"
+            formField="backResultDesc"
             dropdownArray={weldResultList}
             onChange={handleChange}
             visibleField="value"
@@ -599,6 +657,7 @@ const NewWeldInspection = () => {
             visibleField="value"
             valueField="key"
             className="no-border"
+            disabled={formData.backResultDesc == "OK"}
           />
           <FormInputItem
             name="backRemark"

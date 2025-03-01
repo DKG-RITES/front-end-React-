@@ -91,6 +91,8 @@ export const endQctDuty = createAsyncThunk(
         catch(error){
 
         }
+
+        return true;
     }
 )
 

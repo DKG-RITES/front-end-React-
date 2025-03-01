@@ -62,10 +62,15 @@ console.log("Form Data: ", formData);
         {/* <DKG_InteractionTableSec /> */}
 
         <div className="border grid grid-cols-4 divide-x divide-y divide-gray-300">
-          <h3 className="font-semibold p-2 text-center">HAZ Extent (mm)</h3>
+          <h3 className="font-semibold p-2 text-center"> </h3>
           <h3 className="font-semibold p-2 text-center">Head</h3>
           <h3 className="font-semibold p-2 text-center">Web</h3>
           <h3 className="font-semibold p-2 text-center">Foot</h3>
+
+          <h3 className="font-semibold p-2 text-center">HAZ Extent (mm)</h3>
+          <FormInputItem className="no-border" name='hazHead'  onChange={handleChange} required/>
+          <FormInputItem className="no-border" name='hazWeb'  onChange={handleChange} required/>
+          <FormInputItem className="no-border" name='hazFoot'  onChange={handleChange} required/>
 
           <h3 className="font-semibold p-2 text-center">Foot (L)</h3>
           <FormInputItem className="no-border" name='headL'  onChange={handleChange} required/>

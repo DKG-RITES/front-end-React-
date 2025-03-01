@@ -23,8 +23,8 @@ const railSectionList = [
     value: "60E1",
   },
   {
-    key: "IRS 52",
-    value: "IRS 52",
+    key: "IRS52",
+    value: "IRS52",
   },
   {
     key: "60E1A1",

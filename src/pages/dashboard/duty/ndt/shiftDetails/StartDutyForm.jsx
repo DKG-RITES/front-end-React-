@@ -94,6 +94,7 @@ const StartDutyForm = () => {
             <div className="grid grid-cols-2 gap-x-2">
                 <FormDropdownItem label="Rail Grade" name='railGrade' formField='railGrade' dropdownArray={railGradeList} visibleField='value' valueField='key' onChange={handleChange} required/>
                 <FormDropdownItem label="Rail Section" name='railSection' formField='railSection' dropdownArray={railSectionList} visibleField='value' valueField='key' onChange={handleChange} required />
+                
             </div>
 
             <Btn htmlType="submit" className="flex justify-center mx-auto">

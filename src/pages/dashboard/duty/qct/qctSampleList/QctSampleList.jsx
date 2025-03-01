@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer';
 import SubHeader from '../../../../../components/DKG_SubHeader';
 import GeneralInfo from '../../../../../components/DKG_GeneralInfo';
@@ -9,14 +9,53 @@ import FormDropdownItem from '../../../../../components/DKG_FormDropdownItem';
 import { Table, Divider } from 'antd';
 import Btn from '../../../../../components/DKG_Btn';
 import { FilterFilled } from "@ant-design/icons";
+import { apiCall } from '../../../../../utils/CommonFunctions';
+import { useDispatch, useSelector } from 'react-redux';
+import TableComponent from '../../../../../components/DKG_Table';
+import FormInputItem from '../../../../../components/DKG_FormInputItem';
+import { endQctDuty } from '../../../../../store/slice/qctDutySlice';
 
-const { millDropdownList, qctGeneralInfo, railSectionList, railGradeList, qctList, sampleDeclarationColumns, sampleDeclarationData } = data;
+const { millDropdownList, railSectionList, railGradeList, qctList, sampleDeclarationColumns, sampleDeclarationData } = data;
+
+const columns = [
+  {
+    title: "S No.",
+    dataIndex: "sNo",
+    render: (_, __, index) => index+1,
+  },
+  {
+    title: "QCT",
+    dataIndex: "qctType",
+    filterable: true
+  },
+  {
+    title: "Mill",
+    dataIndex: "mill",
+    filterable: true
+  },
+
+  {
+    title: "Rail Grade and Rail Section",
+    dataIndex: "rg",
+    render: (_, row) => row.railGrade + " - " + row.railSection,
+    filterable: true
+  },
+  {
+    title: "Sample Month",
+    dataIndex: "sampleMonth",
+    filterable: true
+  },
+  {
+    title: "No. Of Samples",
+    dataIndex: "sampleCount",
+    filterable: true
+  },
+]
 
 const QctSampleList = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    mill: '', railSection: '',  railGrade: '', qct: ''
-  })
+  const [formData, setFormData] = useState({shiftRemarks: null})
+  const [tableData, setTableData] = useState([]);
 
   const handleChange = (fieldName, value) => {
     setFormData(prev => {
@@ -27,17 +66,44 @@ const QctSampleList = () => {
     })
   }
 
+  console.log("Tabledata: ", tableData)
+
   const handleClick = () => {
     navigate('/qct/newSampleDeclaration')
   }
+
+  const {token} = useSelector(state => state.auth)
+  const qctGeneralInfo = useSelector(state => state.qctDuty)
+
+  const populateData = async () => {
+    try {
+      const {data} = await apiCall("GET", "/qct/getPendingTestSummary", token)
+      setTableData(data?.responseData || [])
+    }
+    catch(error){
+
+    }
+  }
+
+  const dispatch = useDispatch();
+  const handleFormSubmit = async () => {
+      await dispatch(endQctDuty(formData)).unwrap();
+      navigate('/')
+    }
+
+  useEffect(() => {
+    populateData();
+  }, [])
+
+
 
   return (
     <FormContainer>
       <SubHeader title='QCT - Sample List' link='/' />
       <GeneralInfo data={qctGeneralInfo} />
 
-      <FormBody initialValues={formData}>
-        <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-x-4'>
+      {/* <FormBody initialValues={formData}> */}
+        {/* <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-x-4'>
           <div className='flex items-center gap-x-2'>
             <FilterFilled />
             <FormDropdownItem label='Mill' name='mill' dropdownArray={millDropdownList} valueField='key' visibleField='value' onChange={handleChange} className='w-full' />
@@ -59,13 +125,15 @@ const QctSampleList = () => {
             <FilterFilled />          
             <FormDropdownItem label ='QCT' name='qct' dropdownArray={qctList} valueField='key' visibleField='value' onChange = {handleChange} className='w-full' />
           </div>
-        </div>
+        </div> */}
 
         <Divider>Samples Declared for Testing</Divider>
 
-        <Table 
-          dataSource={sampleDeclarationData} 
-          columns={sampleDeclarationColumns} 
+        <TableComponent
+          hideExport
+          hideManageColumns
+          dataSource={tableData} 
+          columns={columns} 
           scroll={{ x: true }}
           pagination={{
             pageSize: 10,
@@ -77,7 +145,20 @@ const QctSampleList = () => {
         <div className='flex justify-center mt-4'>
           <Btn onClick={handleClick}>Declare New Sample for Testing</Btn>
         </div>
-      </FormBody>
+      {/* </FormBody> */}
+
+      <section>
+        <FormBody
+          initialValues={formData}
+          onFinish={handleFormSubmit}
+        >
+          <FormInputItem placeholder='Enter Remarks' onChange={(field, value) => handleChange(field, value, setFormData)} name='shiftRemarks' required/>
+            <div className="text-center">
+              <Btn htmlType='submit'>End Duty</Btn>
+            </div>
+        </FormBody>
+      </section>
+
     </FormContainer>
   )
 }

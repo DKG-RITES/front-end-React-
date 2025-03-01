@@ -17,6 +17,7 @@ import Home from "../dashboard/duty/visualInspection/home/Home";
 import VIShiftSummary from "../dashboard/duty/visualInspection/shiftSummary/VIShiftSummary";
 import VisualInspectionForm from "../dashboard/duty/visualInspection/inspection/VisualInspectionForm";
 import StageShiftDetailsForm from "../dashboard/duty/stage/rollingStage/shiftDetails/ShiftDetailsForm";
+import SriStartDutyForm from "../dashboard/duty/srInspection/shiftDetails/ShiftDetailsForm";
 import StageHome from "../dashboard/duty/stage/rollingStage/home/Home";
 import NDTStartDutyForm from "../dashboard/duty/ndt/shiftDetails/StartDutyForm";
 import NDTHome from "../dashboard/duty/ndt/home/Home";
@@ -71,10 +72,27 @@ import NewWeldingReport from "../dashboard/records/NewWeldingReport";
 import WeldingSummaryReport from "../dashboard/records/WeldingSummaryReport";
 import WeldingTestSampleReport from "../dashboard/records/WeldingTestSampleReport";
 import ViReportMain from "../dashboard/records/ViReportMain";
+import ViDefectAnalysis from "../dashboard/records/ViDefectAnalysis";
 import ViAcptRejReport from "../dashboard/records/ViAcptRejReport";
 import ViAcceptanceReport from "../dashboard/records/ViAcceptanceReport";
 import QctShiftDetailsForm from "../dashboard/duty/qct/shiftDetails/ShiftDetailsForm";
 import QctPrivateRoute from "./QctPrivateRoute";
+import SRIShiftDetailsForm from "../dashboard/duty/srInspection/shiftDetails/ShiftDetailsForm";
+import SRIPrivateRoute from './SRIPrivateRoute';
+import SmsIsoMain from "../dashboard/isoReports/sms/SmsIsoMain";
+import RollingIsoMain from "../dashboard/isoReports/rolling/RollingIsoMain";
+import Fatigue from "../dashboard/duty/qct/test/Fatigue";
+import Fracture from "../dashboard/duty/qct/test/Fracture";
+import Fcgr from "../dashboard/duty/qct/test/Fcgr";
+import Residual from "../dashboard/duty/qct/test/Residual";
+import CenterLine from "../dashboard/duty/qct/test/CenterLine";
+import ViIsoMain from "../dashboard/isoReports/vi/ViIsoMain";
+import WeldingIsoMain from "../dashboard/isoReports/welding/WeldingIsoMain";
+// import SriIsoMain from "../dashboard/isoReports/sri/SriIsoMain";
+import QctRecordMain from "../dashboard/records/QctRecordMain";
+import QctRecord1 from "../dashboard/records/QctRecord1";
+import SriIsoMain from "../dashboard/isoReports/sri/SriIsoMain";
+
 
 const RoutesComponent = () => {
   return (
@@ -96,6 +114,10 @@ const RoutesComponent = () => {
             <Route path="/record/vi" element={<ViReportMain />} />
             <Route path="/record/vi/acptRej" element={<ViAcptRejReport />} />
             <Route path="/record/vi/acpt" element={<ViAcceptanceReport />} />
+            <Route path="/record/vi/defect" element={<ViDefectAnalysis />} />
+
+            <Route path="/record/qct" element={<QctRecordMain />} />
+            <Route path="/record/qct/record1" element={<QctRecord1 />} />
             {/* <Route path="/record/welding/testSample" element={<WeldingTestSampleReport />} /> */}
 
             <Route path="/sms">
@@ -207,7 +229,8 @@ const RoutesComponent = () => {
             </Route>
 
             <Route path="/srInspection">
-              <Route index element={<SrInspectionHome />} />
+              <Route index element={<SriStartDutyForm />} />
+              <Route path="home" element={<SrInspectionHome />} />
               <Route
                 path="addNewInspection"
                 element={<SrNewInspectionForm />}
@@ -220,11 +243,26 @@ const RoutesComponent = () => {
               <Route path="startDuty" element={<QctShiftDetailsForm />} />
               <Route element={<QctPrivateRoute />}>
               <Route path="sampleList" element={<QctSampleList />} />
+              <Route path="fatigue/:qctId" element={<Fatigue />} />
+              <Route path="fracture/:qctId" element={<Fracture />} />
+              <Route path="fcgr/:qctId" element={<Fcgr />} />
+              <Route path="residual/:qctId" element={<Residual />} />
+              <Route path="centerLine/:qctId" element={<CenterLine />} />
               <Route
                 path="newSampleDeclaration"
                 element={<QctSampleDeclarationForm />}
                 />
                 </Route>
+            </Route>
+
+            <Route path = "/iso">
+              <Route path="sms" element={<SmsIsoMain />} />
+              <Route path="rolling" element={<RollingIsoMain />} />
+              <Route path="vi" element={<ViIsoMain />} />
+              <Route path="welding" element={<WeldingIsoMain />} />
+              <Route path="sri" element={<SriIsoMain />} />
+                
+              {/* </Route> */}
             </Route>
 
             <Route path="/calibration">

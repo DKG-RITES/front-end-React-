@@ -140,12 +140,35 @@ const AcceptanceTestSample = ({ railGrade, dutyId }) => {
           token,
           payload
         );
-        if (data.responseData?.heatNo) {
-          message.success("Test data present for provided details.");
-          setFormData(data.responseData);
-        } else {
-          message.error("Test data not present for provided details.");
-        }
+        // if (data.responseData?.heatNo) {
+        //   message.success("Test data present for provided details.");
+          setFormData(prev => {
+            return {
+              chemical: data?.responseData?.chemical,
+              n2: data?.responseData?.n2,
+              fwtSt: data?.responseData?.fwtSt,
+              mechanical: data?.responseData?.mechanical,
+              sp: data?.responseData?.sp,
+              ir: data?.responseData?.ir,
+              o2: data?.responseData?.o2,
+              fwtHs: data?.responseData?.fwtHs,
+              fwtStSr: data?.responseData?.fwtStSr,
+              tensileFoot: data?.responseData?.tensileFoot,
+              micro: data?.responseData?.micro,
+              decarb: data?.responseData?.decarb,
+              rsh: data?.responseData?.rsh,
+              ph: data?.responseData?.ph,
+              tensile: data?.responseData?.tensile,
+              heatNo: prev.heatNo,
+              strand: prev.strand,
+              sampleLot: prev.sampleLot,
+              sampleId: prev.sampleId,
+              sampleType: prev.sampleType
+            }
+          });
+        // } else {
+          // message.error("Test data not present for provided details.");
+        // }
       } catch (error) {}
     },
     [token]

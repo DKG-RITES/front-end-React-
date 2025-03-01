@@ -409,7 +409,7 @@ const items = [
             key: "2.8.1",
             icon: <AppstoreAddOutlined />,
             label: "SRI Start Duty",
-            path: "/srInspection/startDuty",
+            path: "/srInspection",
           },
           {
             key: "2.8.2",
@@ -420,7 +420,7 @@ const items = [
                 key: "2.8.2.1",
                 icon: <BankOutlined />,
                 label: "SR Inspection Home",
-                path: "/srInspection",
+                path: "/srInspection/home",
               },
               {
                 key: "2.8.2.2",

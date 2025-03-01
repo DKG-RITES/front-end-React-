@@ -13,7 +13,7 @@ const WsRemarks = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/srInspection')
+    navigate("/srInspection/home");
   }
 
   return (
@@ -61,7 +61,7 @@ const WsRemarks = () => {
         <Divider />
 
         <div className='flex justify-center mt-4'>
-          <Btn className='w-36' onClick={handleClick}>Ok</Btn>
+          <Btn className='w-36' onClick={handleClick}>OK</Btn>
         </div>
       </section>
     </FormContainer>

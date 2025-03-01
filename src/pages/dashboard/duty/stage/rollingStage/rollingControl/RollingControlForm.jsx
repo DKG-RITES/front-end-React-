@@ -87,7 +87,23 @@ const RollingControlForm = () => {
     setCurrentTablePage(1); // Reset to first page when page size changes
   };
 
-  const handleChange = (fieldName, value) => {
+  const handleChange = async (fieldName, value) => {
+    if(fieldName === "micrometerNo" || fieldName === "vernierNo" || fieldName === "weighingMachine"){
+      try{
+        const {data} = await apiCall("GET", `/calibration/getCalibrationDtls?serialNumber=${value}`, token)
+        const date = data?.responseData?.calibrationValidUpto;
+        if(fieldName === "micrometerNo"){
+          setFormData(prev => ({...prev, [fieldName] : value, micrometerValidity: date}))
+        }
+        else if(fieldName === "vernierNo"){
+          setFormData(prev => ({...prev, [fieldName] : value, vernierValidity: date}))
+        }
+        else if(fieldName === "weighingMachine"){
+          setFormData(prev => ({...prev, [fieldName] : value, weighingMachineValidity: date}))
+        }
+      }
+      catch(error){}
+    }
     setFormData((prev) => {
       return {
         ...prev,

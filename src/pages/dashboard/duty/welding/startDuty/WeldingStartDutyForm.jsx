@@ -85,8 +85,16 @@ const WeldingStartDutyForm = () => {
                 <FormDropdownItem label="Shift" name="shift" formField="shift" dropdownArray={shiftList} visibleField="value" valueField="key" onChange={handleChange} required />
 
                 <FormDropdownItem label='Mill' name='mill' formField="mill"  dropdownArray={millDropdownList} valueField={'key'} visibleField={'value'} onChange={handleChange} required />
-                <FormDropdownItem label ='Welding Line' name='weldingLine' formField="weldingLine"  dropdownArray={weldingLineDropdownList} valueField={'key'} visibleField={'value'} onChange = {handleChange} required />
-
+                {
+                  formData.mill === 'RSM' && (
+                    <FormDropdownItem label ='Welding Line' name='weldingLine' formField="weldingLine"  dropdownArray={weldingLineDropdownList} valueField={'key'} visibleField={'value'} onChange = {handleChange}/>
+                  )
+                }
+                {
+                  formData.mill === 'URM' && (
+                    <FormDropdownItem label ='Welding Line' name='weldingLine' formField="weldingLine"  dropdownArray={weldingLineDropdownList} valueField={'key'} visibleField={'value'} onChange = {handleChange} required/>
+                  )
+                }
                 <FormDropdownItem label="Rail Grade" name='railGrade' formField="railGrade" dropdownArray={railGradeList} visibleField='value' valueField='key' onChange={handleChange} required/>
                 <FormDropdownItem label="Rail Section" name='railSection' formField="railSection" dropdownArray={railSectionList} visibleField='value' valueField='key' onChange={handleChange} required />
             </div>

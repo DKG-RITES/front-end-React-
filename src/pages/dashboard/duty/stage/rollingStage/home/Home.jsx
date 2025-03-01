@@ -3,7 +3,7 @@ import SubHeader from "../../../../../../components/DKG_SubHeader";
 import FormContainer from "../../../../../../components/DKG_FormContainer";
 import GeneralInfo from "../../../../../../components/DKG_GeneralInfo";
 import TabList from "../../../../../../components/DKG_TabList";
-import stageHomeTabs from "../../../../../../utils/frontSharedData/rollingStage/StageHome";
+import getStageHomeTabs from "../../../../../../utils/frontSharedData/rollingStage/StageHome";
 import { Divider } from 'antd';
 import FormBody from "../../../../../../components/DKG_FormBody";
 import FormInputItem from "../../../../../../components/DKG_FormInputItem";
@@ -25,6 +25,7 @@ const Home = () => {
 
 
     const rollingGeneralInfo = useSelector(state => state.rollingDuty);
+    const railGrade = rollingGeneralInfo?.railGrade || "";
 
     const testSampleMarkingTab = {
         title: 'Testing Sample Marking',
@@ -40,17 +41,13 @@ const Home = () => {
         }
     }
 
-    // useEffect(() => {
-    //     setGeneralInfo(rollingGeneralInfo)
-    // }, [rollingGeneralInfo])
-
   return (
     <FormContainer>
         <SubHeader title="Stage - Home" link="/" />
         <GeneralInfo data={rollingGeneralInfo} />
 
         <section className="mt-6">
-            <TabList tabList={[...stageHomeTabs, testSampleMarkingTab]} />
+            <TabList tabList={[...getStageHomeTabs(railGrade), testSampleMarkingTab]} />
         </section>
 
         <Divider className="mt-6 mb-1" />

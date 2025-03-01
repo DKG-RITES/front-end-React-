@@ -4,7 +4,7 @@ import SubHeader from "../../../../../../components/DKG_SubHeader";
 import GeneralInfo from "../../../../../../components/DKG_GeneralInfo";
 import data from "../../../../../../utils/frontSharedData/rollingStage/Stage.json";
 import { Divider, Form, message, TimePicker } from "antd";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import FormInputItem from "../../../../../../components/DKG_FormInputItem";
 import FormDropdownItem from "../../../../../../components/DKG_FormDropdownItem";
 import Btn from "../../../../../../components/DKG_Btn";
@@ -76,7 +76,7 @@ const RollingControlSample = () => {
         console.log("FLOAT: ", value)
         let floor = null;
         let ceil = null;
-        if (railSection === "IRS 52") {
+        if (railSection === "IRS52") {
           if (value < 155.6 || value > 156.8) {
             floor = 155.6;
             ceil = 156.8;
@@ -124,7 +124,7 @@ const RollingControlSample = () => {
             floor = 149.0;
             ceil = 151.0;
           }
-        } else if (railSection === "IRS 52") {
+        } else if (railSection === "IRS52") {
           if (value < 135.0 || value > 137.0) {
             floor = 135.0;
             ceil = 137.0;
@@ -162,7 +162,7 @@ const RollingControlSample = () => {
         let ceil = null;
         let floor = null;
 
-        if (railSection === "IRS 52") {
+        if (railSection === "IRS52") {
           if (value < 51.63055 || value > 52.66835) {
             floor = 51.63055;
             ceil = 52.66835;
@@ -206,7 +206,7 @@ const RollingControlSample = () => {
         let ceil = null;
         let floor = null;
 
-        if (railSection === "IRS 52") {
+        if (railSection === "IRS52") {
           if (value < 15.0 || value > 16.5) {
             floor = 15.0;
             ceil = 16.5;
@@ -247,13 +247,17 @@ const RollingControlSample = () => {
 
   console.log("Formdata: ", formData.height)
 
+  const navigate = useNavigate();
+
   const handleFormSubmit = async () => {
     try {
       await apiCall("POST", "/rolling/saveControlHeat", token, {
         ...formData,
+        heatNo: String(formData.heatNo).padStart(6, "0"),
         dutyId: rollingGeneralInfo.dutyId,
       });
       message.success("Data saved successfully");
+      navigate("/stage/rollingControl");
     } catch (error) {}
   };
 

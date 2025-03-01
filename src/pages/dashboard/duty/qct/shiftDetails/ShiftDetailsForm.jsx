@@ -36,12 +36,13 @@ const QctShiftDetailsForm = () => {
 
     const handleFormSubmit = async () => {
       await dispatch(startQctDuty(formData)).unwrap();
-      navigate('/qct/home');
+      navigate('/qct/sampleList');
+      // message.error("Internal server error. Please contact support.")
     };
 
     if (dutyId) {
       message.error("Duty already in progress. Cannot start new duty.");
-      return <Navigate to="/qct/startDuty" />;
+      return <Navigate to="/qct/sampleList" />;
     }
 
   return (

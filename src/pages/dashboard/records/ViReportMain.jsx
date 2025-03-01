@@ -17,12 +17,12 @@ const ViReportMain = () => {
             icon: <AuditOutlined />,
             link: '/record/vi/acpt'
           },
-        //   {
-        //     id: 2,
-        //     title: 'Test Sample Report',
-        //     icon: <ToolOutlined />,
-        //     link: '/record/welding/testSample'
-        //   },
+          {
+            id: 3,
+            title: 'Defect Analysis',
+            icon: <ToolOutlined />,
+            link: '/record/vi/defect'
+          },
     ]
     const navigate = useNavigate()
   const renderRecordItemTabs = () =>

@@ -15,6 +15,7 @@ const QctPrivateRoute = () => {
     <>
         {(dutyId) ? <Outlet /> : <Navigate to='/qct/startDuty' />}
     </>
+    // <Navigate to='/qct/startDuty' />
   )
 }
 

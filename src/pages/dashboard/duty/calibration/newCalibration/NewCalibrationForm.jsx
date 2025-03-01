@@ -19,17 +19,13 @@ const currentDate = dayjs();
 const dateFormat = "DD/MM/YYYY";
 
 const NewCalibrationForm = () => {
-
   const location = useLocation();
-
   const serialNumber = location.state?.serialNumber || null;
-
-  console.log("SERIAL NUMER: ", serialNumber)
-
-  
+  console.log("SERIAL NUMBER: ", serialNumber)
   const [instrumentCategoryList, setInstrumentCategoryList] = useState([])
   const [instrumentList, setInstrumentList] = useState([]);
   const navigate = useNavigate();
+  const [isDisabled, setIsDisabled] = useState(false);
   const [formData, setFormData] = useState({
     instrumentCategory: null, instrument: null, detail: null, railSection: null, serialNumber: null, calibrationDate: currentDate.format(dateFormat), calibrationResult: null, calibrationValidUpto: null, calibrationExpiryNumberOfDays: null
   })
@@ -85,6 +81,12 @@ const NewCalibrationForm = () => {
 
       const { responseData } = data;
 
+      if (responseData) {
+        setIsDisabled(true);
+      } else {
+        setIsDisabled(false);
+      }
+
       setFormData({
         instrumentCategory: responseData?.instrumentCategory || null,
         instrument: responseData?.instrument || null,
@@ -116,15 +118,15 @@ const NewCalibrationForm = () => {
 
       <Form initialValues={formData} form={form} layout="vertical" onFinish={handleFormSubmit}>
         <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-x-4'>
-          <FormDropdownItem label='Instrument Category' name="instrumentCategory" formField="instrumentCategory" dropdownArray={instrumentCategoryList} valueField='key' visibleField='value' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} />
-          <FormDropdownItem label ='Instrument' name='instrument' formField="instrument" dropdownArray={instrumentList} valueField='key' visibleField='value' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} />
+          <FormDropdownItem label='Instrument Category' name="instrumentCategory" formField="instrumentCategory" dropdownArray={instrumentCategoryList} valueField='key' visibleField='value' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} disabled={isDisabled} />
+          <FormDropdownItem label ='Instrument' name='instrument' formField="instrument" dropdownArray={instrumentList} valueField='key' visibleField='value' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} disabled={isDisabled} />
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-x-4'>
-          <FormInputItem label='Instrument Detail' name='detail' placeholder='Enter Instrument Detail' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
+          <FormInputItem label='Instrument Detail' name='detail' placeholder='Enter Instrument Detail' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required disabled={isDisabled} />
           {
             (formData?.instrumentCategory === 'Gauge (Working)' || formData?.instrumentCategory === 'Gauge (Master)') && 
-            <FormDropdownItem label='Rail Section' name='railSection' formField="railSection" dropdownArray={railSectionList} visibleField='value' valueField='key' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
+            <FormDropdownItem label='Rail Section' name='railSection' formField="railSection" dropdownArray={railSectionList} visibleField='value' valueField='key' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required disabled={isDisabled} />
           }
         </div>
 
@@ -144,13 +146,22 @@ const NewCalibrationForm = () => {
         <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-x-4'>
           <FormDropdownItem label ='Calibration Result' name='calibrationResult' formField="calibrationResult" dropdownArray={calResultList} valueField='key' visibleField='value' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
           {
-            (formData?.calibrationResult === 'OK' || formData?.calibrationResult === 'Not OK') && 
+            (formData?.calibrationResult === 'OK') && 
             <CustomDatePicker label='Cal. Valid upto Date' name='calibrationValidUpto' defaultValue={formData?.calibrationValidUpto} onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
           }
         </div>
 
         <div className='grid grid-cols-1'>
-          <FormInputItem label='Cal Expiry No. of Days' name='calibrationExpiryNumberOfDays' placeholder='0' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
+          {
+            (formData?.calibrationResult === 'OK') && 
+            <FormInputItem label='Cal Expiry No. of Days' name='calibrationExpiryNumberOfDays' placeholder='0' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
+          }
+
+          {
+            (formData?.calibrationResult === 'Not OK') && 
+            <FormInputItem label='Cal Expiry No. of Days' name='calibrationExpiryNumberOfDays' placeholder='0' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)}/>
+          }
+          
         </div>
 
         <div className='flex justify-center mt-4'>
