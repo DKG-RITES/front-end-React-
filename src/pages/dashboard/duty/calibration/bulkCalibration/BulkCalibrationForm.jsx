@@ -19,6 +19,7 @@ import { apiCall, handleChange } from "../../../../../utils/CommonFunctions";
 import { useSelector } from "react-redux";
 import { DeleteOutlined } from "@ant-design/icons";
 import FormInputItem from "../../../../../components/DKG_FormInputItem";
+import { filter } from "lodash";
 
 const {
   instrumentMapping: sampleData,
@@ -35,6 +36,8 @@ const BulkCalibrationForm = () => {
 
   const [clbList, setClbLst] = useState([]);
   const [filteredClbList, setFilteredClbList] = useState([]);
+
+  console.log("FULTR: ", filteredClbList)
 
   const navigate = useNavigate();
   const [info, setInfo] = useState([
@@ -107,6 +110,9 @@ const BulkCalibrationForm = () => {
         serialNumberList: updatedSerialNumberList,
       };
     });
+
+    const updatedFiltertedClbList = filteredClbList.filter(item => item.serialNumber !== serialNumber);
+    setFilteredClbList(updatedFiltertedClbList);
   };
 
   const bulkColumns = [
@@ -295,9 +301,17 @@ const BulkCalibrationForm = () => {
             }
             required
           />
-          {(formData?.calibrationResult === "OK" ||
-            formData?.calibrationResult === "Not OK") && (
+          {formData?.calibrationResult === "OK" && (
             <>
+                <FormInputItem
+                  name="calibrationExpiryNumberOfDays"
+                  label="Clb expired after no. of days"
+                  placeholder="0"
+                  onChange={(name, value) =>
+                    handleChange(name, value, setFormData)
+                  }
+                  // disabled
+                />
               <CustomDatePicker
                 label="Cal. Valid upto Date"
                 name="calibrationValidUpto"
@@ -308,16 +322,21 @@ const BulkCalibrationForm = () => {
                 required
               />
 
-              <FormInputItem
-                name="calibrationExpiryNumberOfDays"
-                label="Clb expired after no. of days"
-                placeholder="0"
-                onChange={(name, value) =>
-                  handleChange(name, value, setFormData)
-                }
-              />
             </>
           )}
+          {/* {
+            (formData?.calibrationResult === 'OK') && 
+            <CustomDatePicker label='Cal. Valid upto Date' name='calibrationValidUpto' defaultValue={formData?.calibrationValidUpto} onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
+          } */}
+          {/* {
+            (formData?.calibrationResult === 'OK') && 
+            <FormInputItem label='Cal Expiry No. of Days' name='calibrationExpiryNumberOfDays' placeholder='0' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
+          }
+
+          {
+            (formData?.calibrationResult === 'Not OK') && 
+            <FormInputItem label='Cal Expiry No. of Days' name='calibrationExpiryNumberOfDays' placeholder='0' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)}/>
+          } */}
         </div>
       </Form>
 

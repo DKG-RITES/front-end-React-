@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer';
 import SubHeader from '../../../../../components/DKG_SubHeader';
 import GeneralInfo from '../../../../../components/DKG_GeneralInfo';
 import data from "../../../../../utils/frontSharedData/srInspection/srInspection.json";
 import Btn from '../../../../../components/DKG_Btn';
 import { useNavigate } from 'react-router-dom'
-import { Divider } from 'antd';
+import { Divider, Table } from 'antd';
+import { apiCall } from '../../../../../utils/CommonFunctions';
+import { useSelector } from 'react-redux';
 
 const { srInspectionGeneralInfo } = data;
 
@@ -16,9 +18,39 @@ const WsRemarks = () => {
     navigate("/srInspection/home");
   }
 
+  const columns = [
+    {
+      title: "Shift Details",
+      dataIndex: "shiftDtls"
+    },
+    {
+      title: "Remarks",
+      dataIndex: "shiftRemarks",
+      render: (data) => data || "----"
+    }
+  ]
+
+  const [dataSource, setDataSource] = useState([]);
+
+  const {token} = useSelector(state => state.auth)
+
+  const {dutyId} = useSelector(state => state.sriDuty)
+
+  const populateWsRemarks = useCallback(async () => {
+    try{
+      const {data} = await apiCall("GET", `/shortrailinspection/getWorkStationRemarks?dutyId=${dutyId}`, token);
+      setDataSource(data?.responseData || [])
+    }
+    catch(error){}
+  }, [])
+
+  useEffect(() => {
+    populateWsRemarks()
+  }, [populateWsRemarks])
+
   return (
     <FormContainer>
-      <SubHeader title='Other Workstation Remarks' link='/srInspection/home' />
+      {/* <SubHeader title='Other Workstation Remarks' link='/srInspection/home' />
       <GeneralInfo data={srInspectionGeneralInfo} />
 
       <section>
@@ -63,7 +95,8 @@ const WsRemarks = () => {
         <div className='flex justify-center mt-4'>
           <Btn className='w-36' onClick={handleClick}>OK</Btn>
         </div>
-      </section>
+      </section> */}
+      <Table columns={columns} dataSource={dataSource} pagination={false} />
     </FormContainer>
   )
 }

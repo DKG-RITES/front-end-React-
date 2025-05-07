@@ -94,7 +94,7 @@ const RollingVerificationIsoUrm = () => {
         "POST",
         "/iso/getRollingVerificationDtls",
         token,
-        formData
+        {...formData, mill: "URM" }
       );
       setFormData({
         date: formData.date,

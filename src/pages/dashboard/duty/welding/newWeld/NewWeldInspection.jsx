@@ -12,6 +12,7 @@ import FormDropdownItem from "../../../../../components/DKG_FormDropdownItem";
 import Btn from "../../../../../components/DKG_Btn";
 import { useSelector } from "react-redux";
 import { apiCall } from "../../../../../utils/CommonFunctions";
+import FormSearchItem from "../../../../../components/DKG_FormSearchItem";
 
 const {
   weldParameterDropdownList,
@@ -388,6 +389,16 @@ const updateData = async () => {
     });
   };
 
+  const handleRailIdLengthSearch = async (name, index, value) => {
+    try{
+      const {data} = await apiCall("GET", `/vi/getActOffLengthByRailId?railId=${value}`, token)
+      console.log("Rail Id length: ", data?.responseData?.length)
+    }
+    catch(error){
+      
+    }
+  }
+
   return (
     <FormContainer>
       <SubHeader
@@ -413,8 +424,9 @@ const updateData = async () => {
             readOnly={id ? true : false}
           />
           <FormInputItem
-            label="Joints Count"
+            label="Joints Count(inc. 'cult & reweld')"
             name="noOfJoints"
+            className=""
             onChange={(name, value) => handleNoOfJointsChange(name, value)}
             required
             readOnly={id ? true : false}
@@ -422,190 +434,204 @@ const updateData = async () => {
         </div>
 
         {formData.weldList?.map((item, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-2 gap-x-2 md:gap-x-8 border p-4"
-          >
-            <FormInputItem
-              label="Joint No."
-              name={["weldList", index, "jointNo"]}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-              required
-              readOnly={id ? true : false}
-            />
-            <FormDropdownItem
-              label="Weld Parameters"
-              name={["weldList", index, "weldParameterDesc"]}
-              formField="weldParameter"
-              dropdownArray={weldParameterDropdownList}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-              required
-            />
-
-            <FormDropdownItem
-              label="Visual"
-              name={["weldList", index, "visualDesc"]}
-              formField="visual"
-              dropdownArray={weldParameterDropdownList}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-            />
-            <FormDropdownItem
-              label="Marking"
-              name={["weldList", index, "markingDesc"]}
-              formField="marking"
-              dropdownArray={weldParameterDropdownList}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-            />
-
-            <FormDropdownItem
-              label="Dimension"
-              name={["weldList", index, "dimensionDesc"]}
-              formField="dimension"
-              dropdownArray={weldParameterDropdownList}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-            />
-            {}
-            {item.dimension ? (
-              <div></div>
-            ) : (
+          <>
+            <div
+              key={index}
+              className="grid grid-cols-2 gap-x-2 md:gap-x-8 border p-4"
+            >
+              <FormInputItem
+                label="Joint No."
+                name={["weldList", index, "jointNo"]}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                valueField="key"
+                visibleField="value"
+                required
+                readOnly={id ? true : false}
+              />
               <FormDropdownItem
-                label="Reason of Dim. NOT OK"
-                name={["weldList", index, "dimensionDetail"]}
-                formField="dimensionDetail"
-                dropdownArray={reasonDimensionDropdownList}
+                label="Weld Parameters"
+                name={["weldList", index, "weldParameterDesc"]}
+                formField="weldParameter"
+                dropdownArray={weldParameterDropdownList}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                valueField="key"
+                visibleField="value"
+                required
+              />
+
+              <FormDropdownItem
+                label="Visual"
+                name={["weldList", index, "visualDesc"]}
+                formField="visual"
+                dropdownArray={weldParameterDropdownList}
                 onChange={(name, value) =>
                   handleWeldListChange(name, value, index)
                 }
                 valueField="key"
                 visibleField="value"
               />
-            )}
-
-            <FormDropdownItem
-              label="USFD"
-              name={["weldList", index, "usfdDesc"]}
-              formField="usfd"
-              dropdownArray={weldParameterDropdownList}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-            />
-            {item.usfd ? (
-              <div></div>
-            ) : (
               <FormDropdownItem
-                label="Reason of USFD for Not OK"
-                name={["weldList", index, "usfdDetail"]}
-                formField="usfdDetail"
-                dropdownArray={reasonUSFDDropdownList}
+                label="Marking"
+                name={["weldList", index, "markingDesc"]}
+                formField="marking"
+                dropdownArray={weldParameterDropdownList}
                 onChange={(name, value) =>
                   handleWeldListChange(name, value, index)
                 }
                 valueField="key"
                 visibleField="value"
               />
-            )}
 
-            <FormInputItem
-              label="Weld Operator"
-              name={["weldList", index, "weldOperator"]}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-            />
-            <FormInputItem
-              label="USFD Operator"
-              name={["weldList", index, "usfdOperator"]}
-              value={formData.usfdOperator}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-            />
+              <FormDropdownItem
+                label="Dimension"
+                name={["weldList", index, "dimensionDesc"]}
+                formField="dimension"
+                dropdownArray={weldParameterDropdownList}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                valueField="key"
+                visibleField="value"
+              />
+              {}
+              {item.dimension ? (
+                <div></div>
+              ) : (
+                <FormDropdownItem
+                  label="Reason of Dim. NOT OK"
+                  name={["weldList", index, "dimensionDetail"]}
+                  formField="dimensionDetail"
+                  dropdownArray={reasonDimensionDropdownList}
+                  onChange={(name, value) =>
+                    handleWeldListChange(name, value, index)
+                  }
+                  valueField="key"
+                  visibleField="value"
+                />
+              )}
 
-            <FormDropdownItem
-              label="Result"
-              name={["weldList", index, "result"]}
-              formField="result"
-              dropdownArray={resultDropdownList}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-            />
-            <FormInputItem
-              label="Remarks"
-              name={["weldList", index, "remark"]}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              valueField="key"
-              visibleField="value"
-            />
-            <Divider className="col-span-2" />
+              <FormDropdownItem
+                label="USFD"
+                name={["weldList", index, "usfdDesc"]}
+                formField="usfd"
+                dropdownArray={weldParameterDropdownList}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                valueField="key"
+                visibleField="value"
+              />
+              {item.usfd ? (
+                <div></div>
+              ) : (
+                <FormDropdownItem
+                  label="Reason of USFD for Not OK"
+                  name={["weldList", index, "usfdDetail"]}
+                  formField="usfdDetail"
+                  dropdownArray={reasonUSFDDropdownList}
+                  onChange={(name, value) =>
+                    handleWeldListChange(name, value, index)
+                  }
+                  valueField="key"
+                  visibleField="value"
+                />
+              )}
 
-            <FormInputItem
-              label="Rail ID 1"
-              name={["weldList", index, "railId1"]}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              required
-            />
-            <FormInputItem
-              label="Rail ID 1 Length"
-              name={["weldList", index, "railId1Length"]}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              required
-            />
-            <FormInputItem
-              label="Rail ID 2"
-              name={["weldList", index, "railId2"]}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              required
-            />
-            <FormInputItem
-              label="Rail ID 2 Length"
-              name={["weldList", index, "railId2Length"]}
-              onChange={(name, value) =>
-                handleWeldListChange(name, value, index)
-              }
-              required
-            />
-          </div>
+              <FormInputItem
+                label="Weld Operator"
+                name={["weldList", index, "weldOperator"]}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                valueField="key"
+                visibleField="value"
+              />
+              <FormInputItem
+                label="USFD Operator"
+                name={["weldList", index, "usfdOperator"]}
+                value={formData.usfdOperator}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                valueField="key"
+                visibleField="value"
+              />
+
+              <FormDropdownItem
+                label="Result"
+                name={["weldList", index, "result"]}
+                formField="result"
+                dropdownArray={resultDropdownList}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                valueField="key"
+                visibleField="value"
+              />
+              <FormInputItem
+                label="Remarks"
+                name={["weldList", index, "remark"]}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                valueField="key"
+                visibleField="value"
+              />
+              <Divider className="col-span-2" />
+
+              <FormInputItem
+                label="Rail ID 1"
+                name={["weldList", index, "railId1"]}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                // onSearch={(value) => handleRailIdLengthSearch("railId1", index, value)}
+                required
+              />
+              <FormInputItem
+                label="Rail ID 1 Length"
+                name={["weldList", index, "railId1Length"]}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                disabled
+                required
+              />
+              {/* <FormInputItem
+                label="Rail ID 2"
+                name={["weldList", index, "railId2"]}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                required
+              /> */}
+
+<FormInputItem
+                label="Rail ID 2"
+                name={["weldList", index, "railId2"]}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                // onSearch={(value) => handleRailIdLengthSearch("railId2", index, value)}
+                required
+              />
+              <FormInputItem
+                label="Rail ID 2 Length"
+                name={["weldList", index, "railId2Length"]}
+                onChange={(name, value) =>
+                  handleWeldListChange(name, value, index)
+                }
+                disabled
+                required
+              />
+            </div>         
+            <Divider className="mt-10 mb-10"/>
+          </>
         ))}
-
-        <Divider />
 
         <div className="border grid grid-cols-4 divide-x divide-y divide-gray-300">
           <div className="p-2 text-center font-semibold">End</div>

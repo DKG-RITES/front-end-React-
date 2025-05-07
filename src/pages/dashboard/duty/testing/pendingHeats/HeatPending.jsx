@@ -8,10 +8,12 @@ import { FilterFilled } from '@ant-design/icons';
 import FormDropdownItem from '../../../../../components/DKG_FormDropdownItem'
 import Search from "../../../../../components/DKG_Search"
 import { Table } from 'antd';
+import { useSelector } from 'react-redux'
 
-const { testingGeneralInfo, railGradeList, millList, resultList } = data;
+const { railGradeList, millList, resultList } = data;
 
 const HeatPending = () => {
+  const testingGeneralInfo = useSelector(state => state.testingDuty)
     const [formData, setFormData] = useState({
         mill: '', railGrade: ''
     })

@@ -29,7 +29,7 @@ const RollingControlIRS52 = () => {
 
   const handleFormSubmit = () => {
     message.success("Form submission triggered.");
-    navigate('/stage/rollingControl');
+    navigate("/stage/rollingControl");
   };
 
   return (

@@ -13,6 +13,8 @@ import { endCalibrationDuty } from '../../../../../store/slice/calibrationDutySl
 import { apiCall } from "../../../../../utils/CommonFunctions";
 import GeneralInfo from '../../../../../components/DKG_GeneralInfo';
 import TableComponent from '../../../../../components/DKG_Table';
+import dayjs from "dayjs";
+import { startCalibrationDuty } from '../../../../../store/slice/calibrationDutySlice';
 
 const { instrumentMapping: sampleData } = data;
 
@@ -26,8 +28,35 @@ const CalibrationList = () => {
 
   const [formData, setFormData] = useState([])
 
+  const determineShift = () => {
+    const currentHour = new Date().getHours();
+    if (currentHour >= 6 && currentHour < 14) return 'A';
+    if (currentHour >= 14 && currentHour < 22) return 'B';
+    return 'C';
+  };
+
   const calibrationGeneralInfo = useSelector((state) => state.calibrationDuty);
   const { token } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const autoStartDuty = async () => {
+      if (!calibrationGeneralInfo?.dutyId) {
+        const currentDate = dayjs().format("DD/MM/YYYY");
+        const shift = determineShift();
+  
+        try {
+          await dispatch(startCalibrationDuty({
+            startDate: currentDate,
+            shift: shift
+          })).unwrap();
+        } catch (error) {
+          console.error("Failed to start duty:", error);
+        }
+      }
+    };
+  
+    autoStartDuty();
+  }, [dispatch, calibrationGeneralInfo?.dutyId]);
 
   const populateData = useCallback(async () => {
     const instrumentCategoryList = Object.keys(sampleData).map(inst => {

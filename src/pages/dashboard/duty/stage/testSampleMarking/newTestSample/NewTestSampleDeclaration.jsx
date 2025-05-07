@@ -8,6 +8,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { message, Form } from "antd";
 import FormDropdownItem from "../../../../../../components/DKG_FormDropdownItem";
 import AcceptanceTestSample from "../acceptanceTestSample.jsx/AcceptanceTestSample";
+import RetestSample from "../RetestSample";
 
 const {
   testDropdownList,
@@ -112,6 +113,9 @@ const NewTestSampleDeclaration = () => {
 
         {
           formData.test === "Acceptance Test" && <AcceptanceTestSample railGrade={formData.railGrade} dutyId={dutyId} />
+        }
+        {
+          formData.test === "Retest Samples" && <RetestSample railGrade={formData.railGrade} dutyId={dutyId} />
         }
       
     </FormContainer>

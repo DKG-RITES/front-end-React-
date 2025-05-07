@@ -55,7 +55,7 @@ const dutyItemTabs = [
     id: 9,
     title: 'Calibration',
     icon: <ToolOutlined />,
-    link: '/calibration/startDuty'
+    link: '/calibration/list'
   },
   {
     id: 10,

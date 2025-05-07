@@ -203,6 +203,7 @@ const bloomIdentificationList = [
 ];
 
 const SmsBloomInspection = () => {
+  const [fieldsDisable, setFieldsDisabled] = useState(true)
   const smsGeneralInfo = useSelector((state) => state.smsDuty);
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -221,27 +222,25 @@ const SmsBloomInspection = () => {
 
   const handleFormSubmit = async () => {
     try {
-      // Call the API
       await apiCall("POST", "/sms/saveBloomInsp", token, { 
         ...formData, 
         dutyId: smsGeneralInfo.dutyId,
       });
       navigate('/sms/dutyEnd')
-      // Show success message only when the API call is successful
+      
       message.success("Bloom Inspection successful.");
     } catch (error) {
-      // Error is already handled by `apiCall` with `message.error`
       console.error("Form submission error:", error);
     }
   };
 
-  const [bloomRejectedRule, setBloomRejectedRule] = useState([]);
+  const [bloomLengthRule, setBloomLengthRule] = useState([]);
 
-  const handleBloomRejectedChange = (fieldName, value) => {
-    const isInteger = regexMatch.intRegex.test(value);
+  const handleBloomLengthChange = (fieldName, value) => {
+    const isFloat = regexMatch.floatRegex.test(value)
 
-    if (!isInteger) {
-      setBloomRejectedRule([
+    if (!isFloat) {
+      setBloomLengthRule([
         {
           validator: (_, value) =>
             Promise.reject(
@@ -250,7 +249,49 @@ const SmsBloomInspection = () => {
         },
       ]);
     } else {
-      setBloomRejectedRule([]);
+      setBloomLengthRule([]);
+    }
+
+    setFormData(prev => ({...prev, [fieldName]: value}))
+  };
+
+  const [primeBloomRejectedRule, setPrimeBloomRejectedRule] = useState([]);
+
+  const handlePrimeBloomRejectedChange = (fieldName, value) => {
+    const isInteger = regexMatch.intRegex.test(value);
+
+    if (!isInteger) {
+      setPrimeBloomRejectedRule([
+        {
+          validator: (_, value) =>
+            Promise.reject(
+              new Error("This must be numeric.")
+            ),
+        },
+      ]);
+    } else {
+      setPrimeBloomRejectedRule([]);
+    }
+
+    setFormData(prev => ({...prev, [fieldName]: value}))
+  };
+
+  const [coBloomRejectedRule, setCoBloomRejectedRule] = useState([]);
+
+  const handleCoBloomRejectedChange = (fieldName, value) => {
+    const isInteger = regexMatch.intRegex.test(value);
+
+    if (!isInteger) {
+      setCoBloomRejectedRule([
+        {
+          validator: (_, value) =>
+            Promise.reject(
+              new Error("This must be numeric.")
+            ),
+        },
+      ]);
+    } else {
+      setCoBloomRejectedRule([]);
     }
 
     setFormData(prev => ({...prev, [fieldName]: value}))
@@ -268,6 +309,8 @@ const SmsBloomInspection = () => {
         noOfPrimeBlooms: data.responseData?.noOfPrimeBlooms || 0,
         noOfCoBlooms: data.responseData?.noOfCoBlooms || 0,
       });
+
+      setFieldsDisabled(false)
     } catch (error) {}
   };
 
@@ -323,13 +366,15 @@ const SmsBloomInspection = () => {
             onChange={(fieldName, value) =>
               handleChange(fieldName, value, setFormData)
             }
+            disabled={fieldsDisable}
             required
           />
           <FormInputItem
             label="Bloom Length"
             name="lengthOfBlooms"
-            onChange={(fieldName, value) =>
-                handleChange(fieldName, value, setFormData)}
+            onChange={handleBloomLengthChange}
+            rules={bloomLengthRule}
+            disabled={fieldsDisable}
             required
           />
           <FormInputItem
@@ -338,21 +383,23 @@ const SmsBloomInspection = () => {
             onChange={(fieldName, value) =>
               handleChange(fieldName, value, setFormData)
             }
+            disabled={fieldsDisable}
             required
           />
           <FormInputItem
             label="Prime Blooms Rejected Count"
             name="noOfPrimeBloomsRejected"
-            onChange={handleBloomRejectedChange}
-            rules={bloomRejectedRule}
+            onChange={handlePrimeBloomRejectedChange}
+            rules={primeBloomRejectedRule}
+            disabled={fieldsDisable}
             required
           />
           <FormInputItem
             label="CO Blooms Rejected Count"
             name="noOfCoBloomsRejected"
-            onChange={(fieldName, value) =>
-              handleChange(fieldName, value, setFormData)
-            }
+            onChange={handleCoBloomRejectedChange}
+            rules={coBloomRejectedRule}
+            disabled={fieldsDisable}
             required
           />
           <TextAreaComponent
@@ -362,6 +409,7 @@ const SmsBloomInspection = () => {
               handleChange(fieldName, value, setFormData)
             }
             className="col-span-2"
+            disabled={fieldsDisable}
             required
           />
             <Btn htmlType="submit" className="flex mx-auto col-span-2">Submit</Btn>

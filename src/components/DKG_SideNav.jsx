@@ -51,7 +51,6 @@ const items = [
     key: "1",
     icon: <HomeOutlined />,
     label: "Home",
-    activeTab: 1,
     path: "/",
   },
   {
@@ -280,6 +279,12 @@ const items = [
         label: "Testing",
         items: [
           {
+            key: "2.5.17",
+            icon: <FlagOutlined />,
+            label: "Testing Start Duty",
+            path: "/testing/startDuty"
+          },
+          {
             key: "2.5.1",
             icon: <FlagOutlined />,
             label: "Testing Home",
@@ -468,26 +473,26 @@ const items = [
         icon: <ToolOutlined />,
         label: "Calibration",
         items: [
+          // {
+          //   key: "2.10.1",
+          //   icon: <AppstoreAddOutlined />,
+          //   label: "Calibration Start Duty",
+          //   path: "/calibration/startDuty",
+          // },
           {
             key: "2.10.1",
-            icon: <AppstoreAddOutlined />,
-            label: "Calibration Start Duty",
-            path: "/calibration/startDuty",
-          },
-          {
-            key: "2.10.2",
             icon: <AppstoreAddOutlined />,
             label: "Calibration List",
             path: "/calibration/list",
           },
           {
-            key: "2.10.3",
+            key: "2.10.2",
             icon: <FundOutlined />,
             label: "New / Modify Calibration List",
             path: "/calibration/newModifyCalibration",
           },
           {
-            key: "2.10.4",
+            key: "2.10.3",
             icon: <DatabaseOutlined />,
             label: "Bulk Calibration",
             path: "/calibration/bulkCalibration",

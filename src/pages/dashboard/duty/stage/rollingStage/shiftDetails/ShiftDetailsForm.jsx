@@ -27,8 +27,16 @@ const railSectionList = [
     value: "IRS52",
   },
   {
+    key: "UIC60",
+    value: "UIC60",
+  },
+  {
     key: "60E1A1",
     value: "60E1A1",
+  },
+  {
+    key: "136RE",
+    value: "136RE",
   },
 ];
 
@@ -62,7 +70,7 @@ const ShiftDetailsForm = () => {
   };
 
   if (dutyId) {
-    message.error("Rolling duty in progress. Cannot start new duty.");
+    // message.error("Rolling duty in progress. Cannot start new duty.");
     return <Navigate to="/stage/home" />;
   }
 
@@ -78,7 +86,7 @@ const ShiftDetailsForm = () => {
             defaultValue={formData.startDate}
             onChange={handleChange}
             required
-            disabled
+            // disabled
           />
           <FormDropdownItem
             label="Shift"

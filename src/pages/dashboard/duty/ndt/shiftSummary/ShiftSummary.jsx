@@ -35,7 +35,7 @@ function ShiftSummary() {
     useEffect(() => {
         const fetchShiftSummary = async () => {
             try {
-                const response = await apiCall("GET", `/ndt/getShiftSummary/${ndtGeneralInfo.dutyId}`, token); //need to change the API call 
+                const response = await apiCall("GET", `/ndt/getShiftSummary?dutyId=${ndtGeneralInfo.dutyId}`, token); 
                 if (response && response.data) {
                     setFormData(response.data);
                     setIsEditable(false);

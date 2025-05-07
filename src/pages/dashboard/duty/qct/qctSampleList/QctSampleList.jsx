@@ -6,9 +6,9 @@ import data from "../../../../../utils/frontSharedData/qct/qct.json";
 import FormBody from '../../../../../components/DKG_FormBody';
 import { useNavigate } from 'react-router-dom';
 import FormDropdownItem from '../../../../../components/DKG_FormDropdownItem';
-import { Table, Divider } from 'antd';
+import { Table, Divider, Form, Button } from 'antd';
 import Btn from '../../../../../components/DKG_Btn';
-import { FilterFilled } from "@ant-design/icons";
+import { FilterFilled, CloseCircleOutlined } from "@ant-design/icons";
 import { apiCall } from '../../../../../utils/CommonFunctions';
 import { useDispatch, useSelector } from 'react-redux';
 import TableComponent from '../../../../../components/DKG_Table';
@@ -37,7 +37,7 @@ const columns = [
   {
     title: "Rail Grade and Rail Section",
     dataIndex: "rg",
-    render: (_, row) => row.railGrade + " - " + row.railSection,
+    render: (_, row) => row.railGrade + " , " + row.railSection,
     filterable: true
   },
   {
@@ -56,6 +56,20 @@ const QctSampleList = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({shiftRemarks: null})
   const [tableData, setTableData] = useState([]);
+  const [clbList, setClbLst] = useState([]);
+  const [filteredQctList, setFilteredQctList] = useState([]);
+  const [instrumentCategoryList, setInstrumentCategoryList] = useState([]);
+  const [instrumentList, setInstrumentList] = useState([]);
+  const [qList, setQList] = useState([]);
+
+  const [filters, setFilters] = useState({
+    mill: null,
+    railSection: null,
+    railGrade: null,
+    qct: null
+  });
+
+  const [form] = Form.useForm();
 
   const handleChange = (fieldName, value) => {
     setFormData(prev => {
@@ -65,6 +79,36 @@ const QctSampleList = () => {
       }
     })
   }
+
+  const handleFinish = () => {
+    let updatedQctList = [];
+
+    if (filters.mill) {
+      updatedQctList = qList.filter(
+        (record) => record.mill === filters.mill
+      );
+    }
+
+    if (filters.railSection) {
+      updatedQctList = updatedQctList.filter(
+        (record) => record.railSection === filters.railSection
+      );
+    }
+
+    if (filters.railGrade) {
+      updatedQctList = updatedQctList.filter(
+        (record) => record.railGrade === filters.railGrade
+      );
+    }
+
+    if (filters.qct) {
+      updatedQctList = updatedQctList.filter(
+        (record) => record.qct === filters.qct
+      );
+    }
+  
+    setFilteredQctList(updatedQctList);
+  };
 
   console.log("Tabledata: ", tableData)
 
@@ -126,8 +170,76 @@ const QctSampleList = () => {
             <FormDropdownItem label ='QCT' name='qct' dropdownArray={qctList} valueField='key' visibleField='value' onChange = {handleChange} className='w-full' />
           </div>
         </div> */}
+        <Form
+          initialValues={filters}
+          form={form}
+          layout="vertical"
+          onFinish={handleFinish}
+        >
+          <div className="grid grid-cols-2 gap-x-4">
+            <FormDropdownItem
+              label="Mill"
+              name="mill"
+              formField="mill"
+              dropdownArray={millDropdownList}
+              valueField="key"
+              visibleField="value"
+              onChange={(fieldName, value) =>
+                handleChange(fieldName, value, setFilters)
+              }
+              className="w-full"
+            />
+            <FormDropdownItem
+              label="Rail Section"
+              name="railSection"
+              formField="railSection"
+              dropdownArray={railSectionList}
+              visibleField="value"
+              valueField="key"
+              onChange={(fieldName, value) =>
+                handleChange(fieldName, value, setFilters)
+              }
+              className="w-full"
+            />
+            <FormDropdownItem
+              label="Rail Grade"
+              name="railGrade"
+              formField="railGrade"
+              dropdownArray={railGradeList}
+              visibleField="value"
+              valueField="key"
+              onChange={(fieldName, value) =>
+                handleChange(fieldName, value, setFilters)
+              }
+              className="w-full"
+            />
+            <FormDropdownItem
+              label="QCT"
+              name="qct"
+              formField="qct"
+              dropdownArray={qctList}
+              valueField="key"
+              visibleField="value"
+              onChange={(fieldName, value) =>
+                handleChange(fieldName, value, setFilters)
+              }
+              className="w-full"
+            />
 
-        <Divider>Samples Declared for Testing</Divider>
+            <Btn htmlType="submit" text="Search" className="w-full" />
+            <Button
+              className="flex gap-2 items-center border-darkBlue text-darkBlue"
+              onClick={() => window.location.reload()}
+            >
+              <span>
+                <CloseCircleOutlined />
+              </span>
+              <span>Reset</span>
+            </Button>
+          </div>
+        </Form>
+
+        <Divider className=''>Samples Declared Pending for Testing</Divider>
 
         <TableComponent
           hideExport

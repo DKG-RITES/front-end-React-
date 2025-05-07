@@ -8,7 +8,7 @@ const SRIPrivateRoute = () => {
     const {dutyId} = useSelector(state => state.sriDuty);
 
     if(!dutyId){
-        message.error("No ongoing SRI duty. Please start a duty.")
+        // message.error("No ongoing SRI duty. Please start a duty.")
     }
 
   return (

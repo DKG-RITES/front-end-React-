@@ -16,10 +16,10 @@ import { CENTER_LINE_RSH, FATIGUE, FCGR, FRACTURE_TOUGHNESS, HARDNESS, qctTestLi
 import { apiCall } from "../../../../../utils/CommonFunctions";
 import { useSelector } from "react-redux";
 import IconBtn from "../../../../../components/DKG_IconBtn";
+import { use } from "react";
 
 const {
   millDropdownList,
-  qctGeneralInfo,
   railSectionList,
   railGradeList,
   qctList,
@@ -38,7 +38,9 @@ const QctSampleDeclarationForm = () => {
     qctType: "",
     heatNo: "",
     sampleId: "",
+    noOfSamples: 1, // Add this line
   });
+  const [sampleFields, setSampleFields] = useState([{ strandNo: "", sampleId: "" }]); // Add this line
 
   const handleRowClick = (row) => {
     console.log("ROW: ", row)
@@ -88,7 +90,17 @@ const QctSampleDeclarationForm = () => {
   
 
   const handleChange = (fieldName, value) => {
+    console.log("F< ZVAL: ", fieldName, value)
     setFormData((prev) => {
+      // If changing number of samples, update the sample fields array
+      if (fieldName === "noOfSamples") {
+        const numSamples = parseInt(value) || 1;
+        const newSampleFields = Array(numSamples).fill().map((_, i) => 
+          sampleFields[i] || { strandNo: "", sampleId: "" }
+        );
+        setSampleFields(newSampleFields);
+      }
+      
       return {
         ...prev,
         [fieldName]: value,
@@ -96,19 +108,34 @@ const QctSampleDeclarationForm = () => {
     });
   };
 
-  // const handleChange = (fieldName, value) => {
-  //   console.log("FieldName: ", fieldName, value)
-  // }
-
+  const {token} = useSelector((state) => state.auth);
   const qctGeneralInfo = useSelector((state) => state.qctDuty);
-  const { token } = useSelector((state) => state.auth);
+
+  // Add this function to handle sample field changes
+  const handleSampleFieldChange = (index, field, value) => {
+    const newSampleFields = [...sampleFields];
+    newSampleFields[index] = {
+      ...newSampleFields[index],
+      [field]: value
+    };
+    setSampleFields(newSampleFields);
+  };
 
   const declareNewSample = async () => {
     try {
-      await apiCall("POST", "/qct/saveNewTestSample", token, {
+      // Create an array of samples to save
+      const samples = sampleFields.map(sample => ({
         ...formData,
+        strandNo: sample.strandNo,
+        sampleId: sample.sampleId,
         dutyId: qctGeneralInfo.dutyId,
-      });
+      }));
+      
+      // Save each sample
+      for (const sample of samples) {
+        await apiCall("POST", "/qct/saveNewTestSample", token, sample);
+      }
+      
       message.success("Data saved successfully.");
       setModalOpen(false);
       setFormData({
@@ -116,7 +143,9 @@ const QctSampleDeclarationForm = () => {
         qctType: "",
         heatNo: "",
         sampleId: "",
+        noOfSamples: 1,
       });
+      setSampleFields([{ strandNo: "", sampleId: "" }]);
       populateTableData();
     } catch (error) {}
   };
@@ -263,16 +292,6 @@ const QctSampleDeclarationForm = () => {
               label="Heat number"
               onChange={handleChange}
             />
-            <FormInputItem
-              name="strandNo"
-              label="Strand"
-              onChange={handleChange}
-            />
-            <FormInputItem
-              name="sampleId"
-              label="Sample ID"
-              onChange={handleChange}
-            />
             <FormDropdownItem
               dropdownArray={qctTestList}
               name="qctType"
@@ -293,16 +312,6 @@ const QctSampleDeclarationForm = () => {
               required
             />
             <FormDropdownItem
-              label="Rail Section"
-              name="railSection"
-              formField="railSection"
-              dropdownArray={railSectionList}
-              visibleField="value"
-              valueField="key"
-              onChange={handleChange}
-              required
-            />
-            <FormDropdownItem
               label="Rail Grade"
               name="railGrade"
               formField="railGrade"
@@ -312,8 +321,44 @@ const QctSampleDeclarationForm = () => {
               onChange={handleChange}
               required
             />
+            <FormDropdownItem
+              label="Rail Section"
+              name="railSection"
+              formField="railSection"
+              dropdownArray={railSectionList}
+              visibleField="value"
+              valueField="key"
+              onChange={handleChange}
+              required
+            />
+            <FormInputItem
+              name="noOfSamples"
+              label="Number of Samples"
+              onChange={handleChange}
+            />
+            
+            {/* Dynamic sample fields */}
+            <Divider className="col-span-2">Sample Details</Divider>
+            
+            {sampleFields.map((field, index) => (
+              <React.Fragment key={index}>
+                <FormInputItem
+                  name={`strandNo_${index}`}
+                  label={`Strand ${index + 1}`}
+                  value={field.strandNo}
+                  onChange={(_, value) => handleSampleFieldChange(index, "strandNo", value)}
+                />
+                <FormInputItem
+                  name={`sampleId_${index}`}
+                  label={`Sample ID ${index + 1}`}
+                  value={field.sampleId}
+                  onChange={(_, value) => handleSampleFieldChange(index, "sampleId", value)}
+                />
+              </React.Fragment>
+            ))}
+            
             <div className="col-span-2 flex mx-auto">
-            <Btn htmlType="submit" text="Submit" />
+              <Btn htmlType="submit" text="Submit" />
             </div>
           </Form>
         </Modal>

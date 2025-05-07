@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer';
 import SubHeader from '../../../../../components/DKG_SubHeader';
 import GeneralInfo from '../../../../../components/DKG_GeneralInfo';
-import { Divider, Table } from 'antd';
+import { Divider, message, Table } from 'antd';
 import TabList from "../../../../../components/DKG_TabList";
 import SrInspectionHomeTabs from "../../../../../utils/frontSharedData/srInspection/srInspection"
 import FormBody from '../../../../../components/DKG_FormBody';
@@ -92,6 +92,21 @@ const SrInspectionHome = () => {
     navigate("/srInspection/addNewInspection", {state: {data: row}})
   }
 
+  const handleDelete = async (row) => {
+    const payload = {
+      railGrade: row.railGradeInspected,
+      railSection: row.railSectionInspected,
+      dutyId: sriGeneralInfo.dutyId
+    }
+
+    try {
+      await apiCall("POST", "/shortrailinspection/deleteInspectedRgRs", token, payload)
+      message.success("Record deleted successfully.")
+      populateTableData();
+    }
+    catch(error){}
+  }
+
   const totalTonnesColumns = [
     {
       title: "S/No",
@@ -138,7 +153,7 @@ const SrInspectionHome = () => {
       render: (_, row) => (
         <div className='flex gap-2'>
           <IconBtn icon={EditOutlined} text="Edit" onClick={() => handleInspectedRowClick(row)} />
-          <IconBtn icon={DeleteOutlined} text="Delete" />
+          <IconBtn icon={DeleteOutlined} text="Delete" onClick ={() => handleDelete(row)} />
         </div>
       )
     },

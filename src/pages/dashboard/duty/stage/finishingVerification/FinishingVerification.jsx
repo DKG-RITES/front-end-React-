@@ -225,6 +225,7 @@ const FinishingVerification = () => {
           <h3 className="font-semibold !text-xl mb-2">
             Hot Stamping of Rails / Cooling Bed
           </h3>
+          <h4 className="font-semibold !text-md mb-2">(Visual Branding)</h4>
           {formData.hotStampingList?.map((record, index) => (
             <div className="relative grid grid-cols-2 gap-x-4 border p-4 pb-0">
               <FormInputItem
@@ -253,15 +254,16 @@ const FinishingVerification = () => {
           <IconBtn
             icon={PlusOutlined}
             text="add"
-            className="absolute right-0 bottom-0"
+            className="absolute right-0 bottom--2"
             onClick={addHotStamping}
           />
         </div>
 
         <div className="relative">
-          <h3 className="font-semibold !text-xl mb-2">
+          <h3 className="font-semibold !text-xl mb-2 mt-6">
             Pre-Cambering of Long Rail
           </h3>
+          <h4 className="font-semibold !text-md mb-2">(Branding)</h4>
           {formData.preCamberingList?.map((record, index) => (
             <div className="relative grid grid-cols-2 gap-x-4 border p-4 pb-0">
               <FormInputItem
@@ -296,22 +298,23 @@ const FinishingVerification = () => {
           <IconBtn
             icon={PlusOutlined}
             text="add"
-            className="absolute right-0 bottom-0"
+            className="absolute right-0 bottom--2"
             onClick={addPreCambering}
           />
         </div>
-        <Divider />
+        <Divider className="mb-3 mt-10" />
         {mill === "URM" && (
           <>
             <h3 className="font-semibold !text-xl mb-2">
               Straightening Machine
             </h3>
+            <h4 className="font-semibold !text-md mb-2">(Pressure Triangle / Roll Deflection)</h4>
             <div className="border grid grid-cols-5 divide-x divide-y divide-gray-300 mb-4">
               <div className="p-2">Rolls</div>
               <div className="p-2">R1</div>
               <div className="p-2">R4</div>
               <div className="p-2">R6</div>
-              <div className="p-2">8</div>
+              <div className="p-2">R8</div>
 
               <div className="p-2">HRSM</div>
               <FormInputItem
@@ -377,6 +380,7 @@ const FinishingVerification = () => {
             <h3 className="font-semibold !text-xl mb-2">
             Straightening Machine - SR
             </h3>
+            <h4 className="font-semibold !text-md mb-2">(Pressure Triangle / Roll Deflection)</h4>
             <div className="border grid grid-cols-5 divide-x divide-y divide-gray-300 mb-4">
               <div className="p-2">Rolls</div>
               <div className="p-2">R1</div>
@@ -443,6 +447,7 @@ const FinishingVerification = () => {
             <h3 className="font-semibold !text-xl mb-2">
               Straightening Machine - LR
             </h3>
+            <h4 className="font-semibold !text-md mb-2">(Pressure Triangle / Roll Deflection)</h4>
             <div className="border grid grid-cols-5 divide-x divide-y divide-gray-300 mb-4">
               <div className="p-2">Rolls</div>
               <div className="p-2">R1</div>
@@ -509,7 +514,7 @@ const FinishingVerification = () => {
           </>
         )}
         <FormInputItem
-          label="Straightness Remarks"
+          label="Straightness Remarks(Straightness of Rails)"
           name="straightnessRemarks"
           required
           onChange={handleChange}

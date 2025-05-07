@@ -7,7 +7,7 @@ const SmsPrivateRoute = () => {
 
     const {dutyId} = useSelector(state => state.smsDuty);
     if(!dutyId){
-      message.error("No ongoing SMS duty. Please start a duty.")
+      // message.error("No ongoing SMS duty. Please start a duty.")
     }
 
     return (

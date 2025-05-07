@@ -196,13 +196,14 @@ const RollingControlIso60E1A1 = () => {
       micrometerNumber,
       numberOfGauges,
       heatDtlList,
-      shift: formData.shift,
-      date: formData.date,
-      railGrade: formData.railGrade,
+      shift: formData?.shift,
+      date: formData?.date,
+      railGrade: formData?.railGrade,
     };
   };
 
   const onFinish = async (formData) => {
+    console.log("ONFINISH: ", formData)
     try {
       const { data } = await apiCall(
         "POST",
@@ -251,17 +252,17 @@ const RollingControlIso60E1A1 = () => {
           pageRev="NIL"
           effDate="12/05/2021"
           dsVis
-          dsVal={formData.date + " - " + formData.shift}
+          dsVal={formData?.date + " - " + formData?.shift}
           grdVis
-          grdVal={formData.railGrade}
+          grdVal={formData?.railGrade}
           stdWtVis
-          stdWtVal={formData.heatDtlList?.[0].weight}
+          stdWtVal={formData?.heatDtlList?.[0].weight}
           mmVis
-          mmVal={formData.micrometerNumber}
+          mmVal={formData?.micrometerNumber}
           vVis
-          vVal={formData.vernierNumber}
+          vVal={formData?.vernierNumber}
           ggVis
-          ggVal={formData.numberOfGauges}
+          ggVal={formData?.numberOfGauges}
         />
         <div style={{ overflowX: "auto" }} className="iso-table">
           <table

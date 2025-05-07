@@ -8,7 +8,7 @@ const QctPrivateRoute = () => {
     const {dutyId} = useSelector(state => state.qctDuty);
 
     if(!dutyId){
-        message.error("No ongoing QCT duty. Please start a duty.")
+        // message.error("No ongoing QCT duty. Please start a duty.")
     }
 
   return (

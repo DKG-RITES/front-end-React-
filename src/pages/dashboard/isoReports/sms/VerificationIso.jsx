@@ -104,13 +104,13 @@ const VerificationIso = () => {
 
   const handlePrint = useReactToPrint({
     content: () => repRef.current,
-    documentTitle: "sms_verification_iso_report", // Set custom filename
+    documentTitle: "sms_verification_iso_report",
   });
 
   const {token} = useSelector(state => state.auth);
 
   const onFinish = async (formData) => {
-    try{
+    try {
       const { data } = await apiCall("POST", "/iso/getHeatDtls", token, formData);
 
       const castingDtlList = [];
@@ -118,20 +118,69 @@ const VerificationIso = () => {
       const degassingDtlList = [];
       const bloomDtlList = [];
 
+      // Process data based on heat stages
       data?.responseData?.forEach(item => {
-        if(item.heatStage === "Casting"){
-          castingDtlList.push({castNo: item.heatNumber, firstTemp: item.castingTemp, secondTemp: item.castingTemp});
+        if (item.heatStage === "Converter") {
+          heatDtlList.push({
+            castNo: item.heatNumber,
+            castingTemp: item.turnDownTemp,
+            castingTempWv: item.turnDownTempWv
+          });
         }
-        if(item.heatStage === "Converter"){
-          heatDtlList.push({castNo: item.heatNumber, castingTemp: item.turnDownTemp, castingTempWv: item.turnDownTempWv});
+        else if (item.heatStage === "Degassing") {
+          heatDtlList.push({
+            castNo: item.heatNumber,
+            castingTemp: item.turnDownTemp,
+            castingTempWv: item.turnDownTempWv
+          });
+          degassingDtlList.push({
+            castNo: item.heatNumber,
+            vacuum: item.degassingVacuum,
+            time: item.degassingDuration,
+            castingTimeWv: item.degassingDurationWv
+          });
         }
-        if(item.heatStage === "Degassing"){
-          degassingDtlList.push({castNo: item.heatNumber, vacuum: item.degassingVacuum, time: item.degassingDuration, castingTimeWv: item.degasssingDurationWv});
+        else if (item.heatStage === "Casting") {
+          heatDtlList.push({
+            castNo: item.heatNumber,
+            castingTemp: item.turnDownTemp,
+            castingTempWv: item.turnDownTempWv
+          });
+          degassingDtlList.push({
+            castNo: item.heatNumber,
+            vacuum: item.degassingVacuum,
+            time: item.degassingDuration,
+            castingTimeWv: item.degassingDurationWv
+          });
+          castingDtlList.push({
+            castNo: item.heatNumber,
+            firstTemp: item.castingTemp,
+            secondTemp: item.castingTemp
+          });
         }
-        if(item.heatStage === "Bloom Cutting"){
-          bloomDtlList.push({castNo: item.heatNumber, noOfCoBlooms: item.numberOfCoBlooms});
+        else if (item.heatStage === "Bloom Cutting") {
+          bloomDtlList.push({
+            castNo: item.heatNumber,
+            noOfCoBlooms: item.numberOfCoBlooms
+          });
+          heatDtlList.push({
+            castNo: item.heatNumber,
+            castingTemp: item.turnDownTemp,
+            castingTempWv: item.turnDownTempWv
+          });
+          degassingDtlList.push({
+            castNo: item.heatNumber,
+            vacuum: item.degassingVacuum,
+            time: item.degassingDuration,
+            castingTimeWv: item.degassingDurationWv
+          });
+          castingDtlList.push({
+            castNo: item.heatNumber,
+            firstTemp: item.castingTemp,
+            secondTemp: item.castingTemp
+          });
         }
-      })
+      });
 
       setFormData({
         heatDtlList,
@@ -141,15 +190,16 @@ const VerificationIso = () => {
         date: formData.date,
         shift: formData.shift,
         railGrade: formData.railGrade,
-        ladleToTundishUsed: data?.responseData[0]?.ladleToTundishUsed,
-        tundishToMouldUsed: data?.responseData[0]?.tundishToMouldUsed,
-      })
+        ladleToTundishUsed: data?.responseData[0]?.isLadleToTundishUsed === true ? "Yes" : "No",
+        tundishToMouldUsed: data?.responseData[0]?.isTundishToMouldUsed === true? "Yes" : "No",
+      });
     } 
-
-    catch(error){
-
+    catch(error) {
+      // Error handling
     }
   }
+
+  console.log("FORN: ", formData)
 
   useEffect(() => {
   }, [])

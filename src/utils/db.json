@@ -33,8 +33,16 @@
           "value": "IRS52"
       },
       {
+        "key": "UIC 60",
+        "value": "UIC 60"
+      },
+      {
           "key": "60E1A1",
           "value": "60E1A1"
+      },
+      {
+        "key": "136RE",
+        "value": "136RE"
       }
   ],
   "railGradeList": [
@@ -43,16 +51,20 @@
       "value": "R260"
     },
     {
-      "key": "880",
-      "value": "880"
-    },
-    {
-      "key": "1175HT",
-      "value": "1175HT"
+      "key": "R350HT",
+      "value": "R350HT"
     },
     {
       "key": "1080HH",
       "value": "1080HH"
+    },
+    {
+      "key": "880",
+      "value": "880"
+    },
+    {
+      "key": "880NC",
+      "value": "880NC"
     }
   ],
   "smsList": [

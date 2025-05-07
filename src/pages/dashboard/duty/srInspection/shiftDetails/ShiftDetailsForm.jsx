@@ -40,7 +40,7 @@ const SRIShiftDetailsForm = () => {
     };
 
     if (dutyId) {
-      message.error("Duty already in progress. Cannot start new duty.");
+      // message.error("Duty already in progress. Cannot start new duty.");
       return <Navigate to="/srInspection/home" />;
     }
 
@@ -49,7 +49,7 @@ const SRIShiftDetailsForm = () => {
         <SubHeader title="SRI - Start Duty" link="/" />
         <FormBody initialValues={formData} onFinish={handleFormSubmit}>
             <div className="grid grid-cols-2 gap-x-2">
-              <CustomDatePicker label="Date" name="startDate" defaultValue={formData.startDate} onChange={handleChange} disabled required />
+              <CustomDatePicker label="Date" name="startDate" defaultValue={formData.startDate} onChange={handleChange} required />
               <FormDropdownItem label="Shift" name="shift" formField="shift" dropdownArray={shiftList} visibleField="value" valueField="key" onChange={handleChange} required />
             </div>
 

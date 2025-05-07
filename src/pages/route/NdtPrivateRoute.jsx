@@ -8,7 +8,7 @@ const NdtPrivateRoute = () => {
     const {dutyId} = useSelector(state => state.ndtDuty);
 
     if(!dutyId){
-        message.error("No ongoing NDT duty. Please start a duty.")
+        // message.error("No ongoing NDT duty. Please start a duty.")
     }
 
   return (

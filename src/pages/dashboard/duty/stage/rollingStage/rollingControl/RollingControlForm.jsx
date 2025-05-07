@@ -15,11 +15,7 @@ import { useSelector } from "react-redux";
 import CustomDatePicker from "../../../../../../components/DKG_CustomDatePicker";
 import { apiCall } from "../../../../../../utils/CommonFunctions";
 
-const {
-  micrometerNumberList,
-  vernierNumberList,
-  weighingMachineList,
-} = data;
+const { micrometerNumberList, vernierNumberList, weighingMachineList } = data;
 
 const RollingControlForm = () => {
   const [form] = Form.useForm();
@@ -44,9 +40,11 @@ const RollingControlForm = () => {
       // }
     ],
   });
-
+  const [showFields, setShowFields] = useState(false);
   const rollingGeneralInfo = useSelector((state) => state.rollingDuty);
   const { token } = useSelector((state) => state.auth);
+
+  const handleToggleFields = () => setShowFields(!showFields);
 
   const columns = [
     {
@@ -159,148 +157,113 @@ const RollingControlForm = () => {
       <SubHeader title="Rail Rolling Control" link="/stage/home" />
       <GeneralInfo data={rollingGeneralInfo} />
 
-      <Form
-        initialValues={formData}
-        onFinish={handleFormSubmit}
-        form={form}
-        layout="vertical"
-      >
-        <div className="grid grid-cols-2 gap-x-2">
-          <FormDropdownItem
-            label="Micrometer No."
-            name="micrometerNo"
-            formField="micrometerNo"
-            dropdownArray={micrometerNumberList}
-            visibleField="value"
-            valueField="key"
-            onChange={handleChange}
-            required
-          />
-          <CustomDatePicker
-            label="Micrometer Validity"
-            name="micrometerValidity"
-            defaultValue={formData.micrometerValidity}
-            onChange={handleChange}
-            required
-          />
-          <FormDropdownItem
-            label="Vernier No."
-            name="vernierNo"
-            formField="vernierNo"
-            dropdownArray={vernierNumberList}
-            visibleField="value"
-            valueField="key"
-            onChange={handleChange}
-            required
-          />
-          <CustomDatePicker
-            label="Vernier Validity"
-            name="vernierValidity"
-            formField="vernierValidity"
-            defaultValue={formData.vernierValidity}
-            onChange={handleChange}
-            required
-          />
+      <Btn onClick={handleToggleFields}>
+        {showFields ? "Hide Fields" : "Click to fill details of instruments"}
+      </Btn>
 
-          <FormDropdownItem
-            label="Weighing M/c"
-            name="weighingMachine"
-            formField="weighingMachine"
-            dropdownArray={weighingMachineList}
-            valueField="key"
-            visibleField="value"
-            onChange={handleChange}
-            required
-          />
-          <CustomDatePicker
-            label="Weighing Machine Validity"
-            name="weighingMachineValidity"
-            defaultValue={formData.weighingMachineValidity}
-            onChange={handleChange}
-            required
-          />
-          <FormInputItem
-            label="No. of Gauges"
-            name="noOfGauges"
-            onChange={handleChange}
-            required
-          />
+      {
+        showFields && (
+          <>
+            <Form
+              initialValues={formData}
+              onFinish={handleFormSubmit}
+              form={form}
+              layout="vertical"
+            >
+              <div className="grid grid-cols-2 gap-x-2">
+                <FormDropdownItem
+                  label="Micrometer No."
+                  name="micrometerNo"
+                  formField="micrometerNo"
+                  dropdownArray={micrometerNumberList}
+                  visibleField="value"
+                  valueField="key"
+                  onChange={handleChange}
+                  required
+                />
+                <CustomDatePicker
+                  label="Micrometer Validity"
+                  name="micrometerValidity"
+                  defaultValue={formData.micrometerValidity}
+                  onChange={handleChange}
+                  disabled
+                />
+                <FormDropdownItem
+                  label="Vernier No."
+                  name="vernierNo"
+                  formField="vernierNo"
+                  dropdownArray={vernierNumberList}
+                  visibleField="value"
+                  valueField="key"
+                  onChange={handleChange}
+                  required
+                />
+                <CustomDatePicker
+                  label="Vernier Validity"
+                  name="vernierValidity"
+                  formField="vernierValidity"
+                  defaultValue={formData.vernierValidity}
+                  onChange={handleChange}
+                  disabled
+                />
 
-          <FormInputItem
-            label="Branding"
-            name="branding"
-            onChange={handleChange}
-            required
-          />
-        </div>
+                <FormDropdownItem
+                  label="Weighing M/c"
+                  name="weighingMachine"
+                  formField="weighingMachine"
+                  dropdownArray={weighingMachineList}
+                  valueField="key"
+                  visibleField="value"
+                  onChange={handleChange}
+                  required
+                />
+                <CustomDatePicker
+                  label="Weighing Machine Validity"
+                  name="weighingMachineValidity"
+                  defaultValue={formData.weighingMachineValidity}
+                  onChange={handleChange}
+                  disabled
+                />
+                <FormInputItem
+                  label="No. of Gauges"
+                  name="noOfGauges"
+                  onChange={handleChange}
+                  required
+                />
 
-        <Divider className="mt-0 mb-6" />
-
-        <Table
-          columns={columns}
-          dataSource={formData.railRollingHeatList}
-          scroll={{ x: true }}
-          pagination={{
-            current: currentTablePage,
-            pageSize: tablePageSize,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-            onChange: (page) => setCurrentTablePage(page),
-            onShowSizeChange: (_, size) => handlePageSizeChange(size),
-          }}
-        />
-        <IconBtn
-          icon={PlusOutlined}
-          text="add sample"
-          onClick={() => navigate("/stage/rollingControl/rollingControlSample")}
-        />
-
-        {/* <Divider className="mt-6 mb-6" />
-
-        <Table
-          columns={columns}
-          dataSource={rollingControlTableData}
-          scroll={{ x: true }}
-          pagination={{
-            current: currentTablePage,
-            pageSize: tablePageSize,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-            onChange: (page) => setCurrentTablePage(page),
-            onShowSizeChange: (current, size) => handlePageSizeChange(size),
-          }}
-        />
-        <IconBtn
-          icon={PlusOutlined}
-          text="Add Sample for IRS52"
-          onClick={handleClickSec}
-        />
-
-        <Divider className="mt-6 mb-6" />
-
-        <Table
-          columns={columns}
-          dataSource={formData.railRollingHeatList}
-          scroll={{ x: true }}
-          pagination={{
-            current: currentTablePage,
-            pageSize: tablePageSize,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-            onChange: (page) => setCurrentTablePage(page),
-            onShowSizeChange: (current, size) => handlePageSizeChange(size),
-          }}
-        />
-        <IconBtn
-          icon={PlusOutlined}
-          text="Add Sample for 60E1A1"
-          onClick={handleClickTer}
-        /> */}
-
-        <Btn htmlType="submit" className="flex justify-center mx-auto mt-6">
-          Save
-        </Btn>
-      </Form>
+                <FormInputItem
+                  label="Branding"
+                  name="branding"
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </Form>
+            <Divider className="mt-0 mb-0" />
+          </>
+        )
+      }
+      <Table
+        columns={columns}
+        dataSource={formData.railRollingHeatList}
+        scroll={{ x: true }}
+        pagination={{
+          current: currentTablePage,
+          pageSize: tablePageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20"],
+          onChange: (page) => setCurrentTablePage(page),
+          onShowSizeChange: (_, size) => handlePageSizeChange(size),
+        }}
+      />
+      <IconBtn
+        icon={PlusOutlined}
+        text="add sample"
+        onClick={() => navigate("/stage/rollingControl/rollingControlSample")}
+      />
+      <Btn htmlType="submit" className="flex justify-center mx-auto mt-6">
+        Save
+      </Btn>
     </FormContainer>
   );
 };

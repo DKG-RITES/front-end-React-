@@ -725,10 +725,30 @@ const SmsHeatSummary = () => {
     }
   };
 
-  // const [heatRule, setHeatRule] = useState([]);
+  const [heatRule, setHeatRule] = useState([]);
   const [tempRule, setTempRule] = useState([]);
 
   const handleNewHeatValChange = (fieldName, value) => {
+    if (fieldName === "heatNo") {
+      const isValid = /^\d+$/.test(value);
+      if (!isValid) {
+        setHeatRule([
+          {
+            validator: (_, val) =>
+            Promise.reject(new Error("Heat No. must not contain decimal values or string values.")),
+          },
+        ]);
+      } else if (isValid && parseInt(value.length) > 6) {
+        setHeatRule([
+          {
+            validator: (_, val) =>
+              Promise.reject(new Error("Heat Number must 6 digits or smaller.")),
+          },
+        ]);
+      } else {
+        setHeatRule([]);
+      }
+    }
 
     if (fieldName === "turnDownTemp") {
       const isValid = /^\d+$/.test(value);
@@ -945,7 +965,7 @@ const SmsHeatSummary = () => {
             label="Enter Heat Number"
             placeholder="012345"
             name="heatNo"
-            // rules={heatRule}
+            rules={heatRule}
             onChange={handleNewHeatValChange}
             required
           />

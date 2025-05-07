@@ -63,3 +63,49 @@ const Home = () => {
 }
 
 export default Home
+
+// import React, { useState } from "react";
+// import { Select } from "antd";
+
+// const { Option } = Select;
+
+// const Home = () => {
+//   const [firstValue, setFirstValue] = useState(null);
+//   const [secondValue, setSecondValue] = useState(null);
+
+//   const handleFirstChange = (value) => {
+//     setFirstValue(value);
+//     setSecondValue(null); 
+//   };
+
+//   return (
+//     <div style={{ width: 300, margin: "20px auto" }}>
+//       <Select
+//         style={{ width: "100%", marginBottom: 10 }}
+//         placeholder="Select first option"
+//         onChange={handleFirstChange}
+//         value={firstValue}
+//         allowClear
+//       >
+//         <Option value="apple">Apple</Option>
+//         <Option value="banana">Banana</Option>
+//         <Option value="cherry">Cherry</Option>
+//       </Select>
+
+//       <Select
+//         style={{ width: "100%" }}
+//         placeholder="Select second option"
+//         value={secondValue}
+//         onChange={setSecondValue}
+//         allowClear
+//         disabled={!firstValue} // Disable if first is not selected
+//       >
+//         <Option value="red">Red</Option>
+//         <Option value="green">Green</Option>
+//         <Option value="blue">Blue</Option>
+//       </Select>
+//     </div>
+//   );
+// };
+
+// export default Home;

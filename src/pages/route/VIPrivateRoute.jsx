@@ -8,7 +8,7 @@ const VIPrivateRoute = () => {
     const {dutyId} = useSelector(state => state.viDuty);
 
     if(!dutyId){
-        message.error("No ongoing VI duty. Please start a duty.")
+        // message.error("No ongoing VI duty. Please start a duty.")
     }
 
   return (

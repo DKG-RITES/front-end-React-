@@ -125,7 +125,7 @@ const ViAcceptanceReport = () => {
 
   return (
     <div className="flex flex-col gap-4 md:gap-2 bg-white p-4 w-full md:w-4/5 mx-auto h-[100vh] md:h-fit">
-      <SubHeader title="Accepted & Rejected Rails Report" link="/record/vi" />
+      <SubHeader title="VI Acceptance Report" link="/record/vi" />
 
       <div className="mt-4 border border-darkBlueHover p-2 py-4">
         <div>

@@ -70,7 +70,7 @@ export const startCalibrationDuty = createAsyncThunk(
         const {token} = getState().auth
         try{
             const {data} = await apiCall("POST", "/calibration/startDuty", token, formData)
-            message.success("Calibration Duty started successfully");
+            // message.success("Calibration Duty started successfully");
             return data?.responseData;
         }
         catch(error){

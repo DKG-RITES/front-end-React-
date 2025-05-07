@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import FormContainer from '../../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../../components/DKG_SubHeader'
 import data from "../../../../../../utils/frontSharedData/testSampleDec/testSampleDec.json"
@@ -8,6 +8,8 @@ import IconBtn from '../../../../../../components/DKG_IconBtn';
 import Btn from '../../../../../../components/DKG_Btn';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { EditOutlined } from '@ant-design/icons';
+import { apiCall } from '../../../../../../utils/CommonFunctions';
+import { useSelector } from 'react-redux';
 
 const { testSampleTableData } = data;
 
@@ -40,39 +42,60 @@ const TestSampleList = () => {
       title: "S/No",
       dataIndex: "sNo",
       key: "sNo",
+      render: (_, __, index) => index+1
     },
     {
       title: "Heat No.",
-      dataIndex: "heatNo",
+      dataIndex: "heatNumber",
       key: "heatNo",
     },
     {
       title: "Timing",
-      dataIndex: "timing",
+      dataIndex: "createdAt",
       key: "timing",
+      render: (epoch) => new Date(epoch*1000)?.toLocaleString() || ""
     },
     {
       title: "Type",
       dataIndex: "type",
       key: "type",
     },
-    {
-      title: "Edit",
-      fixed: "right",
-      render: (_, record) => (
-        <IconBtn
-          icon={EditOutlined}
-          onClick={() => handleRowClick(record.heatNo)}
-        />
-      ),
-    },
+    // {
+    //   title: "Edit",
+    //   fixed: "right",
+    //   render: (_, record) => (
+    //     <IconBtn
+    //       icon={EditOutlined}
+    //       onClick={() => handleRowClick(record.heatNo)}
+    //     />
+    //   ),
+    // },
   ];
 
+  const [testSampleTableData, setTestSampleTableData] = useState([]);
+  const token = useSelector((state) => state.auth.token);
+
+  useEffect(() => {
+    populateData();
+  }, [])
+  
   if(!state || !state.dutyId){
     message.error("Reach the page from an ongoing duty in a module.")
     return <Navigate to="/" />
   }
-  
+
+
+
+  const populateData = async () => {
+    try{
+      const {data} = await apiCall("GET", "/rolling/getAllTestSamples", token)
+      setTestSampleTableData(data?.responseData || [])
+    }
+    catch(erorr){
+      message.error("Error fetchng data.")
+    }
+  }
+
   return (
     <FormContainer>
       <SubHeader title='Test Sample - Declaration' link={state?.redirectTo} />

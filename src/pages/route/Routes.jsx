@@ -92,7 +92,18 @@ import WeldingIsoMain from "../dashboard/isoReports/welding/WeldingIsoMain";
 import QctRecordMain from "../dashboard/records/QctRecordMain";
 import QctRecord1 from "../dashboard/records/QctRecord1";
 import SriIsoMain from "../dashboard/isoReports/sri/SriIsoMain";
-
+import TestingStartDutyForm from "../dashboard/duty/testing/startDuty/TestingStartDutyForm";
+import TestingPrivateRoute from "./TestingPrivateRoute";
+import ChemicalTest from "../dashboard/duty/testing/pendingTestSamples/ChemicalTest";
+import N2Test from "../dashboard/duty/testing/pendingTestSamples/N2Test";
+import FWTTest from "../dashboard/duty/testing/pendingTestSamples/FwtTest";
+import IRTest from "../dashboard/duty/testing/pendingTestSamples/IRTest";
+import O2Test from "../dashboard/duty/testing/pendingTestSamples/O2Test";
+import TensileFootTest from "../dashboard/duty/testing/pendingTestSamples/TensileFootTest";
+import MicroTest from "../dashboard/duty/testing/pendingTestSamples/MicroTest";
+import DecarbTest from "../dashboard/duty/testing/pendingTestSamples/DecarbTest";
+import TensileTest from "../dashboard/duty/testing/pendingTestSamples/TensileTest";
+import HardnessTest from "../dashboard/duty/testing/pendingTestSamples/HardnessTest";
 
 const RoutesComponent = () => {
   return (
@@ -182,15 +193,27 @@ const RoutesComponent = () => {
             </Route>
 
             <Route path="/testing">
-              <Route index element={<TestingHome />} />
-              <Route path="home" element={<TestingHome />} />
-              <Route
-                path="pendingTestSamples"
-                element={<PendingTestSamples />}
-              />
-              <Route path="testingReport" element={<TestingReport />} />
-              <Route path="heatPending" element={<HeatPending />} />
-              <Route path="report" element={<NReport />} />
+              <Route index element={<TestingStartDutyForm />} /> 
+              <Route path="startDuty" element={<TestingStartDutyForm />} />
+              <Route element={<TestingPrivateRoute />}>
+                <Route path="home" element={<TestingHome />} />
+                <Route path="pendingTestSamples" element={<PendingTestSamples />} />
+                <Route path="testingReport" element={<TestingReport />} />
+                <Route path="heatPending" element={<HeatPending />} />
+                <Route path="report" element={<NReport />} />
+                
+                {/* Test specific routes */}
+                <Route path="chemical" element={<ChemicalTest />} />
+                <Route path="n2" element={<N2Test />} />
+                <Route path="fwt" element={<FWTTest />} />
+                <Route path="ir" element={<IRTest />} />
+                <Route path="o2" element={<O2Test />} />
+                <Route path="tensilefoot" element={<TensileFootTest />} />
+                <Route path="micro" element={<MicroTest />} />
+                <Route path="decarb" element={<DecarbTest />} />
+                <Route path="tensile" element={<TensileTest />} />
+                <Route path="hardness" element={<HardnessTest />} />
+              </Route>
             </Route>
 
             <Route path="/visual">
@@ -266,8 +289,8 @@ const RoutesComponent = () => {
             </Route>
 
             <Route path="/calibration">
-              <Route index element={<CalShiftDetailsForm />} />
-              <Route path="startDuty" element={<CalShiftDetailsForm />} />
+              <Route index element={<CalibrationList />} />
+              <Route path="list" element={<CalibrationList />} />
               <Route element={<CalibrationPrivateRoute />}>
                 <Route path="list" element={<CalibrationList />} />
                 <Route

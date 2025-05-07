@@ -172,6 +172,37 @@ const SrNewInspectionForm = () => {
     });
   };
 
+  const getSafeValue = (value) => Number(value) || 0;
+
+  const stdWt =
+    (formData.railSectionInspected === "60E1" || formData.railSectionInspected === "60E1A1") ? 60.21 : 51.89;
+
+  const totalTonnesAccepted = stdWt * (
+    (26 * (getSafeValue(formData?.acceptance26mClA) + getSafeValue(formData?.acceptance26mClA01) + getSafeValue(formData?.acceptance26mClB) + getSafeValue(formData?.acceptance26mIu))) + 
+    (25 * (getSafeValue(formData?.acceptance25mClA) + getSafeValue(formData?.acceptance25mClA01) + getSafeValue(formData?.acceptance25mClB) + getSafeValue(formData?.acceptance25mIu))) + 
+    (24 * (getSafeValue(formData?.acceptance24mClA) + getSafeValue(formData?.acceptance24mClA01) + getSafeValue(formData?.acceptance24mClB) + getSafeValue(formData?.acceptance24mIu))) + 
+    (13 * (getSafeValue(formData?.acceptance13mClA) + getSafeValue(formData?.acceptance13mClA01) + getSafeValue(formData?.acceptance13mClB) + getSafeValue(formData?.acceptance13mIu))) + 
+    (12 * (getSafeValue(formData?.acceptance12mClA) + getSafeValue(formData?.acceptance12mClA01) + getSafeValue(formData?.acceptance12mClB) + getSafeValue(formData?.acceptance12mIu))) + 
+    (11 * (getSafeValue(formData?.acceptance11mClA) + getSafeValue(formData?.acceptance11mClA01) + getSafeValue(formData?.acceptance11mClB) + getSafeValue(formData?.acceptance11mIu))) + 
+    (10 * (getSafeValue(formData?.acceptance10mClA) + getSafeValue(formData?.acceptance10mClA01) + getSafeValue(formData?.acceptance10mClB) + getSafeValue(formData?.acceptance10mIu)))
+  );
+  
+  const totalTonnesRejected =
+    stdWt * (26 * (getSafeValue(formData?.rejection26m) + getSafeValue(formData?.cutbart26m) + getSafeValue(formData?.refinish26m))) +
+    getSafeValue(formData?.acceptance25mClA) + getSafeValue(formData?.acceptance25mClA01) + 
+    getSafeValue(formData?.acceptance25mClB) + getSafeValue(formData?.acceptance25mIu) +
+    2 * (getSafeValue(formData?.acceptance24mClA) + getSafeValue(formData?.acceptance24mClA01) + 
+        getSafeValue(formData?.acceptance24mClB) + getSafeValue(formData?.acceptance24mIu)) +
+    getSafeValue(formData?.acceptance12mClA) + getSafeValue(formData?.acceptance12mClA01) + 
+    getSafeValue(formData?.acceptance12mClB) + getSafeValue(formData?.acceptance12mIu) +
+    2 * (getSafeValue(formData?.acceptance11mClA) + getSafeValue(formData?.acceptance11mClA01) + 
+        getSafeValue(formData?.acceptance11mClB) + getSafeValue(formData?.acceptance11mIu)) +
+    3 * (getSafeValue(formData?.acceptance10mClA) + getSafeValue(formData?.acceptance10mClA01) + 
+        getSafeValue(formData?.acceptance10mClB) + getSafeValue(formData?.acceptance10mIu));
+
+
+  const totalTonnesInspected = getSafeValue(totalTonnesAccepted) + getSafeValue(totalTonnesRejected);
+
   const onFinish = async () => {
     try {
       await apiCall("POST", "/shortrailinspection/save", token, {
@@ -227,10 +258,16 @@ const SrNewInspectionForm = () => {
       <SubHeader title='Short Rail Inspection Form' link='/srInspection/home' />
       <GeneralInfo data={sriGeneralInfo} />
 
+      <h3 className='font-bold'>Total Tonnes Accepted: <span className='font-normal'>{totalTonnesAccepted}</span></h3>
+      <h3 className='font-bold'>Total Tonnes Rejected: <span className='font-normal'>{totalTonnesRejected}</span></h3>
+      <h3 className='font-bold'>Total Tonnes Inspected: <span className='font-normal'>{totalTonnesInspected}</span></h3>
+
+      <hr/>
+
       <Form form={form} layout="vertical" initialValues={formData} onFinish={onFinish} >
         <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-x-4'>
-          <FormDropdownItem label='Rail Section Inspected' name='railSectionInspected' formField="railSectionInspected" dropdownArray={railSectionList} valueField='key' visibleField='value' onChange={handleChange} className='w-full' required disabled={edittable} />
-          <FormDropdownItem label ='Rail Grade Inspected' name='railGradeInspected' formField="railGradeInspected" dropdownArray={railGradeList} valueField='key' visibleField='value' onChange = {handleChange} className='w-full' required disabled={edittable} />
+          <FormDropdownItem label='Rail Section Inspected' name='railSectionInspected' formField="railSectionInspected" dropdownArray={railSectionList} valueField='key' visibleField='value' onChange={handleChange} className='w-full'  disabled={edittable} />
+          <FormDropdownItem label ='Rail Grade Inspected' name='railGradeInspected' formField="railGradeInspected" dropdownArray={railGradeList} valueField='key' visibleField='value' onChange = {handleChange} className='w-full'  disabled={edittable} />
         </div>
 
         <h3 className="font-semibold !text-xl mb-2">
@@ -248,25 +285,21 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="acceptance26mClA"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance26mClA01"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance26mClB"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance26mIu"
             onChange={handleChange}
-            required
           />
 
           <div className="p-2 font-semibold">25m</div>
@@ -274,25 +307,21 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="acceptance25mClA"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance25mClA01"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance25mClB"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance25mIu"
             onChange={handleChange}
-            required
           />
 
           <div className="p-2 font-semibold">24m</div>
@@ -300,25 +329,21 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="acceptance24mClA"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance24mClA01"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance24mClB"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance24mIu"
             onChange={handleChange}
-            required
           />
 
           <div className="p-2 font-semibold">13m</div>
@@ -326,25 +351,21 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="acceptance13mClA"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance13mClA01"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance13mClB"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance13mIu"
             onChange={handleChange}
-            required
           />
 
           <div className="p-2 font-semibold">12m</div>
@@ -352,25 +373,21 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="acceptance12mClA"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance12mClA01"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance12mClB"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance12mIu"
             onChange={handleChange}
-            required
           />
 
           <div className="p-2 font-semibold">11m</div>
@@ -378,25 +395,21 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="acceptance11mClA"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance11mClA01"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance11mClB"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance11mIu"
             onChange={handleChange}
-            required
           />
 
           <div className="p-2 font-semibold">10m</div>
@@ -404,25 +417,21 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="acceptance10mClA"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance10mClA01"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance10mClB"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="acceptance10mIu"
             onChange={handleChange}
-            required
           />
         </div>
 
@@ -441,19 +450,19 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="rejection26m"
             onChange={handleChange}
-            required
+            
           />
           <FormInputItem
             className="no-border"
             name="cutbart26m"
             onChange={handleChange}
-            required
+            
           />
           <FormInputItem
             className="no-border"
             name="refinish26m"
             onChange={handleChange}
-            required
+            
           />
 
           <div className="p-2 font-semibold">13m</div>
@@ -461,19 +470,17 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="rejection13m"
             onChange={handleChange}
-            required
+            
           />
           <FormInputItem
             className="no-border"
             name="cutbart13m"
             onChange={handleChange}
-            required
           />
           <FormInputItem
             className="no-border"
             name="refinish13m"
             onChange={handleChange}
-            required
           />
         </div>
 
@@ -492,19 +499,19 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="utnpRejection26m"
             onChange={handleChange}
-            required
+            
           />
           <FormInputItem
             className="no-border"
             name="utnpCutbart26m"
             onChange={handleChange}
-            required
+            
           />
           <FormInputItem
             className="no-border"
             name="utnpRefinish26m"
             onChange={handleChange}
-            required
+            
           />
 
           <div className="p-2 font-semibold">13m</div>
@@ -512,19 +519,19 @@ const SrNewInspectionForm = () => {
             className="no-border"
             name="utnpRejection13m"
             onChange={handleChange}
-            required
+            
           />
           <FormInputItem
             className="no-border"
             name="utnpCutbart13m"
             onChange={handleChange}
-            required
+            
           />
           <FormInputItem
             className="no-border"
             name="utnpRefinish13m"
             onChange={handleChange}
-            required
+            
           />
         </div>
 
@@ -542,16 +549,16 @@ const SrNewInspectionForm = () => {
             {formData.rejectionAnalysisDtls?.map((record, index) => (
               <>
                 <div className="p-2">
-                  <FormDropdownItem className="no-border" name={["rejectionAnalysisDtls", index, "rejection26mAnalysisDefect"]} formField="rejection26mAnalysisDefect" dropdownArray={defectList} visibleField="value" valueField="key" onChange={(name, value) => handleRejAnaDtlChange(name, value, index)} required />
+                  <FormDropdownItem className="no-border" name={["rejectionAnalysisDtls", index, "rejection26mAnalysisDefect"]} formField="rejection26mAnalysisDefect" dropdownArray={defectList} visibleField="value" valueField="key" onChange={(name, value) => handleRejAnaDtlChange(name, value, index)} showSearch/>
                 </div>
                 <div className="p-2">
-                  <FormInputItem className="no-border" name={["rejectionAnalysisDtls", index, "rejection26mAnalysisNumber"]} rules={rejection26mAnalysisNumberRule[index]} required onChange={(name, value) => handleRejAnaDtlChange(name, value, index)} />
+                  <FormInputItem className="no-border" name={["rejectionAnalysisDtls", index, "rejection26mAnalysisNumber"]} rules={rejection26mAnalysisNumberRule[index]}  onChange={(name, value) => handleRejAnaDtlChange(name, value, index)} />
                 </div>
                 <div className="p-2">
-                  <FormDropdownItem className="no-border" name={["rejectionAnalysisDtls", index, "rejection13mAnalysisDefect"]} formField="rejection13mAnalysisDefect" dropdownArray={defectList} visibleField="value" valueField="key" onChange={(name, value) => handleRejAnaDtlChange(name, value, index)} required />
+                  <FormDropdownItem className="no-border" name={["rejectionAnalysisDtls", index, "rejection13mAnalysisDefect"]} formField="rejection13mAnalysisDefect" dropdownArray={defectList} visibleField="value" valueField="key" onChange={(name, value) => handleRejAnaDtlChange(name, value, index)} showSearch/>
                 </div>
                 <div className="p-2">
-                  <FormInputItem className="no-border" name={["rejectionAnalysisDtls", index, "rejection13mAnalysisNumber"]} rules={rejection13mAnalysisNumberRule[index]} required onChange={(name, value) => handleRejAnaDtlChange(name, value, index)} />
+                  <FormInputItem className="no-border" name={["rejectionAnalysisDtls", index, "rejection13mAnalysisNumber"]} rules={rejection13mAnalysisNumberRule[index]}  onChange={(name, value) => handleRejAnaDtlChange(name, value, index)} />
                 </div>
                 <div className="p-2">
                 <IconBtn icon={DeleteOutlined} text="Delete" onClick={() => deleteRejAnls(record.id, index)} />
@@ -571,7 +578,7 @@ const SrNewInspectionForm = () => {
         <FormInputItem
           label="Remarks"
           name="remarks"
-          required
+          
           onChange={handleChange}
         />
 

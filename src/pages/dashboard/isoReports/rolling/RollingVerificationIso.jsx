@@ -94,7 +94,7 @@ const RollingVerificationIso = () => {
         "POST",
         "/iso/getRollingVerificationDtls",
         token,
-        formData
+        {...formData, mill: "RSM"}
       );
       setFormData({
         date: formData.date,

@@ -8,7 +8,7 @@ const WeldingPrivateRoute = () => {
     const {dutyId} = useSelector(state => state.weldingDuty);
 
     if(!dutyId){
-        message.error("No ongoing Welding duty. Please start a duty.")
+        // message.error("No ongoing Welding duty. Please start a duty.")
     }
 
   return (

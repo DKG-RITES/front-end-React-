@@ -13,7 +13,7 @@ const CalibrationPrivateRoute = () => {
 
   return (
     <>
-        {(dutyId) ? <Outlet /> : <Navigate to='/calibration/startDuty' />}
+        {(dutyId) ? <Outlet /> : <Navigate to='/calibration/list' />}
     </>
   )
 }

@@ -3,7 +3,7 @@ import { apiCall } from '../../utils/CommonFunctions'
 import { message } from 'antd'
 
 const initialState = {
-    dutyId: null,
+    // dutyId: null,
     date: null,
     startTime: null,
     shift: null,

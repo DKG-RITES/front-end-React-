@@ -21,17 +21,21 @@ const railGradeList = [
     value: "R260",
   },
   {
-    key: "880",
-    value: "880",
-  },
-  {
-    key: "1175HT",
-    value: "1175HT",
+    key: "350HT",
+    value: "350HT",
   },
   {
     key: "1080HH",
     value: "1080HH",
   },
+  {
+    key: "880",
+    value: "880",
+  },
+  {
+    key: "880NC",
+    value: "880NC",
+  }
 ];
 const SmsDutyStartForm = () => {
   const dispatch = useDispatch();
@@ -71,7 +75,7 @@ const SmsDutyStartForm = () => {
   };
 
   if (dutyId) {
-    message.error("Duty already in progress. Cannot start new duty.");
+    // message.error("Duty already in progress. Cannot start new duty.");
     return <Navigate to="/sms/dutyEnd" />;
   }
 
@@ -86,7 +90,7 @@ const SmsDutyStartForm = () => {
             name="startDate"
             defaultValue={formData.startDate}
             onChange={handleChange}
-            disabled
+            // disabled
             required
           />
 

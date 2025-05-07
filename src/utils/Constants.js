@@ -13,6 +13,7 @@ export const HARDNESS = "Hardness";
 export const DECARB = "Decarb"
 
 export const RG_880 = "880"
+export const RG_880NC = "880NC"
 export const RG_R260 = "R260"
 export const RG_R350HT = "R350HT"
 export const RG_1080HH = "1080HH"
@@ -44,4 +45,19 @@ export const qctTestList = [
         key: "CENTER_LINE_RSH",
         value: 'Center Line RSH'
     },
+]
+
+export const testStatusDropdown = [
+    {
+        label: "ACCEPTED",
+        value: "ACCEPTED"
+    },
+    {
+        label: "REJECTED",
+        value: "REJECTED"
+    },
+    {
+        label: "RETEST",
+        value: "RETEST"
+    }
 ]

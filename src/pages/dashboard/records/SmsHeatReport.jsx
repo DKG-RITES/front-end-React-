@@ -13,12 +13,12 @@ const SmsHeatReport = () => {
   const columns = [
     // Filterable Columns
     { title: "Heat No", dataIndex: "heatNo", key: "heatNo", filterable: true },
-    { title: "SMS", dataIndex: "sms", key: "sms", filterable: true },
     {
-      title: "Caster No",
-      dataIndex: "casterNo",
-      key: "casterNo",
-      filterable: true,
+      title: "SMS & Caster No",
+      dataIndex: "smsNumber",
+      key: "smsNumber",
+      filterable: true, // Enable filter
+      render: (_, record) => record.smsNumber + " , " + record.casterNumber
     },
     {
       title: "Rail Grade",
@@ -146,7 +146,7 @@ const SmsHeatReport = () => {
       key: "noOfRejectedBlooms",
     },
     { title: "Total Cast Wt", dataIndex: "totalCastWt", key: "totalCastWt" },
-    { title: "Heat Remark", dataIndex: "heatRemark", key: "heatRemark" },
+    { title: "Heat Remark", dataIndex: "heatRemark", key: "heatRemark", render: (rem) => rem || "---" },
     {
       title: "Reason for Rejection",
       dataIndex: "reasonForRejection",

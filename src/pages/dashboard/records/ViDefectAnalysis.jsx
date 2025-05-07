@@ -274,7 +274,7 @@ const ViDefectAnalysis = () => {
     try {
       const { data } = await apiCall(
         "POST",
-        "/vi/getAcptRejReport",
+        "/vi/getViDefectAnalysisRecord",
         token,
         filter
       );

@@ -10,15 +10,21 @@ import FormInputItem from '../../../../../components/DKG_FormInputItem'
 import Btn from '../../../../../components/DKG_Btn'
 import FormBody from '../../../../../components/DKG_FormBody'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { endTestingDuty } from '../../../../../store/slice/testingDutySlice'
 
-const { testingGeneralInfo } = data;
+// const { testingGeneralInfo } = data;
 
 const TestingHome = () => {
     const navigate = useNavigate();
     const [remarks, setRemarks] = useState('')
 
-    const handleFormSubmit = () => {
-        message.success("Duty End Called")
+    const testingGeneralInfo = useSelector(state => state.testingDuty)
+
+    const dispatch = useDispatch();
+
+    const handleFormSubmit = async () => {
+        await dispatch(endTestingDuty({ shiftRemarks: remarks })).unwrap()
         navigate('/')
     }
 

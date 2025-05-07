@@ -104,7 +104,7 @@ const RollingIsoMain = () => {
         {
             activeTab === 5 && (
                 <div>
-                    <h1 className="text-2xl font-semibold text-center">Finishing Verification ISO URM</h1>
+                    <h1 className="text-2xl font-semibold text-center">Rolling Verification ISO URM</h1>
                 <RollingVerificationIsoUrm />
                 </div>
             )

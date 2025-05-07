@@ -7,6 +7,37 @@ import { useSelector } from "react-redux";
 import TableComponent from '../../../../components/DKG_Table';
 import Btn from '../../../../components/DKG_Btn';
 
+const cameraNameMap = {
+  "40522378": "HT",
+  "40525413": "BST",
+  "40522337": "BSB",
+  "40522346": "FB",
+  "40522366": "NBSB",
+  "40522375": "NBST"
+};
+
+function clubContinuousRanges(numbers) {
+  if (!Array.isArray(numbers)) return [];
+
+  const sorted = [...new Set(numbers)].sort((a, b) => a - b);
+  const result = [];
+
+  let start = sorted[0];
+  let end = sorted[0];
+
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === end + 10) {
+      end = sorted[i];
+    } else {
+      result.push(start === end ? `${start}` : `${start} - ${end}`);
+      start = end = sorted[i];
+    }
+  }
+
+  result.push(start === end ? `${start}` : `${start} - ${end}`);
+  return result;
+}
+
 const RailDetails = () => {
     const { railId } = useParams();
     const [loading, setLoading] = useState(true);
@@ -22,36 +53,38 @@ const RailDetails = () => {
         console.error("Invalid data passed to processData:", data);
         return [];
       }
-
+    
       const filteredData = data.filter((item) => item.resultStatus === "fail");
       const groupedData = {};
-  
+    
       filteredData.forEach((item) => {
         const key = item.cameraId;
-
-        const defectTypeArray = Array.isArray(item?.defectType) ? item.defectType : [];
-        const distanceFromHead = item?.distanceFromHead ? [item.distanceFromHead] : [];
-
+    
         if (!groupedData[key]) {
           groupedData[key] = {
             railId: item.railId || '',
             cameraId: item.cameraId || '',
             cameraName: item.cameraName || '',
-            clubbedDefectType: new Set(defectTypeArray),
-            clubbedDistanceFromHead: new Set(distanceFromHead),
+            clubbedDefectType: new Set(Array.isArray(item.defectType) ? item.defectType : []),
+            clubbedDistanceFromHead: new Set(item?.distanceFromHead ? [item.distanceFromHead] : []),
+            defects: [item],
           };
         } else {
+          const defectTypeArray = Array.isArray(item.defectType) ? item.defectType : [];
+          const distanceFromHead = item?.distanceFromHead ? [item.distanceFromHead] : [];
+    
           defectTypeArray.forEach((defect) => groupedData[key].clubbedDefectType.add(defect));
           distanceFromHead.forEach((distance) => groupedData[key].clubbedDistanceFromHead.add(distance));
+          groupedData[key].defects.push(item);
         }
       });
-  
+    
       return Object.values(groupedData).map((item) => ({
         ...item,
-        clubbedDefectType: Array.from(item.defectType || []),
-        clubbedDistanceFromHead: Array.from(item.distanceFromHead || []),
+        clubbedDefectType: Array.from(item.clubbedDefectType || []),
+        clubbedDistanceFromHead: Array.from(item.clubbedDistanceFromHead || []),
       }));
-    };
+    };    
 
     const tableData = processData(dataSource).map((item, index) => ({
       key: index,
@@ -81,7 +114,7 @@ const RailDetails = () => {
     // };
 
     // const summarizedData = summarizeFailData(dataSource);
-    
+
     useEffect(() => {
       const fetchRailDetails = async () => {
         try {
@@ -91,14 +124,20 @@ const RailDetails = () => {
             `/dashboard/getDimensionalInspectionDtlByRailId?railId=${railId}`,
             token
           );
-          setDataSource(data?.responseData || []); 
+    
+          const updatedData = (data?.responseData || []).map(item => ({
+            ...item,
+            cameraName: cameraNameMap[item.cameraId] || item.cameraName || ''
+          }));
+    
+          setDataSource(updatedData);
         } catch (error) {
           setError(error.message || "Failed to fetch rail details.");
         } finally {
           setLoading(false);
         }
       };
-
+    
       const fetchRailDetailsSec = async () => {
         try {
           setLoading(true);
@@ -107,17 +146,23 @@ const RailDetails = () => {
             `/dashboard/getSurfaceInspectionDtlByRailId?railId=${railId}`,
             token
           );
-          setDataSourceSec(data?.responseData || []); 
+    
+          const updatedDataSec = (data?.responseData || []).map(item => ({
+            ...item,
+            cameraName: cameraNameMap[item.cameraId] || item.cameraName || ''
+          }));
+    
+          setDataSourceSec(updatedDataSec);
         } catch (error) {
           setError(error.message || "Failed to fetch rail details.");
         } finally {
           setLoading(false);
         }
       };
-  
+    
       fetchRailDetails();
       fetchRailDetailsSec();
-    }, [railId, token]);
+    }, [railId, token]);    
 
     if (loading) {
         return <Spin tip="Loading rail details..." />;
@@ -233,17 +278,22 @@ const RailDetails = () => {
       { title: "Camera ID", dataIndex: "cameraId", key: "cameraId" },
       { title: "Camera Name", dataIndex: "cameraName", key: "cameraName" },
       {
-        title: "Defect Types",
-        dataIndex: "clubbedDefectType",
-        key: "clubbedDefectType",
-        render: (defects) => defects.join(', '),
-      },
-      {
-        title: "Distances From Head",
+        title: "Distances from Head",
         dataIndex: "clubbedDistanceFromHead",
         key: "clubbedDistanceFromHead",
-        render: (distances) => distances.join(', '),
-      },
+        render: (distances) => {
+          const ranges = clubContinuousRanges(distances);
+          return (
+            <div className="space-x-2">
+              {ranges.map((range, idx) => (
+                <span key={idx} className="bg-gray-200 px-2 py-1 rounded">
+                  {range}
+                </span>
+              ))}
+            </div>
+          );
+        },
+      },            
     ];
 
   return (

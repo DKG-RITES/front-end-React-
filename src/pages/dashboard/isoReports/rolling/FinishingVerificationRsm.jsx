@@ -252,6 +252,7 @@ const columns = [
 
 
     const onFinish = async (formData) => {
+        console.log("ON FINISH")
         try {
             const { data } = await apiCall("POST", "/iso/getRollingFinishingDtls", token, {...formData, mill:"RSM"});
             const hotStampingList = data?.responseData?.hotStampingList || [];

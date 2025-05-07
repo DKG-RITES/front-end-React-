@@ -104,7 +104,7 @@ const ShiftDetailsForm = () => {
     }, [formData])
 
     if (dutyId) {
-      message.error("Duty already in progress. Cannot start new duty.");
+      // message.error("Duty already in progress. Cannot start new duty.");
       return <Navigate to="/visual/home" />;
     }
 

@@ -9,6 +9,7 @@ const TextAreaComponent = ({
   rows,
   onChange,
   required,
+  disabled,
   className
 }) => {
   const handleChange = (e) => {
@@ -17,7 +18,7 @@ const TextAreaComponent = ({
 
   return (
     <Form.Item label={label} name={name} required className={`${className}`}>
-      <TextArea rows={rows} onChange={handleChange} value={value} autoSize={{ minRows: 1, maxRows: 16 }} />
+      <TextArea rows={rows} onChange={handleChange} value={value} autoSize={{ minRows: 1, maxRows: 16 }} disabled={disabled} />
     </Form.Item>
   );
 };

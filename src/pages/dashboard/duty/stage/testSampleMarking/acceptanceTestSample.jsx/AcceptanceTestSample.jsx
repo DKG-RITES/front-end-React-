@@ -8,11 +8,12 @@ import Btn from "../../../../../../components/DKG_Btn";
 import {
   RG_1080HH,
   RG_880,
+  RG_880NC,
   RG_R260,
   RG_R350HT,
 } from "../../../../../../utils/Constants";
 
-const AcceptanceTestSample = ({ railGrade, dutyId }) => {
+const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
   const [form] = Form.useForm();
   const [formData, setFormData] = useState({
     railGrade: railGrade,
@@ -39,6 +40,10 @@ const AcceptanceTestSample = ({ railGrade, dutyId }) => {
   });
 
   const onFinish = async () => {
+    if(retest){
+      message.error("Table retest_rsm03. doesnt exist.")
+      return;
+    }
     try {
       await apiCall("POST", "rolling/saveAcceptanceTestSample", token, {
         ...formData,
@@ -220,7 +225,7 @@ const AcceptanceTestSample = ({ railGrade, dutyId }) => {
       layout="vertical"
       className="bg-offWhite p-2"
     >
-      <div className="grid grid-cols-3 gap-x-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-2">
         <FormDropdownItem
           label="Sample Type"
           name="sampleType"
@@ -273,7 +278,14 @@ const AcceptanceTestSample = ({ railGrade, dutyId }) => {
           checked={formData.chemical || false}
           onChange={(e) => handleChange("chemical", e.target.checked)}
         >
-          Chemical
+          Chemical .(P)
+        </Checkbox>
+
+        <Checkbox
+          checked={formData.o2 || false}
+          onChange={(e) => handleChange("o2", e.target.checked)}
+        >
+          O2
         </Checkbox>
 
         <Checkbox
@@ -287,8 +299,24 @@ const AcceptanceTestSample = ({ railGrade, dutyId }) => {
           checked={formData.fwtSt || false}
           onChange={(e) => handleChange("fwtSt", e.target.checked)}
         >
+          FWT (HS)
+        </Checkbox>
+
+        <Checkbox
+          checked={formData.fwtHs || false}
+          onChange={(e) => handleChange("fwtHs", e.target.checked)}
+        >
           FWT (St.)
         </Checkbox>
+
+        {(railGrade === RG_880 || railGrade === RG_R260) && (
+          <Checkbox
+            checked={formData.fwtStSr || false}
+            onChange={(e) => handleChange("fwtStSr", e.target.checked)}
+          >
+            FWT (St.) - Sr
+          </Checkbox>
+        )}
       {
         (railGrade === RG_880 || railGrade === RG_R260) && 
         <Checkbox
@@ -300,47 +328,17 @@ const AcceptanceTestSample = ({ railGrade, dutyId }) => {
       }
 
         <Checkbox
-          checked={formData.sp || false}
-          onChange={(e) => handleChange("sp", e.target.checked)}
-        >
-          SP
-        </Checkbox>
-
-        <Checkbox
-          checked={formData.ir || false}
-          onChange={(e) => handleChange("ir", e.target.checked)}
-        >
-          IR
-        </Checkbox>
-
-        <Checkbox
-          checked={formData.o2 || false}
-          onChange={(e) => handleChange("o2", e.target.checked)}
-        >
-          O2
-        </Checkbox>
-
-        <Checkbox
-          checked={formData.fwtHs || false}
-          onChange={(e) => handleChange("fwtHs", e.target.checked)}
-        >
-          FWT (HS)
-        </Checkbox>
-
-        {(railGrade === RG_880 || railGrade === RG_R260) && (
-          <Checkbox
-            checked={formData.fwtStSr || false}
-            onChange={(e) => handleChange("fwtStSr", e.target.checked)}
-          >
-            FWT (St.) - Sr
-          </Checkbox>
-        )}
-
-        <Checkbox
           checked={formData.tensileFoot || false}
           onChange={(e) => handleChange("tensileFoot", e.target.checked)}
         >
           Tensile Foot
+        </Checkbox>
+
+        <Checkbox
+          checked={formData.sp || false}
+          onChange={(e) => handleChange("sp", e.target.checked)}
+        >
+          SP
         </Checkbox>
 
         <Checkbox
@@ -351,12 +349,19 @@ const AcceptanceTestSample = ({ railGrade, dutyId }) => {
         </Checkbox>
 
         <Checkbox
+          checked={formData.ir || false}
+          onChange={(e) => handleChange("ir", e.target.checked)}
+        >
+          IR
+        </Checkbox>
+
+        <Checkbox
           checked={formData.decarb || false}
           onChange={(e) => handleChange("decarb", e.target.checked)}
         >
           Decarb
         </Checkbox>
-        {(railGrade === RG_1080HH || railGrade === RG_R350HT) && (
+        {(railGrade === RG_1080HH || railGrade === RG_R350HT || railGrade === RG_880NC) && (
           <>
             <Checkbox
               checked={formData.rsh || false}

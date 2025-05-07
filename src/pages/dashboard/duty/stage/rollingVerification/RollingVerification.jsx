@@ -63,7 +63,6 @@ const RollingVerification = () => {
       //       finishingTemp: null
       //   }
     ],
-    remarks: ""
   });
 
   const onFinish = async () => {
@@ -103,11 +102,48 @@ const RollingVerification = () => {
     });
   };
 
-  const handleChargingTableDtlChange = (fieldName, value, index) => {
-    setFormData((prev) => {
-      const chargingTableUpdated = [...prev.chargingTableDtls];
-      chargingTableUpdated[index][fieldName] = value;
+  // const handleChargingTableDtlChange = (fieldName, value, index) => {
+  //   setFormData((prev) => {
+  //     const chargingTableUpdated = [...prev.chargingTableDtls];
+  //     chargingTableUpdated[index][fieldName] = value;
 
+  //     if (fieldName === "bloomTrackingVerification") {
+  //       chargingTableUpdated[index]["bloomTrackingVerificationDesc"] =
+  //         setDescription("bloomTrackingVerification", value);
+  //     } else if (fieldName === "hotBloomsDescaling") {
+  //       chargingTableUpdated[index]["hotBloomsDescalingDesc"] = setDescription(
+  //         "hotBloomsDescaling",
+  //         value
+  //       );
+  //     }
+  //     return {
+  //       ...prev,
+  //       chargingTableDtls: chargingTableUpdated,
+  //     };
+  //   });
+  // };
+  
+  const handleChargingTableDtlChange = (fieldName, value, index = 0) => {
+    setFormData((prev) => {
+      // Ensure chargingTableDtls exists
+      const chargingTableUpdated = [...(prev.chargingTableDtls || [])];
+  
+      // Ensure the specific index exists
+      if (!chargingTableUpdated[index]) {
+        chargingTableUpdated[index] = {
+          heatNo: null,
+          length: null,
+          defect: null,
+          bloomTrackingVerification: null,
+          bloomTrackingVerificationDesc: null,
+          hotBloomsDescaling: null,
+          hotBloomsDescalingDesc: null,
+        };
+      }
+  
+      // Update the value
+      chargingTableUpdated[index][fieldName] = value;
+  
       if (fieldName === "bloomTrackingVerification") {
         chargingTableUpdated[index]["bloomTrackingVerificationDesc"] =
           setDescription("bloomTrackingVerification", value);
@@ -117,12 +153,13 @@ const RollingVerification = () => {
           value
         );
       }
+  
       return {
         ...prev,
         chargingTableDtls: chargingTableUpdated,
       };
     });
-  };
+  };  
 
   const handleBloomYardDtlDelete = (index) => {
     const bloomYarDtlsUpdated = formData.bloomYardDtls;
@@ -371,48 +408,93 @@ const RollingVerification = () => {
       >
         <div className="relative">
           <h3 className="font-semibold !text-xl">Bloom Yard</h3>
+          <h4 className="font-normal mb-2">Bloom Identity</h4>
 
           {formData?.bloomYardDtls?.map((record, index) => (
             <div className="grid grid-cols-2 gap-x-4 border p-4 pb-0 relative">
-              <FormInputItem
-                className="col-span-2"
-                label="Heat number"
-                name={["bloomYardDtls", index, "heatNo"]}
-                onChange={(fName, value) =>
-                  handleBloomDtlChange(fName, value, index)
-                }
-                required
-              />
-
-               
               {
                 mill === "RSM" && (
                     <>
                         <FormInputItem name={["bloomyardDtls", index, "length"]} label="Length" required />
-                        <FormInputItem name={["bloomyardDtls", index, "defect"]} label="Defect" required />
+                        <FormInputItem name={["bloomyardDtls", index, "defect"]} label="Defects" required />
+                        <FormInputItem 
+                          label="Heat number"               
+                          name={["bloomYardDtls", index, "heatNo"]}
+                          onChange={(fName, value) =>
+                            handleBloomDtlChange(fName, value, index)
+                          }
+                          required
+                        />
+                        <FormDropdownItem
+                          label="Verification"
+                          placeholder="satisfactory / unsatisfactory"                
+                          formField="internalTransferVerification"
+                          name={[
+                            "bloomYardDtls",
+                            index,
+                            "internalTransferVerificationDesc",
+                          ]}
+                          dropdownArray={satUnsatDropdown}
+                          visibleField="value"
+                          valueField="key"
+                          onChange={(fName, value) =>
+                            handleBloomDtlChange(fName, value, index)
+                          }
+                          required
+                        />
                     </>
                 )
-              } 
+              }
 
-              <h4 className="font-semibold col-span-2">
+              {mill === "URM" && (
+                <>
+                  <h4 className="font-semibold col-span-2 mb-2">
+                    1. Online Verification of Internal Transfer Memo for Stacking
+                  </h4>
+                  <FormInputItem 
+                    placeholder="Heat Number"               
+                    name={["bloomYardDtls", index, "heatNo"]}
+                    onChange={(fName, value) =>
+                      handleBloomDtlChange(fName, value, index)
+                    }
+                    required
+                  />
+                  <FormDropdownItem
+                    placeholder="satisfactory / unsatisfactory"
+                    formField="internalTransferVerification"
+                    name={["bloomYardDtls", index, "internalTransferVerificationDesc"]}
+                    dropdownArray={satUnsatDropdown}
+                    visibleField="value"
+                    valueField="key"
+                    onChange={(fName, value) =>
+                      handleBloomDtlChange(fName, value, index)
+                    }
+                    required
+                  />
+
+                  <h4 className="font-semibold col-span-2 mb-2">
+                    2. Online Verification of Rail Heat Register with production report
+                  </h4>
+                  <FormDropdownItem
+                    placeholder="satisfactory / unsatisfactory"
+                    formField="heatRegisterVerification"
+                    name={["bloomYardDtls", index, "heatRegisterVerificationDesc"]}
+                    dropdownArray={satUnsatDropdown}
+                    visibleField="value"
+                    valueField="key"
+                    onChange={(fName, value) =>
+                      handleBloomDtlChange(fName, value, index)
+                    }
+                    required
+                  />
+                </>
+              )}
+
+              
+              {/* <h4 className="font-semibold col-span-2">
                 Online Verification of Internal Transfer Memo for Stacking
               </h4>
-              <FormDropdownItem
-                placeholder="satisfactory / unsatisfactory"
-                formField="internalTransferVerification"
-                name={[
-                  "bloomYardDtls",
-                  index,
-                  "internalTransferVerificationDesc",
-                ]}
-                dropdownArray={satUnsatDropdown}
-                visibleField="value"
-                valueField="key"
-                onChange={(fName, value) =>
-                  handleBloomDtlChange(fName, value, index)
-                }
-                required
-              />
+              
               <h4 className="font-semibold col-span-2">
                 Online Verification of Rail Heat Register with production report
               </h4>
@@ -427,7 +509,7 @@ const RollingVerification = () => {
                   handleBloomDtlChange(fName, value, index)
                 }
                 required
-              />
+              /> */}
               <IconBtn
                 icon={DeleteOutlined}
                 className="shadow-none absolute right-0"
@@ -447,10 +529,10 @@ const RollingVerification = () => {
         <Divider />
         <div className="relative">
           <h3 className="font-semibold !text-xl">Charging Table</h3>
+          <h4 className="font-normal col-span-3 mb-2">Surface Inspection of atleast two faces</h4>
 
           {formData?.chargingTableDtls?.map((record, index) => (
             <div className="grid grid-cols-2 gap-x-4 border p-4 pb-0 relative">
-              <h4 className="font-semibold col-span-3">Surface Inspection of atleast two faces</h4>
               <FormInputItem
                 placeholder="Heat number"
                 name={["chargingTableDtls", index, "heatNo"]}
@@ -475,43 +557,6 @@ const RollingVerification = () => {
                 }
                 required
               />
-
-              <h4 className="font-semibold col-span-2">
-                Online Verification of Computerized Bloom Tracking
-              </h4>
-              <FormDropdownItem
-                placeholder="satisfactory / unsatisfactory"
-                formField="bloomTrackingVerification"
-                name={[
-                  "chargingTableDtls",
-                  index,
-                  "bloomTrackingVerificationDesc",
-                ]}
-                dropdownArray={satUnsatDropdown}
-                visibleField="value"
-                valueField="key"
-                required
-                onChange={(fName, value) =>
-                  handleChargingTableDtlChange(fName, value, index)
-                }
-              />
-
-              <h4 className="font-semibold col-span-2">
-                Descaling of Hot Blooms Before Rolling
-              </h4>
-              <FormDropdownItem
-                placeholder="satisfactory / unsatisfactory"
-                formField="hotBloomsDescaling"
-                name={["chargingTableDtls", index, "hotBloomsDescalingDesc"]}
-                dropdownArray={satUnsatDropdown}
-                visibleField="value"
-                valueField="key"
-                required
-                onChange={(fName, value) =>
-                  handleChargingTableDtlChange(fName, value, index)
-                }
-              />
-
               <IconBtn
                 icon={DeleteOutlined}
                 className="shadow-none absolute right-0"
@@ -528,6 +573,46 @@ const RollingVerification = () => {
         </div>
 
         <Divider />
+        <h3 className="font-semibold !text-xl">Bloom Tracking</h3>
+        
+        <h4 className="font-normal col-span-2 mb-2">
+          Online Verification of Computerized Bloom Tracking
+        </h4>
+        <FormDropdownItem
+          placeholder="satisfactory / unsatisfactory"
+          formField="bloomTrackingVerification"
+          name={[
+            "chargingTableDtls",
+            0,
+            "bloomTrackingVerificationDesc",
+          ]}
+          dropdownArray={satUnsatDropdown}
+          visibleField="value"
+          valueField="key"
+          required
+          onChange={(fName, value) =>
+            handleChargingTableDtlChange(fName, value, 0)
+          }
+        />
+
+        <Divider />
+        <h3 className="font-semibold !text-xl">Descaling of Blooms</h3>
+        
+        <h4 className="font-normal col-span-2 mb-2">
+          Descaling of Hot Blooms Before Rolling
+        </h4>
+        <FormDropdownItem
+          placeholder="satisfactory / unsatisfactory"
+          formField="hotBloomsDescaling"
+          name={["chargingTableDtls", 0, "hotBloomsDescalingDesc"]}
+          dropdownArray={satUnsatDropdown}
+          visibleField="value"
+          valueField="key"
+          required
+          onChange={(fName, value) =>
+            handleChargingTableDtlChange(fName, value, 0)
+          }
+        />
 
         <div className="relative">
           <h3 className="font-semibold !text-xl">Temperature Observation</h3>
@@ -572,9 +657,9 @@ const RollingVerification = () => {
           </div>
         </div>
 
-        <FormInputItem className="mt-8" name="remarks" label="Remarks" onChange={(_, value) => setFormData(prev => ({...prev, remarks: value}))} />
-
-        <Btn htmlType="submit"> Save </Btn>
+        <Btn htmlType="submit" className="flex justify-center mx-auto mt-10">
+          Save
+        </Btn>
       </Form>
     </FormContainer>
   );
