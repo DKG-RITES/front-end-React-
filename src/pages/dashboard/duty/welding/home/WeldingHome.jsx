@@ -164,7 +164,7 @@ const WeldingHome = () => {
             (weldingGeneralInfo.mill === 'URM' && weldingGeneralInfo.weldingLine === 'L3') && (
               <>
               {/* <Divider className="mb-0" /> */}
-              <h1 className="!text-xl font-semibold mt-2">Weld Joint Counter</h1>
+              <h1 className="!text-xl font-semibold mt-2"> Weld Joint Counter </h1>
                <div className="flex gap-2 my-4">
               <h2 className="font-bold">No. of Joints  welded in previous shift after Weld Test (BSP1):</h2>
               <FormInputItem name="jointsWeldedPrevShiftBsp1" onChange={(name, value) => handleChange(name, value, setFormData)} />

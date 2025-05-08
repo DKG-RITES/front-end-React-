@@ -154,10 +154,10 @@ const NewCalibrationForm = () => {
             <FormInputItem label='Calibration expiry notification no. of days' name='calibrationExpiryNumberOfDays' placeholder='0' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} disabled = {isDisabled} />
           }
 
-          {
+          {/* {
             (formData?.calibrationResult === 'Not OK') && 
             <FormInputItem label='Cal Expiry No. of Days' name='calibrationExpiryNumberOfDays' placeholder='0' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)}/>
-          }
+          } */}
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-x-4'>
