@@ -172,10 +172,11 @@ const RollingControlSample = () => {
             floor = 51.63055;
             ceil = 52.66835;
           }
+          // updated the weight according to crio in 601E
         } else if (railSection === "60E1") {
-          if (value < 51.63055 || value > 52.66835) {
-            floor = 51.63055;
-            ceil = 52.66835;
+          if (value < 59.90895 || value > 61.11315) {
+            floor = 59.90895;
+            ceil = 61.11315;
           }
         } else if (railSection === "60E1A1") {
           if (value < 72.60515 || value > 74.06455) {
