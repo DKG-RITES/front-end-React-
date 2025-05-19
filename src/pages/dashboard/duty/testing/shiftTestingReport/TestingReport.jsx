@@ -12,6 +12,7 @@ import Search from "../../../../../components/DKG_Search"
 import Btn from '../../../../../components/DKG_Btn'
 
 const { testingReportData: sampleData,testingGeneralInfo, railGradeList, millList, testCategoryList, testingReportColumns } = data;
+const testingGeneralInfo = useSelector(state => state.testingDuty);
 
 const checkBoxItems = [
     { "key": 1, "value": "Accepting Test" },
