@@ -186,9 +186,9 @@ const SrNewInspectionForm = () => {
     (11 * (getSafeValue(formData?.acceptance11mClA) + getSafeValue(formData?.acceptance11mClA01) + getSafeValue(formData?.acceptance11mClB) + getSafeValue(formData?.acceptance11mIu))) + 
     (10 * (getSafeValue(formData?.acceptance10mClA) + getSafeValue(formData?.acceptance10mClA01) + getSafeValue(formData?.acceptance10mClB) + getSafeValue(formData?.acceptance10mIu)))
   );
-  
+// + getSafeValue(formData?.cutbart26m) + getSafeValue(formData?.refinish26m)
   const totalTonnesRejected =
-    stdWt * (26 * (getSafeValue(formData?.rejection26m) + getSafeValue(formData?.cutbart26m) + getSafeValue(formData?.refinish26m))) +
+    stdWt * (26 * (getSafeValue(formData?.rejection26m) )) +
     getSafeValue(formData?.acceptance25mClA) + getSafeValue(formData?.acceptance25mClA01) + 
     getSafeValue(formData?.acceptance25mClB) + getSafeValue(formData?.acceptance25mIu) +
     2 * (getSafeValue(formData?.acceptance24mClA) + getSafeValue(formData?.acceptance24mClA01) + 
