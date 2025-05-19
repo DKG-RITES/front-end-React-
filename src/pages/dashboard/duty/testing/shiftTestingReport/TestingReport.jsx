@@ -11,8 +11,7 @@ import { Checkbox, Divider, Table } from 'antd'
 import Search from "../../../../../components/DKG_Search"
 import Btn from '../../../../../components/DKG_Btn'
 
-const { testingReportData: sampleData,testingGeneralInfo, railGradeList, millList, testCategoryList, testingReportColumns } = data;
-const testingGeneralInfo = useSelector(state => state.testingDuty);
+const { testingReportData: sampleData, railGradeList, millList, testCategoryList, testingReportColumns } = data;
 
 const checkBoxItems = [
     { "key": 1, "value": "Accepting Test" },
@@ -38,6 +37,8 @@ const TestingReport = () => {
     const handleClick = () => {
         navigate('/testing/home')
     };
+ const testingGeneralInfo = useSelector(state => state.testingDuty);
+    
 
   return (
     <FormContainer>
