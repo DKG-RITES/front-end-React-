@@ -147,6 +147,7 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
         );
         // if (data.responseData?.heatNo) {
         //   message.success("Test data present for provided details.");
+        console.log("RSH: ", data?.responseData?.rsh)
           setFormData(prev => {
             return {
               chemical: data?.responseData?.chemical,

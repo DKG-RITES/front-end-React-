@@ -29,11 +29,6 @@ const NewTestSampleDeclaration = () => {
   const dutyId = state?.dutyId || null;
   const generalInfo = state?.generalInfo || null;
 
-  console.log("location: ", location.state)
-
-  const [form] = Form.useForm();
-  const [checkedValues, setCheckedValues] = useState([]);
-  const [heatNumber, setHeatNumber] = useState("");
 
   const navigate = useNavigate();
 
