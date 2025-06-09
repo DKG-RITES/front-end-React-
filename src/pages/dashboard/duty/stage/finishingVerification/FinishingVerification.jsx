@@ -191,9 +191,27 @@ const FinishingVerification = () => {
   };
 
   const onFinish = async () => {
+
+    const payload = {...formData}
+
+    const hotStampingList = payload.hotStampingList || [];
+
+    const preCamberingList = payload.preCamberingList || [];
+
+    const hotStampingListUpdated = hotStampingList.filter((record) => {
+      return record.heatNo
+    })
+
+    const preCamberingListUpdated = preCamberingList.filter((record) => {
+      return record.heatNo
+    })
+
+      payload.hotStampingList = hotStampingListUpdated;
+      payload.preCamberingList = preCamberingListUpdated;
+
     try {
       await apiCall("POST", "/rolling/finishingVerification/save", token, {
-        ...formData,
+        ...payload,
         dutyId: rollingGeneralInfo.dutyId,
       });
       message.success("Data saved successfully.");
@@ -281,7 +299,7 @@ const FinishingVerification = () => {
                 dropdownArray={satUnsatDropdown}
                 visibleField="value"
                 valueField="key"
-                required
+                // required
                 onChange={(fName, value) =>
                   handlePreCamberingDtlChange(fName, value, index)
                 }
@@ -368,7 +386,7 @@ const FinishingVerification = () => {
                 dropdownArray={satUnsatDropdown}
                 visibleField="value"
                 valueField="key"
-                required
+                // required
                 onChange={handleChange}
               />
             </div>
@@ -440,7 +458,7 @@ const FinishingVerification = () => {
                 dropdownArray={satUnsatDropdown}
                 visibleField="value"
                 valueField="key"
-                required
+                // required
                 onChange={handleChange}
               />
             </div>
@@ -507,7 +525,7 @@ const FinishingVerification = () => {
                 dropdownArray={satUnsatDropdown}
                 visibleField="value"
                 valueField="key"
-                required
+                // required
                 onChange={handleChange}
               />
             </div>
@@ -516,13 +534,13 @@ const FinishingVerification = () => {
         <FormInputItem
           label="Straightness Remarks(Straightness of Rails)"
           name="straightnessRemarks"
-          required
+          // required
           onChange={handleChange}
         />
         <FormInputItem
           label="Remarks"
           name="remarks"
-          required
+          // required
           onChange={handleChange}
         />
 

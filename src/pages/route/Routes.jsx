@@ -104,6 +104,7 @@ import MicroTest from "../dashboard/duty/testing/pendingTestSamples/MicroTest";
 import DecarbTest from "../dashboard/duty/testing/pendingTestSamples/DecarbTest";
 import TensileTest from "../dashboard/duty/testing/pendingTestSamples/TensileTest";
 import HardnessTest from "../dashboard/duty/testing/pendingTestSamples/HardnessTest";
+import ViSummary from "../dashboard/duty/visualInspection/viSummaru/ViSummary";
 
 const RoutesComponent = () => {
   return (
@@ -223,6 +224,7 @@ const RoutesComponent = () => {
                 <Route path="home" element={<Home />} />
                 <Route path="inspection" element={<VisualInspectionForm />} />
                 <Route path="summary" element={<VIShiftSummary />} />
+                <Route path="viSummary" element={<ViSummary />} />
               </Route>
             </Route>
 

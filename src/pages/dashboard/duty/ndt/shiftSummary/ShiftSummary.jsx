@@ -37,8 +37,8 @@ function ShiftSummary() {
             try {
                 const response = await apiCall("GET", `/ndt/getShiftSummary?dutyId=${ndtGeneralInfo.dutyId}`, token); 
                 if (response && response.data) {
-                    setFormData(response.data);
-                    setIsEditable(false);
+                    setFormData(response.data.responseData);
+                    // setIsEditable(false);
                 }
             } catch (error) {
                 console.error("Error fetching shift summary:", error);
@@ -55,7 +55,7 @@ function ShiftSummary() {
     }, [formData, form]);
 
     const handleFormSubmit = async () => {
-        if (!isEditable) return;
+        // if (!isEditable) return;
 
         try {
             await apiCall("POST", "/ndt/saveShiftSummary", token, {

@@ -71,7 +71,6 @@ const RollingVerification = () => {
         message.success("Data saved successfully.")
         navigate('/stage/home')
     }catch(error){
-
     }
   };
 

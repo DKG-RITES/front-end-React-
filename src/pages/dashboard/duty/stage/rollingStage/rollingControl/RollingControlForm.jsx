@@ -15,9 +15,14 @@ import { useSelector } from "react-redux";
 import CustomDatePicker from "../../../../../../components/DKG_CustomDatePicker";
 import { apiCall } from "../../../../../../utils/CommonFunctions";
 
-const { micrometerNumberList, vernierNumberList, weighingMachineList } = data;
+// const { micrometerNumberList, vernierNumberList, weighingMachineList } = data;
 
 const RollingControlForm = () => {
+
+  const [micrometerNumberList, setMicrometerNumberList] = useState([])
+  const [vernierNumberList, setVernierNumberList] = useState([])
+  const [weighingMachineList, setWeighingMachineList] = useState([])
+
   const [form] = Form.useForm();
   const [currentTablePage, setCurrentTablePage] = useState(1);
   const [tablePageSize, setTablePageSize] = useState(5);
@@ -126,6 +131,20 @@ const RollingControlForm = () => {
         `/rolling/getControlDtls?dutyId=${rollingGeneralInfo.dutyId}`,
         token
       );
+
+      const {data: instList} = await apiCall("GET", "/calibration/getVrnrMmWmcInstList", token)
+      const mmList = instList.responseData.Micrometer?.map(item => ({key: item, value: item})) || []
+      const vrnrList = instList.responseData?.Vernier?.map(item => ({key: item, value: item})) || []
+      const wmcList = instList.responseData?.WeighingMachine?.map(item => ({key: item, value: item})) || []
+      // console.log("LIST: ", lst)
+      console.log("Setting ")
+      console.log("MM LSITTT: ", mmList)
+      setMicrometerNumberList(mmList)
+      setVernierNumberList(vrnrList)
+      setWeighingMachineList(wmcList)
+      console.log("Setting done")
+
+
       const { responseData } = data;
 
       setFormData({
@@ -151,6 +170,8 @@ const RollingControlForm = () => {
   useEffect(() => {
     populateData();
   }, [populateData]);
+
+  console.log("Micrometer: ", micrometerNumberList)
 
   return (
     <FormContainer>

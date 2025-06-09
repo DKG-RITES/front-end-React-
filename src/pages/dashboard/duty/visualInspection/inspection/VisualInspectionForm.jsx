@@ -18,7 +18,7 @@ import CustomDatePicker from "../../../../../components/DKG_CustomDatePicker";
 import FormInputItem from "../../../../../components/DKG_FormInputItem";
 import FormDropdownItem from "../../../../../components/DKG_FormDropdownItem";
 import FormNumericInputItem from "../../../../../components/DKG_FormNumericInputItem";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import IconBtn from "../../../../../components/DKG_IconBtn";
 import {
   DeleteOutlined,
@@ -179,6 +179,9 @@ const VisualInspectionForm = () => {
   const [form] = Form.useForm();
   const { dutyId, mill, shift } = useSelector((state) => state.viDuty);
 
+  const location = useLocation();
+  const railId = location?.state?.railId || null
+
 
   const accLengthList = mill === "URM" ? urmAccLengthList : rsmAccLengthList;
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
@@ -187,8 +190,8 @@ const VisualInspectionForm = () => {
     actualOfferedLength: null,
     heatNo: null,
     railId: "",
-    shift: shift,
-    date: currentDate.format(dateFormat),
+    shift: localStorage.getItem("shift") ? localStorage.getItem("shift") : shift,
+    date: localStorage.getItem("date") ? localStorage.getItem("date") : currentDate.format(dateFormat),
     heatStatus: "",
     rej13: null,
     rej12: null,
@@ -234,6 +237,7 @@ const VisualInspectionForm = () => {
         ...formData,
         heatNo: formData?.heatNo?.padStart(6, "0"),
         dutyId: dutyId,
+        updateData: railId ? true : false
       });
       navigate("/visual/home");
       message.success("Data saved successfully.");
@@ -351,6 +355,10 @@ const VisualInspectionForm = () => {
         ...prev,
         [fieldName]: value,
       };
+
+      if(fieldName === "date" || fieldName === "shift"){
+        localStorage.setItem(fieldName, value);
+      }
 
       if (["mill", "date", "shift", "serialNo"].includes(fieldName)) {
         if (
@@ -680,7 +688,24 @@ const VisualInspectionForm = () => {
     form.setFieldsValue(formData);
   }, [formData]);
 
-  console.log("FILE: ", file)
+  const populateData = async (railId) => {
+    try{
+      const {data} = await apiCall("GET", `/vi/getDtlByRailId?railId=${railId}`, token)
+      if(data?.responseData){
+        console.log("GOT DATA: ", data.responseData)
+        setFormData(data.responseData)
+      }
+    }
+    catch(error){
+      console.log("Error: ", error)
+    }
+  }
+
+  useEffect(() => {
+    if(railId){
+      populateData(railId);
+    }
+  }, [])
 
   // console.log("FormData out: ", formData)
 
@@ -1040,7 +1065,9 @@ const VisualInspectionForm = () => {
             disabled={submitBtnDisabled}
             className="mx-auto mt-6"
           >
-            Save Inspection Data
+            {
+              railId ? "Update Inspection Data" : "Save Inspection Data"
+            }
           </Btn>
         </section>
       </Form>

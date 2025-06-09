@@ -11,6 +11,11 @@ const visualHomeTabs = [
       icon: <FileSearchOutlined />,
       link: "/visual/summary"
     },
+    {
+      title: 'Visual Inspection Summary',
+      icon: <FileSearchOutlined />,
+      link: "/visual/viSummary"
+    },
     // {
     //   title: 'Test Sample Marking',
     //   icon: <PieChartOutlined />,

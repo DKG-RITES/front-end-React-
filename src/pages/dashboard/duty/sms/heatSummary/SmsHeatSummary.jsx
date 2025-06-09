@@ -976,7 +976,7 @@ const SmsHeatSummary = () => {
           // maxLength={6}
           name="turnDownTemp"
           onChange={handleNewHeatValChange}
-          rules={tempRule}
+          // rules={tempRule}
           // required
           />
           <FormDropdownItem

@@ -3,7 +3,7 @@ import FormContainer from "../../../../../../components/DKG_FormContainer";
 import SubHeader from "../../../../../../components/DKG_SubHeader";
 import GeneralInfo from "../../../../../../components/DKG_GeneralInfo";
 import data from "../../../../../../utils/frontSharedData/rollingStage/Stage.json";
-import { Divider, Form, message, TimePicker } from "antd";
+import { Divider, Form, message, Modal, TimePicker } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import FormInputItem from "../../../../../../components/DKG_FormInputItem";
 import FormDropdownItem from "../../../../../../components/DKG_FormDropdownItem";
@@ -39,7 +39,7 @@ const RollingControlSample = () => {
   const [formData, setFormData] = useState({
     sampleNo: "",
     heatNo: null,
-    timing: null,
+    timing: dayjs().format('HH:mm'),
     sampleLocation: null,
     height: null,
     flange: null,
@@ -58,6 +58,8 @@ const RollingControlSample = () => {
   const [flangeRule, setFlangeRule] = useState([]);
   const [weightRule, setWeightRule] = useState([]);
   const [webRule, setWebRule] = useState([]);
+
+  const [warningFields, setWarningFields] = useState([]);
 
   const handleChange = (fieldName, value) => {
     if (fieldName === "sampleNo"){
@@ -99,17 +101,35 @@ const RollingControlSample = () => {
         }
 
         if (ceil && floor) {
-          setHeightRule([
-            {
-              validator: (_, value) =>
-                Promise.reject(
-                  new Error(`Value must be in the range of ${floor} - ${ceil}`)
-                ),
-            },
-          ]);
+          // setHeightRule([
+          //   {
+          //     validator: (_, value) =>
+          //       Promise.reject(
+          //         new Error(`Value must be in the range of ${floor} - ${ceil}`)
+          //       ),
+          //   },
+          // ]);
+
+          setHeightRule([])
+          message.warning(`Value must be in the range of ${floor} - ${ceil}`)
+          setWarningFields(prev => {
+            const prevList = prev;
+            if (!prevList?.includes(fieldName)) {
+              return [...prevList, fieldName];
+            }
+            return prev;
+          })
+
         }
         else {
           setHeightRule([]);
+          setWarningFields(prev => {
+            const prevList = prev;
+            if (prevList?.includes(fieldName)) {
+              return prevList?.filter(item => item !== fieldName);
+            }
+            return prev
+          })
         }
       } 
     } else if (fieldName === "flange") {
@@ -142,16 +162,32 @@ const RollingControlSample = () => {
         }
 
         if (ceil && floor) {
-          setFlangeRule([
-            {
-              validator: (_, value) =>
-                Promise.reject(
-                  new Error(`Value must be in the range of ${floor} - ${ceil}`)
-                ),
-            },
-          ]);
+          // setFlangeRule([
+          //   {
+          //     validator: (_, value) =>
+          //       Promise.reject(
+          //         new Error(`Value must be in the range of ${floor} - ${ceil}`)
+          //       ),
+          //   },
+          // ]);
+          setFlangeRule([]);
+          message.warning(`Value must be in the range of ${floor} - ${ceil}`)
+          setWarningFields(prev => {
+            const prevList = prev;
+            if (!prevList?.includes(fieldName)) {
+              return [...prevList, fieldName];
+            }
+            return prev
+          })
         } else {
           setFlangeRule([]);
+          setWarningFields(prev => {
+            const prevList = prev;
+            if (prevList?.includes(fieldName)) {
+              return prevList.filter(item => item!== fieldName);
+            }
+            return prev;
+          })
         }
       }
     } else if (fieldName === "weight") {
@@ -186,16 +222,32 @@ const RollingControlSample = () => {
         }
 
         if (floor && ceil) {
-          setWeightRule([
-            {
-              validator: (_, value) =>
-                Promise.reject(
-                  new Error(`Value must be in the range of ${floor} - ${ceil}`)
-                ),
-            },
-          ]);
+          // setWeightRule([
+          //   {
+          //     validator: (_, value) =>
+          //       Promise.reject(
+          //         new Error(`Value must be in the range of ${floor} - ${ceil}`)
+          //       ),
+          //   },
+          // ]);
+          setWeightRule([]);
+          message.warning(`Value must be in the range of ${floor} - ${ceil}`)
+          setWarningFields(prev => {
+            const prevList = prev;
+            if (!prevList?.includes(fieldName)) {
+              return [...prevList, fieldName];
+            }
+            return prev
+          })
         } else {
           setWeightRule([]);
+          setWarningFields(prev => {
+            const prevList = prev;
+            if (prevList?.includes(fieldName)) {
+              return prevList.filter(item => item!== fieldName);
+            }
+            return prev;
+          })
         }
       }
     } else if (fieldName === "web") {
@@ -230,16 +282,33 @@ const RollingControlSample = () => {
         }
 
         if (floor && ceil) {
-          setWebRule([
-            {
-              validator: (_, value) =>
-                Promise.reject(
-                  new Error(`Value must be in the range of ${floor} - ${ceil}`)
-                ),
-            },
-          ]);
+          // setWebRule([
+          //   {
+          //     validator: (_, value) =>
+          //       Promise.reject(
+          //         new Error(`Value must be in the range of ${floor} - ${ceil}`)
+          //       ),
+          //   },
+          // ]);
+
+          setWebRule([]);
+          message.warning(`Value must be in the range of ${floor} - ${ceil}`)
+          setWarningFields(prev => {
+            const prevList = prev;
+            if (!prevList?.includes(fieldName)) {
+              return [...prevList, fieldName];
+            }
+            return prev
+          })
         } else {
           setWebRule([]);
+          setWarningFields(prev => {
+            const prevList = prev;
+            if (prevList?.includes(fieldName)) {
+              return prevList.filter(item => item!== fieldName);
+            }
+            return prev;
+          })
         }
       }
     }
@@ -251,9 +320,17 @@ const RollingControlSample = () => {
     });
   };
 
-  console.log("Formdata: ", formData.height)
-
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleFormSubmitUtil = () => {
+    if(warningFields?.length){
+      setIsOpen(true)
+      return
+    }
+
+    handleFormSubmit();
+  }
 
   const handleFormSubmit = async () => {
     try {
@@ -323,6 +400,7 @@ const RollingControlSample = () => {
   );
 
   const handleTimingChange = (time, timeString) => {
+
     if (time) {
       // Directly use timeString because it's already in the correct format
       setFormData((prev) => ({ ...prev, timing: timeString }));
@@ -333,7 +411,7 @@ const RollingControlSample = () => {
   };
 
   const timingDayJs = formData.timing
-    ? dayjs(formData.timing, "HH:mm:ss")
+    ? dayjs(formData.timing, "HH:mm")
     : null;
 
   useEffect(() => {
@@ -356,7 +434,7 @@ const RollingControlSample = () => {
 
       <Form
         initialValues={{ ...formData, timingDayJs }}
-        onFinish={handleFormSubmit}
+        onFinish={handleFormSubmitUtil}
         form={form}
         layout="vertical"
       >
@@ -382,7 +460,7 @@ const RollingControlSample = () => {
           >
             <TimePicker
               onChange={handleTimingChange}
-              format="HH:mm:ss"
+              format="HH:mm"
               placeholder="Select Time"
               className="w-full"
             />
@@ -516,6 +594,24 @@ const RollingControlSample = () => {
           Save
         </Btn>
       </Form>
+
+      <Modal
+        title="Warning"
+        open={isOpen}
+        onOk={() => {
+          setIsOpen(false);
+          handleFormSubmit()
+        }}
+        onCancel={() => setIsOpen(false)}
+        > 
+
+      {warningFields?.length > 0 && (
+        <p>
+          {warningFields.join(', ')} dont have values in the range. Do you wish to continue?
+        </p>
+      )}
+        
+        </Modal>
     </FormContainer>
   );
 };

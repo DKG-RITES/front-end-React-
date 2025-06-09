@@ -107,6 +107,88 @@ const HtSequence = () => {
   const [microStatus, setMicroStatus] = useState(null);
   const [decarbStatus, setDecarbStatus] = useState(null);
 
+
+  // function getNextRailIdFromData(responseData) {
+  //   console.log("CAKKED ")
+  //   if (!Array.isArray(responseData) || responseData.length === 0) {
+
+  //     console.log("NOT ARRAY")
+  //     return null;
+  //   }
+  
+  //   // 1. Find the record with the latest createdAt
+  //   const newest = responseData.reduce((a, b) => {
+  //     return new Date(a.createdAt) > new Date(b.createdAt) ? a : b;
+  //   });
+  
+  //   // 2. Extract prefix (letters) and numeric part
+  //   const match = newest.railId.match(/^([A-Za-z]+)(\d+)$/);
+  //   // if (!match) {
+  //   //   console.log("NOT MATCH")
+  //   //   throw new Error(`Invalid railId format: ${newest.railId}`);
+  //   // }
+  //   const [, prefix, numStr] = match;
+  
+  //   // 3. Increment and zero-pad to the same width
+  //   const nextNum = String(parseInt(numStr, 10) + 1).padStart(numStr.length, "0");
+  //   console.log("NEXT NUM: ", nextNum)
+  
+  //   return `${prefix}${nextNum}`;
+  // }
+
+
+  function incrementStringNumber(str) {
+    const chars = str.split("");
+    let carry = 1;
+  
+    for (let i = chars.length - 1; i >= 0; i--) {
+      const code = chars[i].charCodeAt(0);
+  
+      // '0'–'9' are 48–57 in ASCII
+      if (code >= 48 && code <= 57) {
+        const digit = code - 48;
+        const sum = digit + carry;
+        chars[i] = String(sum % 10);
+        carry = sum > 9 ? 1 : 0;
+      } else if (carry) {
+        // once we hit a non-digit and still have a carry, we need to prepend '1'
+        chars.splice(i + 1, 0, "1");
+        carry = 0;
+        break;
+      } else {
+        break;
+      }
+    }
+  
+    // if we carried past the first char and it's still 1, prepend it
+    if (carry) {
+      chars.unshift("1");
+    }
+  
+    return chars.join("");
+  }
+  
+  /**
+   * Given the API responseData array, finds the most-recent item
+   * by createdAt and returns its railId incremented by one.
+   *
+   * @param {Array<{railId: string, createdAt: string}>} responseData
+   * @returns {string|null}
+   */
+  function getNextRailIdFromData(responseData) {
+    if (!Array.isArray(responseData) || responseData.length === 0) {
+      return null;
+    }
+  
+    // pick the record with the latest timestamp
+    const newest = responseData.reduce((a, b) => 
+      new Date(a.createdAt) > new Date(b.createdAt) ? a : b
+    );
+  
+    return incrementStringNumber(newest.railId);
+  }
+  
+
   const [tableData, setTableData] = useState([]);
 
   const populateData = useCallback(async () => {
@@ -117,6 +199,16 @@ const HtSequence = () => {
         token
       );
       setTableData(data.responseData || []);
+
+      const nextRailId = getNextRailIdFromData(data.responseData || [])
+
+      setFormData({
+        railId: nextRailId,
+        bloomQuality: null,
+        htStatus: null,
+        htStatusDesc: null,
+        testSampleMarked: null,
+      });
 
       const batch = data.responseData || [];
       const tensileBatchCount = batch.length % 128;
@@ -235,7 +327,6 @@ const HtSequence = () => {
 
   const handleModalClose = () => {
 
-    console.log("MODAL CLOSE CALLED")
     setIsModalOpen(false);
     setFormData({railId: null,
       bloomQuality: null,
@@ -251,7 +342,6 @@ const HtSequence = () => {
   }, [populateData]);
 
   useEffect(() => {
-    console.log("GETTING CALLED")
     form.setFieldsValue(formData);
   }, [form, formData]);
 

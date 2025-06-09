@@ -42,6 +42,8 @@ const Home = () => {
 
     const handleFormSubmit = async () => {
         try{
+            localStorage.removeItem("date")
+            localStorage.removeItem("shift")
             await dispatch(endViDuty(formData)).unwrap();
             navigate('/');
         }

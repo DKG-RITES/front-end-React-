@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Form, message, Divider, Button, Checkbox, Modal } from "antd";
+import { Form, message, Divider, Checkbox, Modal } from "antd";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import FormContainer from "../../../../../components/DKG_FormContainer";
@@ -34,13 +34,6 @@ const casterNoDropDownSms3 = [
   },
 ];
 
-const heatStageObj = {
-  Converter: 1,
-  Degassing: 2,
-  Casting: 3,
-  "Chemical Analysis": 4,
-  "Bloom Cutting": 5,
-};
 
 // Witnessed / Verified dropdown options ✅
 const wvDropDown = [
@@ -70,7 +63,7 @@ const HeatDtl = () => {
   const { state } = useLocation();
   const heatNo = state?.heatNo || null;
 
-  console.log("HEat numebr:", heatNo)
+  const [divertedHeat, setDivertedHeat] = useState(false);
 
   const [degVacRule, setDegVacRule] = useState([]);
 
@@ -108,6 +101,7 @@ const HeatDtl = () => {
 
   // Determine if a stage should be disabled
   const isFieldDisabled = (stage) => {
+    if(divertedHeat) return false;
     if (currentStage > stage) return true;
     const { heatProcurementStageCode, heatSurrenderStageCode } = editableStage;
 
@@ -180,7 +174,7 @@ const HeatDtl = () => {
     }
     else {
       setDegDurRule([]);
-      if (parseFloat(value) < 10) {
+      if (parseFloat(value) < 10 && !divertedHeat) {
         message.warning("Value must be greater than or equal to 10.0", 5);
 
         setFormData((prev) => ({
@@ -218,7 +212,7 @@ const HeatDtl = () => {
     }
     else {
       setTurDowTempRule([]);
-      if (parseFloat(value) < 1630) {
+      if (parseFloat(value) < 1630 && !divertedHeat) {
         message.warning("Value must be greater than or equal to 1630", 5);
 
         setFormData((prev) => ({
@@ -257,7 +251,7 @@ const HeatDtl = () => {
     } else {
       setHydrisRuleObj([]);
 
-      if (parseFloat(value) > 1.6) {
+      if (parseFloat(value) > 1.6 && !divertedHeat) {
         message.warning("Value must be smaller or equal to 1.6", 5);
         setFormData((prev) => ({
           ...prev,
@@ -297,7 +291,7 @@ const HeatDtl = () => {
     else {
       setNitrogenRule([]);
 
-      if (parseFloat(value) > 0.009) {
+      if (parseFloat(value) > 0.009 && !divertedHeat) {
         message.warning("Value must be less than 0.009", 5);
 
         setFormData((prev) => ({
@@ -348,7 +342,7 @@ const HeatDtl = () => {
     }
     else {
       setOxygenRule([]);
-      if (parseFloat(value) > 20) {
+      if (parseFloat(value) > 20 && !divertedHeat) {
         message.warning("Value must be less than or equal to 20.0", 5);
 
         setFormData((prev) => ({
@@ -387,6 +381,8 @@ const HeatDtl = () => {
         sequenceNo2: data?.responseData?.sequenceNo?.split("/")?.[1] || null,
       } || {});
 
+      setDivertedHeat(data?.responseData?.isDiverted);
+
       // Fetch Procurement & Surrender Stages
       await populateEditableStage();
 
@@ -417,7 +413,6 @@ const HeatDtl = () => {
     }
   }, [token, formData.heatNo, dutyId, stageValidationRules, populateEditableStage]);
 
-
   const [castTempRule, setCastTempRule] = useState([])
 
   const handleCastTempChange = (fieldName, value) => {
@@ -434,7 +429,7 @@ const HeatDtl = () => {
     }
     else {
       setCastTempRule([]);
-      if (parseFloat(value) < 1480) {
+      if (parseFloat(value) < 1480 && !divertedHeat) {
         message.warning("Value must be greater than or equal to 1480", 5);
 
         setFormData((prev) => ({
@@ -470,7 +465,7 @@ const HeatDtl = () => {
     }
     else {
       setCastTemp2Rule([]);
-      if (parseFloat(value) < 1480) {
+      if (parseFloat(value) < 1480 && !divertedHeat) {
         message.warning("Value must be greater than or equal to 1480", 5);
 
         setFormData((prev) => ({
@@ -489,18 +484,6 @@ const HeatDtl = () => {
     }
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
   }
-
-  // //   const handleChemChange = (fieldName, value) => {
-  // //     console.log("Called: ", value);
-  // //     if (value === "Send To Lab") {
-  // //       console.log("INSIDEEEE");
-  // //       setShowLabCheckbox(true);
-  // //     } else {
-  // //       setShowLabCheckbox(false);
-  // //     }
-
-  // //     setFormData((prev) => ({ ...prev, [fieldName]: value }));
-  // //   };
 
   const onFinish = () => {
     if (isOutOfRange) {
@@ -530,9 +513,7 @@ const HeatDtl = () => {
   const [showLabCheckbox, setShowLabCheckbox] = useState(false);
 
   const handleChemChange = (fieldName, value) => {
-    console.log("Called: ", value);
     if (value === "Send To Lab") {
-      console.log("INSIDEEEE");
       setShowLabCheckbox(true);
     } else {
       setShowLabCheckbox(false);
@@ -748,7 +729,7 @@ const HeatDtl = () => {
     else {
       setDegVacRule([]);
 
-      if (parseFloat(value) > 3) {
+      if (parseFloat(value) > 3 && !divertedHeat) {
         message.warning("Value must be smaller than 3.0 ", 5)
         setIsOutOfRange(true);
       }
@@ -793,7 +774,7 @@ const HeatDtl = () => {
 
 <h2 className="font-bold mb-3 underline">Stage 1: Converter</h2>
 
-<div className="grid grid-cols-2 gap-8">
+<div className="grid md:grid-cols-2 gap-8">
   <FormInputItem
     label="Turn Down Temp. (&deg;C)"
     name="turnDownTemp"
@@ -827,7 +808,7 @@ const HeatDtl = () => {
               <Divider />
 
               <h3 className="font-bold mb-3 underline">Stage 2: Degassing</h3>
-              <div className="grid grid-cols-2 gap-x-4">
+              <div className="grid md:grid-cols-2 gap-x-4">
                 <FormInputItem
                   label="Degassing Vacuum(m bar)"
                   name="degassingVacuum"
@@ -883,7 +864,7 @@ const HeatDtl = () => {
               <Divider />
 
         <h3 className="font-bold mb-3 underline">Stage 3: Casting</h3>
-        <div className="grid grid-cols-2 gap-x-4">
+        <div className="grid md:grid-cols-2 gap-x-4">
           <FormInputItem
             label="1st Casting Temp (&deg;C)"
             name="castingTemp"
@@ -977,6 +958,7 @@ const HeatDtl = () => {
         >
           Is probe dipped below 300mm from slag - metal surface
         </Checkbox>
+        <Divider />
         <Checkbox
           checked={formData.isHydrogenBw80And100}
           onChange={(e) =>
@@ -995,7 +977,7 @@ const HeatDtl = () => {
             <>
               <Divider />
               <h3 className="font-bold mb-3 underline">Stage 4: Chemical Analysis</h3>
-              <div className="grid grid-cols-2 gap-x-4">
+              <div className="grid md:grid-cols-2 gap-x-4">
                 <FormInputItem
                   label="Nitrogen (ppm)"
                   name="nitrogen"
@@ -1166,6 +1148,12 @@ const HeatDtl = () => {
           name="heatRemark"
           placeholder="Heat Remark"
           disabled={heatRemarkDisabled}
+          onChange={(name, value) => handleChange(name, value, setFormData)}
+        />
+        <FormInputItem
+          name="otherRemark"
+          placeholder="Other Remark"
+          // disabled={heatRemarkDisabled}
           onChange={(name, value) => handleChange(name, value, setFormData)}
         />
         <Btn htmlType="submit" className="flex mx-auto">
