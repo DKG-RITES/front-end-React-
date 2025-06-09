@@ -52,7 +52,7 @@ const SmsDutyEnd = () => {
 
   return (
     <FormContainer className='flex flex-col gap-4 md:gap-8'>
-    <SubHeader title='SMS - Duty End' link='/' />
+    <SubHeader title='SMS - Home' link='/' />
     <GeneralInfo data={smsGeneralInfo}>
         <div className='absolute top-0 right-0'>
           <IconBtn icon={EditOutlined} onClick={() => message.success("Clicked")} />

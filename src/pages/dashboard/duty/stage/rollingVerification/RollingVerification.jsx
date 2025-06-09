@@ -410,7 +410,7 @@ const RollingVerification = () => {
           <h4 className="font-normal mb-2">Bloom Identity</h4>
 
           {formData?.bloomYardDtls?.map((record, index) => (
-            <div className="grid grid-cols-2 gap-x-4 border p-4 pb-0 relative">
+            <div className="grid grid-cols-2 gap-x-4 border p-4 pb-0 relative" key={index}>
               {
                 mill === "RSM" && (
                     <>
@@ -531,14 +531,18 @@ const RollingVerification = () => {
           <h4 className="font-normal col-span-3 mb-2">Surface Inspection of atleast two faces</h4>
 
           {formData?.chargingTableDtls?.map((record, index) => (
-            <div className="grid grid-cols-2 gap-x-4 border p-4 pb-0 relative">
+            <div className="grid grid-cols-2 gap-x-4 border p-4 pb-0 relative" key={index}>
               <FormInputItem
-                placeholder="Heat number"
                 name={["chargingTableDtls", index, "heatNo"]}
+                placeholder="Heat number"
+                required
+                rules={[
+                  { required: true, message: "Heat number is required" },
+                  // Add more rules if needed
+                ]}
                 onChange={(fName, value) =>
                   handleChargingTableDtlChange(fName, value, index)
                 }
-                required
               />
               <FormInputItem
                 placeholder="Length"

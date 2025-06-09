@@ -47,17 +47,29 @@ const QctShiftDetailsForm = () => {
 
   return (
     <FormContainer>
-        <SubHeader title="QCT - Start Duty" link="/" />
-        <FormBody initialValues={formData} onFinish={handleFormSubmit}>
-            <div className="grid grid-cols-2 gap-x-2">
-              <CustomDatePicker label="Date" name="startDate" defaultValue={formData.startDate} onChange={handleChange} required />
-                <FormDropdownItem label="Shift" name="shift" formField="shift" dropdownArray={shiftList} visibleField="value" valueField="key" onChange={handleChange} required />
-            </div>
-
-            <Btn htmlType="submit" className="flex justify-center mx-auto">
-              Start Duty
-            </Btn>
-        </FormBody>
+      <SubHeader title="QCT - Shift Details" link="/" />
+      <FormBody initialValues={formData} onFinish={handleFormSubmit}>
+        <div className="grid grid-cols-2 gap-x-2">
+          <CustomDatePicker
+            label="Date"
+            name="startDate"
+            defaultValue={formData.startDate}
+            onChange={handleChange}
+            required
+          />
+          <FormDropdownItem
+            label="Shift"
+            name="shift"
+            formField="shift"
+            dropdownArray={shiftList}
+            visibleField="value"
+            valueField="key"
+            onChange={handleChange}
+            required
+          />
+        </div>
+        {/* Removed Start Duty button as not required for QCT */}
+      </FormBody>
     </FormContainer>
   )
 }

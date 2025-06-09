@@ -45,7 +45,7 @@ const SearchFilter = ({showDate, showShift, showRailGrade, showRailSection, show
       <Form form={form} layout="vertical" initialValues={formData} className='grid grid-cols-2 gap-x-2 p-4' onFinish={() => onFinish(formData)}> 
         {
             showDate && (
-                <CustomDatePicker label='Start Date' defaultValue={formData.date} name='date' onChange={handleChange} required/>
+                <CustomDatePicker label='Date' defaultValue={formData.date} name='date' onChange={handleChange} required/>
             )
         }
         {

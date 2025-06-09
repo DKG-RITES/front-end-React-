@@ -435,6 +435,7 @@ const updateData = async () => {
 
         {formData.weldList?.map((item, index) => (
           <>
+          <h3 className="text-lg font-semibold mb-2">Joint No.{index + 1}</h3>
             <div
               key={index}
               className="grid grid-cols-2 gap-x-2 md:gap-x-8 border p-4"

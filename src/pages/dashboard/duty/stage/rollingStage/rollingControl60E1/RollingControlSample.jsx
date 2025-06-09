@@ -400,7 +400,6 @@ const RollingControlSample = () => {
   );
 
   const handleTimingChange = (time, timeString) => {
-
     if (time) {
       // Directly use timeString because it's already in the correct format
       setFormData((prev) => ({ ...prev, timing: timeString }));

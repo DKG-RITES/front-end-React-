@@ -209,12 +209,11 @@ const CalibrationList = () => {
           <Btn onClick={handleClickSec} className='mt-2 sm:mt-0 md:mt-0'>Add New Calibration</Btn>
         </div>
       </div>
+        <div className="mb-8"></div> {/* Add this for extra space after the button */}
+              {/* </FormBody> */}
 
-      <Divider className='mt-0 mb-2' />
 
-      <div className='flex justify-center'>
-        <Btn onClick={handleClickTer}>End Duty</Btn>
-      </div>
+      
 
       <Modal title='Modify Calibration List' open={isModalOpen} onCancel={()=>setIsModalOpen(false)} footer={null}>
           <FormInputItem placeholder='Enter Heat Number' />

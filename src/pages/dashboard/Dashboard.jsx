@@ -63,8 +63,10 @@ const Dashboard = () => {
           onClick={() => setActiveTab(item.id)}
           className={`cursor-pointer ${activeTab === item.id ? 'border-b-2 border-pink' : ''}`}
         >
-          <span className='dashboard-tab-icon'>{item.icon}</span> <br />
-          <div className='text-center w-full'>{item.title}</div>
+          <div className="flex flex-col items-center gap-1">
+            <span className='dashboard-tab-icon'>{item.icon}</span>
+            <span className='text-center w-full'>{item.title}</span>
+          </div>
           </div>
       )
     })

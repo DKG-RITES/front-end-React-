@@ -148,6 +148,9 @@ const NewCalibrationForm = () => {
               handleChange(fieldName, value, setFormData)
             }
             required
+            rules={[
+              { required: true, message: "Serial Number is required" }
+            ]}
           />
           {
             (formData?.calibrationResult === 'OK') && 
@@ -161,8 +164,26 @@ const NewCalibrationForm = () => {
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-x-4'>
-          <CustomDatePicker label="Calibration Date" name="calibrationDate" defaultValue={formData?.calibrationDate} onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
-          <FormDropdownItem label ='Calibration Result' name='calibrationResult' formField="calibrationResult" dropdownArray={calResultList} valueField='key' visibleField='value' onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)} required />
+          <CustomDatePicker
+            label={<span><span style={{ color: "red" }}>*</span> Calibration Date</span>}
+            name="calibrationDate"
+            defaultValue={formData?.calibrationDate}
+            onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)}
+            required
+            rules={[
+              { required: true, message: "Calibration Date is required" }
+            ]}
+          />
+          <FormDropdownItem
+            label="Calibration Result"
+            name="calibrationResult"
+            formField="calibrationResult"
+            dropdownArray={calResultList}
+            valueField="key"
+            visibleField="value"
+            onChange={(fieldName, value) => handleChange(fieldName, value, setFormData)}
+            required
+          />
         </div>
 
         <div className='grid grid-cols-1'>

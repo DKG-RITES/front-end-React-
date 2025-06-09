@@ -77,6 +77,9 @@ const Duty = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {renderDutyItemTabs()}
       </div>
+      {/* Footer for spacing and info */}
+      <footer className="mt-8 py-3 text-center text-xs text-offWhite bg-darkBlue rounded shadow">
+      </footer>
     </section>
   )
 }

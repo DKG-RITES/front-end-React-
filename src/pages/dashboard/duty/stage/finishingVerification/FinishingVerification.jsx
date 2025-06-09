@@ -218,6 +218,31 @@ const FinishingVerification = () => {
     } catch (error) {}
   };
 
+  // Section save handlers
+  const saveHotStamping = async () => {
+    try {
+      await apiCall("POST", "/rolling/finishingVerification/save", token, {
+        dutyId: rollingGeneralInfo.dutyId,
+        hotStampingList: formData.hotStampingList || [],
+      });
+      message.success("Hot Stamping data saved.");
+    } catch (error) {
+      message.error("Failed to save Hot Stamping data.");
+    }
+  };
+
+  const savePreCambering = async () => {
+    try {
+      await apiCall("POST", "/rolling/finishingVerification/save", token, {
+        dutyId: rollingGeneralInfo.dutyId,
+        preCamberingList: formData.preCamberingList || [],
+      });
+      message.success("Pre-Cambering data saved.");
+    } catch (error) {
+      message.error("Failed to save Pre-Cambering data.");
+    }
+  };
+
   useEffect(() => {
     form.setFieldsValue(formData);
   }, [form, formData]);
@@ -245,7 +270,7 @@ const FinishingVerification = () => {
           </h3>
           <h4 className="font-semibold !text-md mb-2">(Visual Branding)</h4>
           {formData.hotStampingList?.map((record, index) => (
-            <div className="relative grid grid-cols-2 gap-x-4 border p-4 pb-0">
+            <div className="relative grid grid-cols-2 gap-x-4 border p-4 pb-0" key={index}>
               <FormInputItem
                 name={["hotStampingList", index, "heatNo"]}
                 placeholder="Heat Number"
@@ -260,7 +285,6 @@ const FinishingVerification = () => {
                   handleHotStampingDtlChange(name, value, index)
                 }
               />
-
               <IconBtn
                 icon={DeleteOutlined}
                 className="shadow-none absolute right-0"
@@ -275,6 +299,11 @@ const FinishingVerification = () => {
             className="absolute right-0 bottom--2"
             onClick={addHotStamping}
           />
+          {formData.hotStampingList && formData.hotStampingList.length > 0 && (
+            <Btn className="mt-2" onClick={saveHotStamping} type="button">
+              Save Hot Stampings
+            </Btn>
+          )}
         </div>
 
         <div className="relative">
@@ -283,7 +312,7 @@ const FinishingVerification = () => {
           </h3>
           <h4 className="font-semibold !text-md mb-2">(Branding)</h4>
           {formData.preCamberingList?.map((record, index) => (
-            <div className="relative grid grid-cols-2 gap-x-4 border p-4 pb-0">
+            <div className="relative grid grid-cols-2 gap-x-4 border p-4 pb-0" key={index}>
               <FormInputItem
                 name={["preCamberingList", index, "heatNo"]}
                 placeholder="Heat Number"
@@ -299,7 +328,7 @@ const FinishingVerification = () => {
                 dropdownArray={satUnsatDropdown}
                 visibleField="value"
                 valueField="key"
-                // required
+                required
                 onChange={(fName, value) =>
                   handlePreCamberingDtlChange(fName, value, index)
                 }
@@ -319,7 +348,14 @@ const FinishingVerification = () => {
             className="absolute right-0 bottom--2"
             onClick={addPreCambering}
           />
+          {formData.preCamberingList && formData.preCamberingList.length > 0 && (
+            <Btn className="mt-2" onClick={savePreCambering} type="button">
+              Save Pre-Camberings
+            </Btn>
+          )}
         </div>
+
+        {/* DO NOT REMOVE: Straightening Machine Table */}
         <Divider className="mb-3 mt-10" />
         {mill === "URM" && (
           <>
@@ -386,7 +422,7 @@ const FinishingVerification = () => {
                 dropdownArray={satUnsatDropdown}
                 visibleField="value"
                 valueField="key"
-                // required
+                required
                 onChange={handleChange}
               />
             </div>
@@ -534,7 +570,7 @@ const FinishingVerification = () => {
         <FormInputItem
           label="Straightness Remarks(Straightness of Rails)"
           name="straightnessRemarks"
-          // required
+          required
           onChange={handleChange}
         />
         <FormInputItem

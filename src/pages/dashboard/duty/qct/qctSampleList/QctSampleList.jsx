@@ -257,20 +257,10 @@ const QctSampleList = () => {
         <div className='flex justify-center mt-4'>
           <Btn onClick={handleClick}>Declare New Sample for Testing</Btn>
         </div>
+        <div className="mb-8"></div> {/* Add this for extra space after the button */}
       {/* </FormBody> */}
 
-      <section>
-        <FormBody
-          initialValues={formData}
-          onFinish={handleFormSubmit}
-        >
-          <FormInputItem placeholder='Enter Remarks' onChange={(field, value) => handleChange(field, value, setFormData)} name='shiftRemarks' required/>
-            <div className="text-center">
-              <Btn htmlType='submit'>End Duty</Btn>
-            </div>
-        </FormBody>
-      </section>
-
+      
     </FormContainer>
   )
 }
