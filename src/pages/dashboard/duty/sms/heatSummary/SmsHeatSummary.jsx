@@ -484,6 +484,7 @@ import FormContainer from "../../../../../components/DKG_FormContainer";
 import { apiCall, checkAndConvertToFLoat, handleChange } from "../../../../../utils/CommonFunctions";
 import { useSelector } from "react-redux";
 import FormDropdownItem from "../../../../../components/DKG_FormDropdownItem";
+import { Button } from "antd";
 
 const wvDropDown = [
   { key: "Witnessed", value: "Witnessed" },
@@ -504,7 +505,9 @@ const SmsHeatSummary = () => {
   const { token } = useSelector((state) => state.auth);
 
   const [form] = Form.useForm();
-  const [modalForm] = Form.useForm(); // Add a separate form instance for the modal
+  const [modalForm] = Form.useForm();
+  const [showCalibrationDetails, setShowCalibrationDetails] = useState(false);
+  const [showCheckboxes, setShowCheckboxes] = useState(false);
 
   const navigate = useNavigate();
 
@@ -548,13 +551,12 @@ const SmsHeatSummary = () => {
   }, [smsGeneralInfo.dutyId, token]);
 
   const deleteHeat = async (heatNo) => {
-    try{
-      await apiCall("POST", "/sms/deleteHeat", token, {heatNo, sms: smsGeneralInfo.sms});
-      message.success(`Heat ${heatNo} deleted successfully.`)
+    try {
+      await apiCall("POST", "/sms/deleteHeat", token, { heatNo, sms: smsGeneralInfo.sms });
+      message.success(`Heat ${heatNo} deleted successfully.`);
       populateTableData();
-    }
-    catch(error){}
-  }
+    } catch (error) {}
+  };
 
   const columns = [
     {
@@ -564,103 +566,48 @@ const SmsHeatSummary = () => {
       render: (_, __, index) => index + 1,
     },
     { title: "Heat No.", dataIndex: "heatNo", key: "heatNo", fixed: "left" },
-    // { title: "Sequence No.", dataIndex: "sequenceNo", key: "sequenceNo" ,
-    //   render: (text, record, index) => {
-    //     const prevRecord = index > 0 ? formData.heatDtlList[index - 1] : null;
-
-    //     let backgroundColor = "transparent";
-  
-    //     // Safely check if both sequence numbers exist and are strings
-    //     const currentSeq = typeof text === "string" ? text : null;
-    //     const prevSeq = prevRecord && typeof prevRecord.sequenceNo === "string" ? prevRecord.sequenceNo : null;
-  
-    //     if (!currentSeq || !prevSeq) {
-    //       return <span>{text || "N/A"}</span>; // If any sequenceNo is missing, display "N/A"
-    //     }
-  
-    //     // Safely extract parts
-    //     const currentParts = currentSeq.split("/");
-    //     const prevParts = prevSeq.split("/");
-  
-    //     // Ensure both have two valid parts before comparison
-    //     if (currentParts.length !== 2 || prevParts.length !== 2) {
-    //       return <span>{text || "N/A"}</span>;
-    //     }
-  
-    //     // Convert extracted parts to numbers
-    //     const [firstPart, secondPart] = currentParts.map(Number);
-    //     const [prevFirstPart, prevSecondPart] = prevParts.map(Number);
-  
-    //     // Validate extracted values
-    //     const validFirstPart = !isNaN(firstPart) && !isNaN(prevFirstPart);
-    //     const validSecondPart = !isNaN(secondPart) && !isNaN(prevSecondPart);
-  
-    //     if (validFirstPart && firstPart !== prevFirstPart) {
-    //       backgroundColor = "#0079ffcf"; // First part changed -> override everything with blue
-    //     } else if (validSecondPart && Math.abs(secondPart - prevSecondPart) > 1) {
-    //       backgroundColor = "yellow"; // Second part difference > 1
-    //     }
-  
-    //     return (
-    //       <span style={{ backgroundColor, color: "black", padding: "1rem" }}>
-    //         {text || ""}
-    //       </span>
-    //     );
-    //   },
-    // },
-
     {
       title: "Sequence No.",
       dataIndex: "sequenceNo",
       key: "sequenceNo",
       render: (text, record, index) => {
-        // Compute global index considering pagination
         const globalIndex = (currentTablePage - 1) * tablePageSize + index;
-    
-        // Get previous record using global index
         const prevRecord = globalIndex > 0 ? formData.heatDtlList[globalIndex - 1] : null;
-    
+
         let backgroundColor = "transparent";
-    
-        // Safely check if both sequence numbers exist and are strings
         const currentSeq = typeof text === "string" ? text : null;
         const prevSeq = prevRecord && typeof prevRecord.sequenceNo === "string" ? prevRecord.sequenceNo : null;
-    
+
         if (!currentSeq || !prevSeq) {
-          return <span>{text || "N/A"}</span>; // If any sequenceNo is missing, display "N/A"
+          return <span>{text || "N/A"}</span>;
         }
-    
-        // Safely extract parts
+
         const currentParts = currentSeq.split("/");
         const prevParts = prevSeq.split("/");
-    
-        // Ensure both have two valid parts before comparison
+
         if (currentParts.length !== 2 || prevParts.length !== 2) {
           return <span>{text || "N/A"}</span>;
         }
-    
-        // Convert extracted parts to numbers
+
         const [firstPart, secondPart] = currentParts.map(Number);
         const [prevFirstPart, prevSecondPart] = prevParts.map(Number);
-    
-        // Validate extracted values
+
         const validFirstPart = !isNaN(firstPart) && !isNaN(prevFirstPart);
         const validSecondPart = !isNaN(secondPart) && !isNaN(prevSecondPart);
-    
+
         if (validFirstPart && firstPart !== prevFirstPart) {
-          backgroundColor = "#0079ffcf"; // First part changed -> override everything with blue
+          backgroundColor = "#0079ffcf";
         } else if (validSecondPart && Math.abs(secondPart - prevSecondPart) > 1) {
-          backgroundColor = "yellow"; // Second part difference > 1
+          backgroundColor = "yellow";
         }
-    
+
         return (
           <span style={{ backgroundColor, color: "black", padding: "1rem" }}>
             {text || ""}
           </span>
         );
       },
-    },    
-    
+    },
     { title: "H2", dataIndex: "hydris", key: "h2" },
     { title: "Stage", dataIndex: "heatStage", key: "stage" },
     { title: "Heat Remark", dataIndex: "heatRemark", key: "heatRemark" },
@@ -669,58 +616,43 @@ const SmsHeatSummary = () => {
       fixed: "right",
       render: (_, record) => (
         <div className="flex gap-2">
-
-        <IconBtn
-          icon={EditOutlined}
-          onClick={() => navigate("/sms/heatDtl", {state: {heatNo: record.heatNo}})}
+          <IconBtn
+            icon={EditOutlined}
+            onClick={() => navigate("/sms/heatDtl", { state: { heatNo: record.heatNo } })}
           />
-
-<Popconfirm
-    // title="Delete the task"
-    description="Are you sure to delete this heat?"
-    onConfirm={() => deleteHeat(record.heatNo)}
-    // onCancel={cancel}
-    okText="Yes"
-    cancelText="No"
-  >
-     <IconBtn danger
-          icon={DeleteOutlined}
-          // onClick={() => deleteHeat(record.heatNo)}
-          />
-  </Popconfirm>
-       
-          </div>
+          <Popconfirm
+            description="Are you sure to delete this heat?"
+            onConfirm={() => deleteHeat(record.heatNo)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <IconBtn danger icon={DeleteOutlined} />
+          </Popconfirm>
+        </div>
       ),
     },
   ];
 
   const addNewHeat = async () => {
-    // const checkFloatObj = checkAndConvertToFLoat(newHeat.turnDownTemp) || null;
-    // if (checkFloatObj.isFloat) {
-
-    //   console.log("STUCK HERE", checkFloatObj)
-    //   return;
-    // }
     const payload = {
-      heatNo: String(newHeat.heatNo).padStart(6, '0'),
+      heatNo: String(newHeat.heatNo).padStart(6, "0"),
       turnDownTemp: newHeat.turnDownTemp,
       turnDownTempWv: newHeat?.turnDownTempWv,
-      dutyId: smsGeneralInfo.dutyId
+      dutyId: smsGeneralInfo.dutyId,
     };
-  
+
     try {
       await apiCall("POST", "/sms/addNewHeat", token, payload);
       message.success("New heat added successfully.");
       setNewHeat({
         heatNo: "",
         turnDownTemp: "",
-        turnDownTempWv: ""
+        turnDownTempWv: "",
       });
       modalForm.resetFields();
       setIsModalOpen(false);
       populateTableData();
     } catch (error) {
-      console.error("Error adding new heat:", error);
       // message.error("Failed to add new heat.");
     }
   };
@@ -735,7 +667,7 @@ const SmsHeatSummary = () => {
         setHeatRule([
           {
             validator: (_, val) =>
-            Promise.reject(new Error("Heat No. must not contain decimal values or string values.")),
+              Promise.reject(new Error("Heat No. must not contain decimal values or string values.")),
           },
         ]);
       } else if (isValid && parseInt(value.length) > 6) {
@@ -808,15 +740,25 @@ const SmsHeatSummary = () => {
 
   useEffect(() => {
     form.setFieldsValue(formData);
-  }, [formData, form]);
-
+  }, [formData]);
 
   return (
     <FormContainer className="flex flex-col gap-4 md:gap-8">
       <SubHeader title="SMS - Shift Summary" link="/sms/dutyEnd" />
       <GeneralInfo data={smsGeneralInfo} />
-      <section>
-        <div className="grid grid-cols-1 gap-2 md:gap-4 border p-1 border-[#d9d9d9] shadow-md rounded-sm relative">
+
+      <div className="flex items-center mb-2">
+        <Button
+          type="primary"
+          onClick={() => setShowCalibrationDetails(!showCalibrationDetails)}
+          className="mr-4"
+        >
+          {showCalibrationDetails ? "Hide Calibration Details" : "Show Calibration Details"}
+        </Button>
+      </div>
+
+      {showCalibrationDetails && (
+        <section className="border p-3 rounded bg-lightGray">
           <div>
             <h3 className="font-semibold">Hydris Calibration Details</h3>
             <div className="grid grid-cols-2">
@@ -828,7 +770,7 @@ const SmsHeatSummary = () => {
                 ))}
             </div>
           </div>
-          <div>
+          <div className="mt-3">
             <h3 className="font-semibold">Leco Calibration Details</h3>
             <div className="grid grid-cols-2">
               {formData.lecoClbList &&
@@ -839,8 +781,8 @@ const SmsHeatSummary = () => {
                 ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section>
         <div className="relative">
@@ -849,7 +791,6 @@ const SmsHeatSummary = () => {
             dataSource={formData.heatDtlList}
             scroll={{ x: true }}
             bordered
-            // rootClassName={applyColorLogic}
             pagination={{
               current: currentTablePage,
               pageSize: tablePageSize,
@@ -869,69 +810,80 @@ const SmsHeatSummary = () => {
       </section>
 
       <section>
-        <Form form={form} layout="vertical" initialValues={formData} onFinish={onFinish}>
-          <div className="flex flex-col gap-2 mb-6">
-            <Checkbox
-              checked={formData.emsFunctioning}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, emsFunctioning: e.target.checked }))
-              }
-            >
-              Is Ems Functioning?
-            </Checkbox>
-            <Checkbox
-              checked={formData.slagDetectorFunctioning}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  slagDetectorFunctioning: e.target.checked,
-                }))
-              }
-            >
-              Is Slag Detector cum Slag Arrester Functioning ?
-            </Checkbox>
-            <Checkbox
-              checked={formData.amlcFunctioning}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, amlcFunctioning: e.target.checked }))
-              }
-            >
-              Is AMLC Functioning ?
-            </Checkbox>
-            <Checkbox
-              checked={formData.hydrogenMeasurementAutomatic}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  hydrogenMeasurementAutomatic: e.target.checked,
-                }))
-              }
-            >
-              Is Hydrogen Measurement Automatic ?
-            </Checkbox>
-            <Checkbox
-              checked={formData.ladleToTundishUsed}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  ladleToTundishUsed: e.target.checked,
-                }))
-              }
-            >
-              Is Shroud (Ladle to Tundish) Used ?
-            </Checkbox>
-            <Checkbox
-              checked={formData.tundishToMouldUsed}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  tundishToMouldUsed: e.target.checked,
-                }))
-              }
-            >
-              Is Shroud (Tundish to Mould) Used ?
-            </Checkbox>
-          </div>
+        <div className="flex items-center mb-2">
+          <Button
+            type="primary"
+            onClick={() => setShowCheckboxes(!showCheckboxes)}
+            className="mr-4"
+          >
+            {showCheckboxes ? "Hide Checkboxes" : "Show Checkboxes"}
+          </Button>
+        </div>
+        <Form form={form} layout="vertical" onFinish={onFinish}>
+          {showCheckboxes && (
+            <div className="flex flex-col gap-2 mb-6">
+              <Checkbox
+                checked={formData.emsFunctioning}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, emsFunctioning: e.target.checked }))
+                }
+              >
+                Is Ems Functioning?
+              </Checkbox>
+              <Checkbox
+                checked={formData.slagDetectorFunctioning}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    slagDetectorFunctioning: e.target.checked,
+                  }))
+                }
+              >
+                Is Slag Detector cum Slag Arrester Functioning ?
+              </Checkbox>
+              <Checkbox
+                checked={formData.amlcFunctioning}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, amlcFunctioning: e.target.checked }))
+                }
+              >
+                Is AMLC Functioning ?
+              </Checkbox>
+              <Checkbox
+                checked={formData.hydrogenMeasurementAutomatic}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    hydrogenMeasurementAutomatic: e.target.checked,
+                  }))
+                }
+              >
+                Is Hydrogen Measurement Automatic ?
+              </Checkbox>
+              <Checkbox
+                checked={formData.ladleToTundishUsed}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    ladleToTundishUsed: e.target.checked,
+                  }))
+                }
+              >
+                Is Shroud (Ladle to Tundish) Used ?
+              </Checkbox>
+              <Checkbox
+                checked={formData.tundishToMouldUsed}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    tundishToMouldUsed: e.target.checked,
+                  }))
+                }
+              >
+                Is Shroud (Tundish to Mould) Used ?
+              </Checkbox>
+            </div>
+          )}
 
           <FormInputItem
             label="Make of Casting Powder Used"
@@ -956,28 +908,26 @@ const SmsHeatSummary = () => {
         footer={null}
       >
         <Form
-          form={modalForm} // Attach the modal form instance
+          form={modalForm}
           layout="vertical"
           onFinish={addNewHeat}
-          initialValues={newHeat} // Sync initial values with newHeat state
+          initialValues={newHeat}
         >
           <FormInputItem
             label="Enter Heat Number"
             placeholder="012345"
             name="heatNo"
             rules={heatRule}
-            onChange={handleNewHeatValChange}
+            value={newHeat.heatNo}
+            onChange={(_, value) => handleNewHeatValChange("heatNo", value)}
             required
           />
-        <FormInputItem
-          label="Turn Down Temperature"
-          placeholder="1630"
-          // minLength={6}
-          // maxLength={6}
-          name="turnDownTemp"
-          onChange={handleNewHeatValChange}
-          // rules={tempRule}
-          // required
+          <FormInputItem
+            label="Turn Down Temperature"
+            placeholder="1630"
+            name="turnDownTemp"
+            value={newHeat.turnDownTemp}
+            onChange={(_, value) => handleNewHeatValChange("turnDownTemp", value)}
           />
           <FormDropdownItem
             label="Witnessed / Verified"
@@ -986,10 +936,11 @@ const SmsHeatSummary = () => {
             dropdownArray={wvDropDown}
             visibleField="value"
             valueField="key"
-            onChange={handleNewHeatValChange}
-            />
-        <Btn htmlType="submit">Add</Btn>
-          </Form>
+            value={newHeat.turnDownTempWv}
+            onChange={(_, value) => handleNewHeatValChange("turnDownTempWv", value)}
+          />
+          <Btn htmlType="submit">Add</Btn>
+        </Form>
       </Modal>
     </FormContainer>
   );
