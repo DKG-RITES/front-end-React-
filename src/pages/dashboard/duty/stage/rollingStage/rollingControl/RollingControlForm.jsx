@@ -22,6 +22,11 @@ import dayjs from "dayjs"; // Make sure you have dayjs installed
 const { micrometerNumberList, vernierNumberList, weighingMachineList } = data;
 
 const RollingControlForm = () => {
+
+  const [micrometerNumberList, setMicrometerNumberList] = useState([])
+  const [vernierNumberList, setVernierNumberList] = useState([])
+  const [weighingMachineList, setWeighingMachineList] = useState([])
+
   const [form] = Form.useForm();
   const [currentTablePage, setCurrentTablePage] = useState(1);
   const [tablePageSize, setTablePageSize] = useState(5);
@@ -106,69 +111,28 @@ const RollingControlForm = () => {
   };
 
   const handleChange = async (fieldName, value) => {
-    if (fieldName === "micrometerNo" || fieldName === "vernierNo" || fieldName === "weighingMachine") {
-      try {
-        const { data } = await apiCall(
-          "GET",
-          `/calibration/getCalibrationDtls?serialNumber=${value}`,
-          token
-        );
+    if(fieldName === "micrometerNo" || fieldName === "vernierNo" || fieldName === "weighingMachine"){
+      try{
+        const {data} = await apiCall("GET", `/calibration/getCalibrationDtls?serialNumber=${value}`, token)
         const date = data?.responseData?.calibrationValidUpto;
-
-        if (fieldName === "micrometerNo") {
-          setFormData((prev) => ({
-            ...prev,
-            [fieldName]: value,
-            micrometerValidity: date || null, // Reset to null if no date is found
-          }));
-        } else if (fieldName === "vernierNo") {
-          setFormData((prev) => ({
-            ...prev,
-            [fieldName]: value,
-            vernierValidity: date || null, // Reset to null if no date is found
-          }));
-        } else if (fieldName === "weighingMachine") {
-          setFormData((prev) => ({
-            ...prev,
-            [fieldName]: value,
-            weighingMachineValidity: date || null, // Reset to null if no date is found
-          }));
+        if(fieldName === "micrometerNo"){
+          setFormData(prev => ({...prev, [fieldName] : value, micrometerValidity: date}))
         }
-
-        // Clear any previous error messages
-        message.destroy();
-      } catch (error) {
-        // Handle the case where no details are found
-        if (fieldName === "micrometerNo") {
-          setFormData((prev) => ({
-            ...prev,
-            [fieldName]: value,
-            micrometerValidity: null, // Reset to default value
-          }));
-        } else if (fieldName === "vernierNo") {
-          setFormData((prev) => ({
-            ...prev,
-            [fieldName]: value,
-            vernierValidity: null, // Reset to default value
-          }));
-        } else if (fieldName === "weighingMachine") {
-          setFormData((prev) => ({
-            ...prev,
-            [fieldName]: value,
-            weighingMachineValidity: null, // Reset to default value
-          }));
+        else if(fieldName === "vernierNo"){
+          setFormData(prev => ({...prev, [fieldName] : value, vernierValidity: date}))
         }
-
-        // Ensure the error message is displayed only once
-        message.destroy();
-        message.error("No details found for the provided serial number.");
+        else if(fieldName === "weighingMachine"){
+          setFormData(prev => ({...prev, [fieldName] : value, weighingMachineValidity: date}))
+        }
       }
-    } else {
-      setFormData((prev) => ({
+      catch(error){}
+    }
+    setFormData((prev) => {
+      return {
         ...prev,
         [fieldName]: value,
-      }));
-    }
+      };
+    });
   };
 
   const handleFormSubmit = async () => {
@@ -215,6 +179,20 @@ await apiCall(
         `/rolling/getControlDtls?dutyId=${rollingGeneralInfo.dutyId}`,
         token
       );
+
+      const {data: instList} = await apiCall("GET", "/calibration/getVrnrMmWmcInstList", token)
+      const mmList = instList.responseData.Micrometer?.map(item => ({key: item, value: item})) || []
+      const vrnrList = instList.responseData?.Vernier?.map(item => ({key: item, value: item})) || []
+      const wmcList = instList.responseData?.WeighingMachine?.map(item => ({key: item, value: item})) || []
+      // console.log("LIST: ", lst)
+      console.log("Setting ")
+      console.log("MM LSITTT: ", mmList)
+      setMicrometerNumberList(mmList)
+      setVernierNumberList(vrnrList)
+      setWeighingMachineList(wmcList)
+      console.log("Setting done")
+
+
       const { responseData } = data;
 
       setFormData({
@@ -244,9 +222,8 @@ await apiCall(
   const instrumentOptions = [
     { key: "micrometer", label: "Micrometer" },
     { key: "vernier", label: "Vernier" },
-    { key: "weighingMachine", label: "Weighing Machine" },
-    { key: "noOfGauges", label: "No. of Gauges" },
-    { key: "branding", label: "Branding" }
+    { key: "weighingMachine", label: "Weighing Machine" }
+    // Removed "noOfGauges" and "branding"
   ];
 
   // Helper to check if a date is before today
@@ -304,7 +281,6 @@ await apiCall(
                       visibleField="value"
                       valueField="key"
                       onChange={handleChange}
-                      required
                     />
                     <CustomDatePicker
                       label="Micrometer Validity"
@@ -326,7 +302,6 @@ await apiCall(
                       visibleField="value"
                       valueField="key"
                       onChange={handleChange}
-                      required
                     />
                     <CustomDatePicker
                       label="Vernier Validity"
@@ -349,7 +324,6 @@ await apiCall(
                       valueField="key"
                       visibleField="value"
                       onChange={handleChange}
-                      required
                     />
                     <CustomDatePicker
                       label="Weighing Machine Validity"
@@ -361,22 +335,20 @@ await apiCall(
                     />
                   </>
                 )}
-                {selectedInstruments.includes("noOfGauges") && (
-                  <FormInputItem
-                    label="No. of Gauges"
-                    name="noOfGauges"
-                    onChange={handleChange}
-                    required
-                  />
-                )}
-                {selectedInstruments.includes("branding") && (
-                  <FormInputItem
-                    label="Branding"
-                    name="branding"
-                    onChange={handleChange}
-                    required
-                  />
-                )}
+
+                {/* Always show No. of Gauges and Branding as mandatory */}
+                <FormInputItem
+                  label="No. of Gauges"
+                  name="noOfGauges"
+                  onChange={handleChange}
+                  rules={[{ required: true, message: "No. of Gauges is required" }]}
+                />
+                <FormInputItem
+                  label="Branding"
+                  name="branding"
+                  onChange={handleChange}
+                  rules={[{ required: true, message: "Branding is required" }]}
+                />
               </div>
             </Form>
             <Divider className="mt-0 mb-0" />
