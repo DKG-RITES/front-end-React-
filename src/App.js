@@ -13,7 +13,12 @@ import { getOngoingSriDutyDtls } from './store/slice/sriDutySlice';
 import { getOngoingTestingDutyDtls } from './store/slice/testingDutySlice';
 // import { getOngoingSriDutyDtls } from './store/slice/sriDutySlice';
 
-axios.defaults.baseURL="http://localhost:8080"
+// axios.defaults.baseURL="http://localhost:8080"
+
+axios.defaults.baseURL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:8080"
+    : "http://10.145.222.6:8080"; // Static IP
 
 // console.log("accd")
 
