@@ -224,6 +224,7 @@ const FinishingVerification = () => {
       await apiCall("POST", "/rolling/finishingVerification/save", token, {
         dutyId: rollingGeneralInfo.dutyId,
         hotStampingList: formData.hotStampingList || [],
+        preCamberingList: formData.preCamberingList || [], // <-- always send
       });
       message.success("Hot Stamping data saved.");
     } catch (error) {
@@ -235,6 +236,7 @@ const FinishingVerification = () => {
     try {
       await apiCall("POST", "/rolling/finishingVerification/save", token, {
         dutyId: rollingGeneralInfo.dutyId,
+        hotStampingList: formData.hotStampingList || [], // <-- always send
         preCamberingList: formData.preCamberingList || [],
       });
       message.success("Pre-Cambering data saved.");
