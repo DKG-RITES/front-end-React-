@@ -88,7 +88,7 @@ const NCalibrationForm = () => {
         ...prev.calibrationList,
         {
           ut: false,
-          ect: false,
+          ct: false,
           fmg: false,
           osiris: false,
           calibrationCompletionTimeDayjs: null,
