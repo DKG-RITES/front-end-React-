@@ -135,7 +135,7 @@ const NCalibrationForm = () => {
           <div key={index} className="relative grid gap-x-4 border p-4 pb-0">
             <section className="flex gap-2">
               <Checkbox checked={record.ut} disabled={!record.isNew} onChange={(e) => handleCalDtlChange("ut", e.target.checked, index)}>UT</Checkbox>
-              <Checkbox checked={record.ect} disabled={!record.isNew} onChange={(e) => handleCalDtlChange("ect", e.target.checked, index)}>ECT</Checkbox>
+              <Checkbox checked={record.ct} disabled={!record.isNew} onChange={(e) => handleCalDtlChange("ct", e.target.checked, index)}>ECT</Checkbox>
               <Checkbox checked={record.fmg} disabled={!record.isNew} onChange={(e) => handleCalDtlChange("fmg", e.target.checked, index)}>FMG</Checkbox>
               <Checkbox checked={record.osiris} disabled={!record.isNew} onChange={(e) => handleCalDtlChange("osiris", e.target.checked, index)}>OSIRIS</Checkbox>
             </section>
