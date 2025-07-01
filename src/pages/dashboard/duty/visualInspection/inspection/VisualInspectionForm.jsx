@@ -128,6 +128,13 @@ const rsmAccLengthList = [
   },
 ]
 
+const defectPositionOptions = [
+  { key: "Head", value: "Head" },
+  { key: "Foot", value: "Foot" },
+  { key: "WBS", value: "WBS" },
+  { key: "WNBS", value: "WNBS" },
+];
+
 const {
   visualInspectionGeneralInfo,
   shiftList,
@@ -221,6 +228,7 @@ const VisualInspectionForm = () => {
     ],
     remarks: "",
     image: "",
+    noDefect: false,
   });
   const navigate = useNavigate();
 
@@ -234,6 +242,7 @@ const VisualInspectionForm = () => {
     try {
       await apiCall("POST", "/vi/saveViDtls", token, {
         ...formData,
+                defectDataList: formData.noDefect ? [] : formData.defectDataList,
         heatNo: formData?.heatNo?.padStart(6, "0"),
         dutyId: dutyId,
         updateData: railId ? true : false
@@ -687,6 +696,8 @@ const VisualInspectionForm = () => {
     form.setFieldsValue(formData);
   }, [formData]);
 
+    console.log("FILE: ", file)
+
   const populateData = async (railId) => {
     try{
       const {data} = await apiCall("GET", `/vi/getDtlByRailId?railId=${railId}`, token)
@@ -882,79 +893,107 @@ const VisualInspectionForm = () => {
           />
         </section>
 
+        <Divider className="my-2" /> {/* <-- Add this line for space */}
 
-        {
-          ((formData?.rej13 || formData?.rej12 || formData?.rej11 || formData?.rej10) !== 0) && (
-            <>
-              <Divider />
-              <section className="flex flex-col gap-4">
-                <h3 className="font-semibold">Add Defect Data</h3>
-
-                {formData?.defectDataList?.map((record, index) => {
-                  return (
-                    <div
-                      className="relative flex flex-col gap-2 border p-2 py-4 rounded-md vi-acpt-def"
-                      key={index}
-                    >
-                      <FormDropdownItem
-                        label="Defect Category"
-                        dropdownArray={defectCategoryList}
-                        name={["defectDataList", index, "defectCategory"]}
-                        formField="defectCategory"
-                        visibleField="value"
-                        valueField="key"
-                        placeholder="Defect Cat.."
-                        required
-                        onChange={(fieldName, value) =>
-                          handleDefectCategoryChange(index, fieldName, value)
+          {formData && (formData?.rej13 || formData?.rej12 || formData?.rej11 || formData?.rej10) !== 0 && (
+                  <>
+                    <Divider />
+                    <section className="flex flex-col gap-4">
+                      {/* No Defect checkbox placed just above Add Defect Data */}
+                      <Checkbox
+                        checked={!!formData.noDefect}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            noDefect: e.target.checked,
+                            defectDataList: e.target.checked ? [] : prev.defectDataList,
+                          }))
                         }
-                      />
-
-                      <FormDropdownItem
-                        dropdownArray={defectTypeList[index] || []}
-                        name={["defectDataList", index, "defectType"]}
-                        formField="defectType"
-                        visibleField="value"
-                        valueField="key"
-                        label="Defect Type"
-                        required
-                        onChange={(fieldName, value) =>
-                          handleDefectDataChange(index, fieldName, value)
-                        }
-                      />
-                      <FormInputItem
-                        label="Location"
-                        required
-                        placeholder="location"
-                        name={["defectDataList", index, "location"]}
-                        onChange={(fieldName, value) =>
-                          handleDefectDataChange(index, fieldName, value)
-                        }
-                      />
-
-                      <FormInputItem
-                        placeholder="position"
-                        required
-                        label="Position"
-                        name={["defectDataList", index, "position"]}
-                        onChange={(fieldName, value) =>
-                          handleDefectDataChange(index, fieldName, value)
-                        }
-                      />
-                      <IconBtn
-                        icon={DeleteOutlined}
-                        className="absolute -top-4 right-0"
-                        onClick={() => deleteDefItem(index)}
-                      />
-                    </div>
-                  );
-                })}
-                <IconBtn
+                        className="mb-2 font-semibold"
+                      >
+                        No Defect
+                      </Checkbox>
+        
+                      {!formData.noDefect && (
+                        <>
+                          <h3 className="font-semibold">Add Defect Data</h3>
+                          {formData?.defectDataList?.map((record, index) => (
+                            <div
+                              className="relative flex flex-col gap-2 border p-2 py-4 rounded-md vi-acpt-def"
+                              key={index}
+                            >
+                              <FormDropdownItem
+                                label="Defect Category"
+                                dropdownArray={defectCategoryList}
+                                name={["defectDataList", index, "defectCategory"]}
+                                formField="defectCategory"
+                                visibleField="value"
+                                valueField="key"
+                                placeholder="Defect Cat.."
+                                required
+                                onChange={(fieldName, value) =>
+                                  handleDefectCategoryChange(index, fieldName, value)
+                                }
+                              />
+        
+                              <FormDropdownItem
+                                dropdownArray={defectTypeList[index] || []}
+                                name={["defectDataList", index, "defectType"]}
+                                formField="defectType"
+                                visibleField="value"
+                                valueField="key"
+                                label="Defect Type"
+                                required
+                                onChange={(fieldName, value) =>
+                                  handleDefectDataChange(index, fieldName, value)
+                                }
+                              />
+                              <FormInputItem
+                                label="Location"
+                                required
+                                placeholder="location"
+                                name={["defectDataList", index, "location"]}
+                                onChange={(fieldName, value) =>
+                                  handleDefectDataChange(index, fieldName, value)
+                                }
+                              />
+        
+                              {record?.defectCategory === "Surface" ? (
+                                // Position should be a drop-down (Head, Foot, WBS, WNBS) and it should be activated only for surface defect
+                              <FormDropdownItem
+                                label="Position"
+                                required
+                                dropdownArray={defectPositionOptions}
+                                name={["defectDataList", index, "position"]}
+                                formField="position"
+                                visibleField="value"
+                                valueField="key"
+                                onChange={(fieldName, value) =>
+                                  handleDefectDataChange(index, fieldName, value)
+                                }
+                              />
+                            ) : (
+                              <FormInputItem
+                                label="Position"
+                                name={["defectDataList", index, "position"]}
+                                placeholder="Position disabled"
+                                disabled
+                              />
+                            )}
+        
+                              <IconBtn
+                                icon={DeleteOutlined}
+                                className="absolute -top-4 right-0"
+                                onClick={() => deleteDefItem(index)}
+                              />
+                            </div>
+                          ))}                <IconBtn
                   icon={PlusOutlined}
                   text="Add More Defect Data"
                   className="-mt-4 w-fit"
                   onClick={addDefectData}
                 />
+                   </>)}
               </section>
               </>
 
