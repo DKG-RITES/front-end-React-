@@ -9,7 +9,7 @@ import { Divider, Form, Table, message } from "antd";
 import Btn from "../../../../../../components/DKG_Btn";
 import { useNavigate } from "react-router-dom";
 import IconBtn from "../../../../../../components/DKG_IconBtn";
-import { EditOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { PlusOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import CustomDatePicker from "../../../../../../components/DKG_CustomDatePicker";
@@ -22,6 +22,18 @@ const RollingControlForm = () => {
   const [micrometerNumberList, setMicrometerNumberList] = useState([])
   const [vernierNumberList, setVernierNumberList] = useState([])
   const [weighingMachineList, setWeighingMachineList] = useState([])
+
+  const deleteControlHeat = async (heatNo, sampleNo) => {
+    console.log("Called")
+    try {
+      await apiCall("POST", "/rolling/deleteControlHeat", token, {heatNo, sampleNo});
+      message.success("Rolling Control Heat Deleted Successfully");
+      window.location.reload()
+    } catch (error) {
+      message.error(error)
+      message.error("Failed to delete Rolling Control Heat");
+    }
+  }
 
   const [form] = Form.useForm();
   const [currentTablePage, setCurrentTablePage] = useState(1);
@@ -77,10 +89,16 @@ const RollingControlForm = () => {
       title: "Edit",
       fixed: "right",
       render: (_, record) => (
-        <IconBtn
+        <div className="flex gap-x-2">
+          <IconBtn
           icon={EditOutlined}
           onClick={() => navigate("/stage/rollingControl/rollingControlSample", {state: {heatNo: record.heatNo, sampleNo: record.sampleNo}})}
-        />
+          />
+          <IconBtn
+          icon={DeleteOutlined}
+          onClick={() => deleteControlHeat(record.heatNo, record.sampleNo)}
+          />
+          </div>
       ),
     },
   ];

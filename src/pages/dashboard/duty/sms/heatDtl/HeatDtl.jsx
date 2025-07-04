@@ -79,7 +79,7 @@ const HeatDtl = () => {
     1: ["turnDownTemp", "turnDownTempWv"],
     2: ["degassingVacuum", "degassingVacuumWv", "degassingDuration", "degassingDurationWv"],
     3: ["castingTemp", "castingTemp2", "casterNo", "sequenceNo1", "sequenceNo2", "hydris"],
-    4: ["nitrogen", "oxygen", "sentToLadle"],
+    4: ["nitrogen", "sentToLadle"],
     5: ["weightOfPrimeBlooms", "weightOfCoBlooms", "weightOfRejectedBlooms", "totalCastWt"],
   }), []);
 
@@ -142,7 +142,8 @@ const HeatDtl = () => {
     try {
         const isStageValid = stageValidationRules[currentStage].every((field) => {
           const value = formData[field];
-          return value !== undefined && value !== null && (typeof value === "number" || value.toString().trim() !== "");
+          if(currentStage === 4 && field === "oxygen") return true
+          return  value !== undefined && value !== null && (typeof value === "number" || value.toString().trim() !== "");
         });
 
         if (isStageValid && currentStage <= 5) {
