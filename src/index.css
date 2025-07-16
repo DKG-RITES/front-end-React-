@@ -1,0 +1,252 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  @apply !text-base
+}
+label{
+  @apply !font-medium
+}
+
+/* .ant-menu-submenu-arrow{
+  @apply hidden
+} */
+
+.ant-menu-submenu-title, .ant-menu-item{
+  /* @apply !text-white */
+}
+
+@media (max-width: 768px) { /* Tailwind's md breakpoint */
+  .custom-sider-css {
+    @apply !max-w-full 
+  }
+}
+
+
+.main-content::before{
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('./assets/images/BgImage.png'); /* Replace with your image URL */
+  background-size: cover; /* Adjust as needed */
+  background-position: center; /* Adjust as needed */
+  opacity: 0.2; /* Change this value for desired opacity */
+  z-index: 0; /* Ensure it's behind the content */
+}
+
+.ant-menu-item-selected{
+  @apply !bg-[#327979] !text-white
+}
+
+.dashboard-search .ant-input, .dashboard-search .ant-btn{
+  @apply !bg-darkBlue !text-offWhite !transition-none border-0 outline-none
+}
+.dashboard-search .ant-btn{
+  @apply border-l-2
+}
+.dashboard-search .ant-input:hover, .dashboard-search .ant-input:focus{
+  @apply bg-darkBlue text-offWhite !outline-none !border-none !shadow-none
+}
+.dashboard-search .ant-btn:hover, .dashboard-search .ant-btn:focus{
+  @apply bg-darkBlue text-offWhite !outline-none !border-none !shadow-none
+}
+.dashboard-search .ant-input::placeholder{
+  @apply text-offWhite
+}
+.dashboard-tab-icon svg{
+  @apply !text-4xl 
+}
+.dashboard-tab-icon{
+  @apply flex justify-center items-center
+}
+
+.duty-tab-icon svg, .icon svg {
+  @apply !text-2xl
+}
+
+.icon svg{
+  @apply font-semibold
+}
+
+/* styles.css or any other CSS file */
+.ant-table-thead > tr > th {
+  @apply !bg-darkBlue !text-offWhite border-2 border-darkBlue
+}
+
+.iso-table .ant-table-thead > tr > th {
+  @apply !bg-white !text-black border-0
+}
+
+.ant-table, .ant-table-tbody > tr > td {
+  @apply border-0 border-darkBlue
+}
+
+.horizontal-form .ant-form-item-label, .horizontal-form .ant-form-item-control {
+  @apply !flex-none
+}
+
+.horizontal-form .ant-form-item {
+  @apply mb-3 md:mb-6
+}
+
+.horizontal-form .ant-form-item-label{
+  @apply w-[40%] text-left text-balance !h-max overflow-auto
+}
+
+.horizontal-form .ant-form-item-control{
+  @apply w-[60%]
+}
+
+.responsive-table .table-column {
+  word-wrap: break-word; /* Allows long words to break and wrap onto the next line */
+  white-space: normal;   /* Allows text to wrap */
+}
+
+.responsive-table {
+  width: 100%;
+}
+
+.checkbox-group .ant-checkbox-input, .checkbox-group .ant-checkbox-inner {
+  @apply !w-6 !h-6
+}
+
+.checkbox-group, .checkbox-group label{
+  @apply gap-2
+}
+.checkbox-group label{
+  @apply w-full pb-1
+}
+
+.vi-acpt-def .ant-form-item{
+  @apply mb-0
+}
+
+.ant-divider{
+  border-block-start: 1px solid #9b9b9b;
+}
+
+.date-component .ant-picker{
+  @apply w-full
+}
+
+.time-component .ant-picker{
+  @apply w-full
+}
+
+.ant-table-filter-trigger{
+  @apply !text-white
+}
+
+.bloom-inspection-form label{
+  @apply !h-fit
+}
+
+.no-border .ant-input{
+  @apply !border-0 focus:ring-0;
+}
+.no-border .ant-select-selector{
+  @apply !border-0 focus:ring-0;
+}
+
+.no-border{
+  @apply !m-0;
+}
+
+.search-input .ant-btn-primary{
+  @apply !bg-darkBlue
+}
+
+.ant-dropdown-trigger.active, .ant-dropdown-trigger.active>*{
+  color:#E74C3C !important
+}
+
+.container{
+  @apply flex flex-col gap-4 md:gap-2 bg-white p-4 w-full md:w-4/5 mx-auto h-[100vh] md:h-fit;
+}
+
+.a4-container {
+  margin: auto;
+  width: 100%;
+  max-width: 210mm;
+  aspect-ratio: 210 / 297;
+  padding: 1.5rem;
+  /* transform: rotate(-90deg); */
+}
+
+.content{
+  /* width: 140%; */
+  /* margin: auto; */
+  /* transform: rotate(90deg) translateX(40%) translateY(-40%); */
+}
+
+@media print {
+  .a4-container{
+    /* transform: scale(0.8); */
+    max-width: 100% !important;
+  }
+
+  .iso-table .ant-table-content{
+    overflow: visible !important;
+  }
+
+  .iso-table{
+    overflow: visible !important;
+  }
+}
+
+.iso-table .ant-table {
+  @apply !text-xs; /* Adjust size as needed */
+}
+
+/* Target table headers */
+.iso-table .ant-table-thead > tr > th {
+  /* font-size: 18px;
+  font-weight: bold; */
+  @apply !text-xs !font-semibold;
+}
+
+/* Target table rows */
+.iso-table .ant-table-tbody > tr > td {
+  /* font-size: 16px; */
+  @apply !text-xs;
+}
+
+.iso-table .ant-table-cell > tr > td > li {
+  @apply !text-xs;
+}
+.iso-table .ant-table-cell > * {
+  @apply !text-xs;
+}
+.iso-table .ant-table-cell * {
+  @apply !text-xs;
+}
+
+/* .a4-container {
+  margin: auto;
+  width: 100%;
+  max-width: 210mm;
+  aspect-ratio: 210 / 297;
+  padding: 1.5rem;
+} */
+
+
+table * {
+  @apply !text-xs;
+}
+
+.cell-style{
+  @apply p-1 border border-black;
+}
+
+
+/* Override the table border color */
+.iso-table .ant-table-cell, .iso-table .ant-table {
+  @apply !border-black /* Change this to your desired border color */
+}
