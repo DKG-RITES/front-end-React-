@@ -54,6 +54,12 @@ const items = [
     path: "/",
   },
   {
+    key: "30",
+    icon: <HomeOutlined />,
+    label: "BSP Dashboard",
+    path: "/bsp",
+  },
+  {
     key: "2",
     icon: <IdcardOutlined />,
     label: "Duty",

@@ -105,6 +105,7 @@ import DecarbTest from "../dashboard/duty/testing/pendingTestSamples/DecarbTest"
 import TensileTest from "../dashboard/duty/testing/pendingTestSamples/TensileTest";
 import HardnessTest from "../dashboard/duty/testing/pendingTestSamples/HardnessTest";
 import ViSummary from "../dashboard/duty/visualInspection/viSummaru/ViSummary";
+import BspDashboard from "../bsp/BspDashboard";
 
 const RoutesComponent = () => {
   return (
@@ -112,6 +113,8 @@ const RoutesComponent = () => {
       <Routes>
         <Route element={<PrivateRoutes />}>
           <Route path="/" element={<LayoutWithDashboard />}>
+            <Route path="/bsp" element={<BspDashboard />} />
+
             <Route index element={<Dashboard />} />
             <Route path="/record/sms" element={<SmsRecordMain />} />
             <Route path="/record/sms/summary" element={<SmsRecord />} />
