@@ -7,8 +7,11 @@ import { apiCall } from '../../../../../utils/CommonFunctions'
 import TableComponent from '../../../../../components/DKG_Table'
 import Btn from '../../../../../components/DKG_Btn'
 import { useNavigate } from 'react-router-dom'
+<<<<<<< HEAD
 import { Button, message, Popconfirm } from 'antd'
 import { DeleteOutlined } from '@ant-design/icons'
+=======
+>>>>>>> 93836f667020a7e40e3e946a729b037ad0666237
 
 const ViSummary = () => {
     const viGeneralInfo = useSelector(state => state.viDuty);
@@ -18,6 +21,7 @@ const ViSummary = () => {
     const navigate = useNavigate();
 
     const handleBtnClick = (record) => {
+<<<<<<< HEAD
         navigate("/visual/inspection", {state: record})
     }
 
@@ -33,6 +37,12 @@ const ViSummary = () => {
         }
     }
 
+=======
+        
+        navigate("/visual/inspection", {state: record})
+    }
+
+>>>>>>> 93836f667020a7e40e3e946a729b037ad0666237
     const columns = [
         {
             title: "Heat Number",
@@ -48,6 +58,7 @@ const ViSummary = () => {
             title: "Action",
             dataIndex: "action",
             key: "action",
+<<<<<<< HEAD
             width: 180,
             align: "center",
             render: (_, record) => (
@@ -78,6 +89,11 @@ const ViSummary = () => {
                             Delete
                         </Button>
                     </Popconfirm>
+=======
+            render: (_, record) => (
+                <div>
+                    <Btn text="Edit" onClick={() => handleBtnClick(record)} />
+>>>>>>> 93836f667020a7e40e3e946a729b037ad0666237
                 </div>
             )
         }

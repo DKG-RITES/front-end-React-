@@ -18,8 +18,11 @@ export const apiCall = async (method, url, token, payload = null) => {
       response = await axios.get(url, header);
     } else if (method === "POST") {
       response = await axios.post(url, payload, header);
+<<<<<<< HEAD
     } else if (method === "DELETE") {
       response = await axios.delete(url, header);
+=======
+>>>>>>> 93836f667020a7e40e3e946a729b037ad0666237
     }
 
     // Check response status code

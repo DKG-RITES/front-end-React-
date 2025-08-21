@@ -243,7 +243,6 @@ const VisualInspectionForm = () => {
   const [dimensionalInspectionData, setDimensionalInspectionData] = useState([]);
   const [surfaceInspectionData, setSurfaceInspectionData] = useState([]);
   const [inspectionDataLoading, setInspectionDataLoading] = useState(false);
-
   const handleFormSubmit = async () => {
     try {
       await apiCall("POST", "/vi/saveViDtls", token, {
@@ -399,6 +398,7 @@ const VisualInspectionForm = () => {
     });
   };
 
+<<<<<<< HEAD
 
 
 
@@ -495,8 +495,6 @@ useEffect(() => {
     fetchInspectionData();
   }
 }, [formData?.railId, token]);
-
-
 
   const [acceptedDataRule, setAcceptDataRule] = useState([]);
 
