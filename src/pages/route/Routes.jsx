@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Dashboard from "../dashboard/Dashboard";
 import PrivateRoutes from "./PrivateRoutes";
+import RoleBasedRoute from "./RoleBasedRoute";
 import LayoutWithDashboard from "./LayoutWithDashboard";
 import Login from "../auth/Login";
 import PageNotFound from "../pageNotFound/PageNotFound";
@@ -101,11 +102,18 @@ import IRTest from "../dashboard/duty/testing/pendingTestSamples/IRTest";
 import O2Test from "../dashboard/duty/testing/pendingTestSamples/O2Test";
 import TensileFootTest from "../dashboard/duty/testing/pendingTestSamples/TensileFootTest";
 import MicroTest from "../dashboard/duty/testing/pendingTestSamples/MicroTest";
+import MacroTest from "../dashboard/duty/testing/pendingTestSamples/MacroTest";
 import DecarbTest from "../dashboard/duty/testing/pendingTestSamples/DecarbTest";
 import TensileTest from "../dashboard/duty/testing/pendingTestSamples/TensileTest";
 import HardnessTest from "../dashboard/duty/testing/pendingTestSamples/HardnessTest";
+import MechanicalTest from "../dashboard/duty/testing/pendingTestSamples/MechanicalTest";
+import SPTest from "../dashboard/duty/testing/pendingTestSamples/SPTest";
+import RSHTest from "../dashboard/duty/testing/pendingTestSamples/RSHTest";
+import PHTest from "../dashboard/duty/testing/pendingTestSamples/PHTest";
 import ViSummary from "../dashboard/duty/visualInspection/viSummaru/ViSummary";
 import BspDashboard from "../bsp/BspDashboard";
+import AiSystem from "../dashboard/aiSystem/AiSystem";
+import ChangePassword from "../../components/ChangePassword";
 
 const RoutesComponent = () => {
   return (
@@ -113,76 +121,91 @@ const RoutesComponent = () => {
       <Routes>
         <Route element={<PrivateRoutes />}>
           <Route path="/" element={<LayoutWithDashboard />}>
-            <Route path="/bsp" element={<BspDashboard />} />
+            {/* BSP Admin - Only for LOCAL_ADMIN and MAIN_ADMIN */}
+            <Route element={<RoleBasedRoute requiredPermission="admin" />}>
+              <Route path="/bsp" element={<BspDashboard />} />
+            </Route>
 
             <Route index element={<Dashboard />} />
-            <Route path="/record/sms" element={<SmsRecordMain />} />
-            <Route path="/record/sms/summary" element={<SmsRecord />} />
-            <Route path="/record/sms/heat" element={<SmsHeatReport />} />
-            <Route path="/record/ndt" element={<NdtReport />} />
 
-            <Route path="/record/welding" element={<WeldingReportMain />} />
-            <Route path="/record/welding/newWeld" element={<NewWeldingReport />} />
-            <Route path="/record/welding/summary" element={<WeldingSummaryReport />} />
-            <Route path="/record/welding/testSample" element={<WeldingTestSampleReport />} />
+            {/* Records - Available for MANAGER, LOCAL_ADMIN, MAIN_ADMIN */}
+            <Route element={<RoleBasedRoute requiredPermission="records" />}>
+              <Route path="/record/sms" element={<SmsRecordMain />} />
+              <Route path="/record/sms/summary" element={<SmsRecord />} />
+              <Route path="/record/sms/heat" element={<SmsHeatReport />} />
+              <Route path="/record/ndt" element={<NdtReport />} />
+            </Route>
 
-            <Route path="/record/vi" element={<ViReportMain />} />
-            <Route path="/record/vi/acptRej" element={<ViAcptRejReport />} />
-            <Route path="/record/vi/acpt" element={<ViAcceptanceReport />} />
-            <Route path="/record/vi/defect" element={<ViDefectAnalysis />} />
+            {/* More Records - Available for MANAGER, LOCAL_ADMIN, MAIN_ADMIN */}
+            <Route element={<RoleBasedRoute requiredPermission="records" />}>
+              <Route path="/record/welding" element={<WeldingReportMain />} />
+              <Route path="/record/welding/newWeld" element={<NewWeldingReport />} />
+              <Route path="/record/welding/summary" element={<WeldingSummaryReport />} />
+              <Route path="/record/welding/testSample" element={<WeldingTestSampleReport />} />
 
-            <Route path="/record/qct" element={<QctRecordMain />} />
-            <Route path="/record/qct/record1" element={<QctRecord1 />} />
-            {/* <Route path="/record/welding/testSample" element={<WeldingTestSampleReport />} /> */}
+              <Route path="/record/vi" element={<ViReportMain />} />
+              <Route path="/record/vi/acptRej" element={<ViAcptRejReport />} />
+              <Route path="/record/vi/acpt" element={<ViAcceptanceReport />} />
+              <Route path="/record/vi/defect" element={<ViDefectAnalysis />} />
 
-            <Route path="/sms">
-              <Route index element={<SmsDutyStartForm />} />
-              <Route path="dutyStart" element={<SmsDutyStartForm />} />
-              <Route element={<SmsPrivateRoute />}>
-                <Route path="heatSummary" element={<SmsHeatSummary />} />
-                <Route path="heatDtl" element={<HeatDtl />} />
-                <Route path="dutyEnd" element={<SmsDutyEnd />} />
-                <Route
-                  path="bloomInspection"
-                  element={<SmsBloomInspection />}
-                />
-                <Route path="shiftReports">
-                  <Route index element={<ShiftReports />} />
-                  <Route path="heatList" element={<SmsHeatList />} />
-                  <Route path="checkList" element={<SmsCheckList />} />
-                  <Route path="verification" element={<SmsVerification />} />
+              <Route path="/record/qct" element={<QctRecordMain />} />
+              <Route path="/record/qct/record1" element={<QctRecord1 />} />
+            </Route>
+
+            {/* SMS Duty - Available for all roles */}
+            <Route element={<RoleBasedRoute requiredPermission="duty-sms" />}>
+              <Route path="/sms">
+                <Route index element={<SmsDutyStartForm />} />
+                <Route path="dutyStart" element={<SmsDutyStartForm />} />
+                <Route element={<SmsPrivateRoute />}>
+                  <Route path="heatSummary" element={<SmsHeatSummary />} />
+                  <Route path="heatDtl" element={<HeatDtl />} />
+                  <Route path="dutyEnd" element={<SmsDutyEnd />} />
+                  <Route
+                    path="bloomInspection"
+                    element={<SmsBloomInspection />}
+                  />
+                  <Route path="shiftReports">
+                    <Route index element={<ShiftReports />} />
+                    <Route path="heatList" element={<SmsHeatList />} />
+                    <Route path="checkList" element={<SmsCheckList />} />
+                    <Route path="verification" element={<SmsVerification />} />
+                  </Route>
                 </Route>
               </Route>
             </Route>
 
-            <Route path="/stage">
-              <Route index element={<StageShiftDetailsForm />} />
-              <Route path="startDuty" element={<StageShiftDetailsForm />} />
-              <Route element={<RollingPrivateRoute />}>
-                <Route path="home" element={<StageHome />} />
-                <Route path="rollingControl" element={<RollingControlForm />} />
+            {/* Rolling/Stage Duty - Available for all roles */}
+            <Route element={<RoleBasedRoute requiredPermission="duty-rolling" />}>
+              <Route path="/stage">
+                <Route index element={<StageShiftDetailsForm />} />
+                <Route path="startDuty" element={<StageShiftDetailsForm />} />
+                <Route element={<RollingPrivateRoute />}>
+                  <Route path="home" element={<StageHome />} />
+                  <Route path="rollingControl" element={<RollingControlForm />} />
+                  <Route
+                    path="rollingControl/rollingControlSample"
+                    element={<RollingControlSample />}
+                  />
+                  <Route
+                    path="rollingVerification"
+                    element={<RollingVerification />}
+                  />
+                  <Route
+                    path="finishingVerification"
+                    element={<FinishingVerification />}
+                  />
+                  <Route path="htSequence" element={<HtSequence />} />
+                </Route>
                 <Route
-                  path="rollingControl/rollingControlSample"
-                  element={<RollingControlSample />}
+                  path="testSampleMarkingList"
+                  element={<TestSampleList />}
                 />
                 <Route
-                  path="rollingVerification"
-                  element={<RollingVerification />}
+                  path="newTestSampleDeclaration"
+                  element={<NewTestSampleDeclaration />}
                 />
-                <Route
-                  path="finishingVerification"
-                  element={<FinishingVerification />}
-                />
-                <Route path="htSequence" element={<HtSequence />} />
               </Route>
-              <Route
-                path="testSampleMarkingList"
-                element={<TestSampleList />}
-              />
-              <Route
-                path="newTestSampleDeclaration"
-                element={<NewTestSampleDeclaration />}
-              />
             </Route>
 
             <Route path="/ndt">
@@ -210,11 +233,16 @@ const RoutesComponent = () => {
                 <Route path="chemical" element={<ChemicalTest />} />
                 <Route path="n2" element={<N2Test />} />
                 <Route path="fwt" element={<FWTTest />} />
+                <Route path="mechanical" element={<MechanicalTest />} />
+                <Route path="sp" element={<SPTest />} />
                 <Route path="ir" element={<IRTest />} />
                 <Route path="o2" element={<O2Test />} />
                 <Route path="tensilefoot" element={<TensileFootTest />} />
                 <Route path="micro" element={<MicroTest />} />
+                <Route path="macro" element={<MacroTest />} />
                 <Route path="decarb" element={<DecarbTest />} />
+                <Route path="rsh" element={<RSHTest />} />
+                <Route path="ph" element={<PHTest />} />
                 <Route path="tensile" element={<TensileTest />} />
                 <Route path="hardness" element={<HardnessTest />} />
               </Route>
@@ -309,6 +337,11 @@ const RoutesComponent = () => {
               </Route>
             </Route>
 
+            {/* AI System - Available for MANAGER, LOCAL_ADMIN, MAIN_ADMIN */}
+            <Route element={<RoleBasedRoute requiredPermission="data-analysis" />}>
+              <Route path="/dashboard/aiSystem" element={<AiSystem />} />
+            </Route>
+
             {/* <Route path="/railDetails">
               <Route index element={<SmsDutyStartForm />} />
               <Route path="railId" element={<SmsHeatSummary />} />
@@ -318,6 +351,7 @@ const RoutesComponent = () => {
         </Route>
 
         <Route path="/login" element={<Login />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>

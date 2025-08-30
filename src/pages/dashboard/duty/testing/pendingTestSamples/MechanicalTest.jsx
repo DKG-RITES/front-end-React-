@@ -25,7 +25,15 @@ const MechanicalTest = () => {
     }
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, testName} = state;
+
+    // Determine the display title based on the test name passed from navigation
+    const getTestTitle = () => {
+        if (testName) {
+            return `${testName} Test`;
+        }
+        return "Mechanical Test"; // Default fallback
+    };
 
     const [formData, setFormData] = useState({
         heatNumber: heatNo,
@@ -49,7 +57,7 @@ const MechanicalTest = () => {
     return (
         <div>
             <SubHeader
-                title="Mechanical Test"
+                title={getTestTitle()}
                 link={"/testing/pendingTestSamples"}
             />
             <FormContainer>

@@ -4,5 +4,10 @@
         "editor.codeActionsOnSave": {
             "source.organizeImports": "never"
         }
+    },
+    "[javascriptreact]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "never"
+        }
     }
 }

@@ -3,12 +3,15 @@ import {Form, Input, InputNumber} from "antd"
 
 const FormInputItem = ({label, name, value, onChange, readOnly, disabled, className, placeholder, required, min, max, type, rules=[], inputStyle}) => {
   const handleChange = (e) => {
+    if(onChange) {
+      // Handle InputNumber case (value passed directly) vs Input case (event object)
+      const value = e && e.target ? e.target.value : e;
 
-    if(onChange)
       if(typeof name === 'string')
-        onChange(name, e.target.value)
+        onChange(name, value)
       else
-        onChange(name[2], e.target.value)
+        onChange(name[2], value)
+    }
   }
   return (
     <Form.Item label={label} name={name}

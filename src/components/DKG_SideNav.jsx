@@ -42,9 +42,26 @@ import {
   WarningOutlined
 } from "@ant-design/icons";
 import IconBtn from "./DKG_IconBtn";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/slice/authSlice";
 import { ActiveTabContext } from "../context/dashboardActiveTabContext";
+
+// Define role-based access permissions for menu items
+const ROLE_PERMISSIONS = {
+  INSPECTING_ENGINEER: [
+    'home', 'duty', 'duty-sms', 'duty-rolling', 'duty-ndt', 'duty-vi', 'duty-welding', 'iso-reports'
+  ],
+  MANAGER: [
+    'home', 'duty', 'duty-sms', 'duty-rolling', 'duty-ndt', 'duty-vi', 'duty-welding',
+    'records', 'iso-reports', 'data-analysis'
+  ],
+  LOCAL_ADMIN: [
+    'home', 'duty', 'records', 'iso-reports', 'admin', 'data-analysis', 'ai-system'
+  ],
+  MAIN_ADMIN: [
+    'full-access'
+  ]
+};
 
 const items = [
   {
@@ -52,17 +69,20 @@ const items = [
     icon: <HomeOutlined />,
     label: "Home",
     path: "/",
+    permission: "home",
   },
   {
     key: "30",
     icon: <HomeOutlined />,
     label: "BSP Dashboard",
     path: "/bsp",
+    permission: "bsp",
   },
   {
     key: "2",
     icon: <IdcardOutlined />,
     label: "Duty",
+    permission: "duty",
     items: [
       {
         key: "2.1",
@@ -75,6 +95,7 @@ const items = [
         key: "2.2",
         icon: <MessageOutlined />,
         label: "SMS",
+        permission: "duty-sms",
         items: [
           {
             key: "2.2.1",
@@ -145,6 +166,7 @@ const items = [
         key: "2.3",
         icon: <AuditOutlined />,
         label: "Rolling Stage",
+        permission: "duty-rolling",
         items: [
           {
             key: "2.3.1",
@@ -239,6 +261,7 @@ const items = [
         key: "2.4",
         icon: <RadarChartOutlined />,
         label: "NDT",
+        permission: "duty-ndt",
         items: [
           {
             key: "2.4.1",
@@ -283,6 +306,7 @@ const items = [
         key: "2.5",
         icon: <RadarChartOutlined />,
         label: "Testing",
+        permission: "duty-testing",
         items: [
           {
             key: "2.5.17",
@@ -327,6 +351,7 @@ const items = [
         key: "2.6",
         icon: <EyeOutlined />,
         label: "Visual Inspection",
+        permission: "duty-vi",
         items: [
           {
             key: "2.6.1",
@@ -365,6 +390,7 @@ const items = [
         key: "2.7",
         icon: <BuildOutlined />,
         label: "Welding Inspection",
+        permission: "duty-welding",
         items: [
           {
             key: "2.7.1",
@@ -415,6 +441,7 @@ const items = [
         key: "2.8",
         icon: <CompassOutlined />,
         label: "Short Rail Inspection",
+        permission: "duty-sri",
         items: [
           {
             key: "2.8.1",
@@ -453,21 +480,16 @@ const items = [
         key: "2.9",
         icon: <DatabaseOutlined />,
         label: "QCT",
+        permission: "duty-qct",
         items: [
           {
             key: "2.9.1",
-            icon: <AppstoreAddOutlined />,
-            label: "QCT Start Duty",
-            path: "/qct/startDuty",
-          },
-          {
-            key: "2.9.2",
             icon: <AppstoreAddOutlined />,
             label: "QCT Sample List",
             path: "/qct/sampleList",
           },
           {
-            key: "2.9.3",
+            key: "2.9.2",
             icon: <BarsOutlined />,
             label: "New Sample Declaration",
             path: "/qct/newSampleDeclaration",
@@ -478,6 +500,7 @@ const items = [
         key: "2.10",
         icon: <ToolOutlined />,
         label: "Calibration",
+        permission: "duty-calibration",
         items: [
           // {
           //   key: "2.10.1",
@@ -513,6 +536,7 @@ const items = [
     label: "Record",
     activeTab: 3,
     path: "/",
+    permission: "records",
   },
   {
     key: "4",
@@ -520,6 +544,7 @@ const items = [
     label: "AI System",
     activeTab: 4,
     path: "/",
+    permission: "ai-system",
   },
   {
     key: "5",
@@ -527,6 +552,7 @@ const items = [
     label: "Data Analysis",
     activeTab: 5,
     path: "/",
+    permission: "data-analysis",
   },
   {
     key: "6",
@@ -534,6 +560,7 @@ const items = [
     label: "ISO Reports",
     activeTab: 6,
     path: "/",
+    permission: "iso-reports",
   },
   {
     key: "7",
@@ -541,6 +568,7 @@ const items = [
     label: "Admin",
     activeTab: 7,
     path: "/",
+    permission: "admin",
   },
 ];
 
@@ -549,6 +577,53 @@ const SideNav = ({ collapsed, toggleCollapse }) => {
   const currentPath = location.pathname;
   const { setActiveTab, activeTab } = useContext(ActiveTabContext);
   const dispatch = useDispatch();
+  const { userType } = useSelector(state => state.auth);
+
+  // Function to check if user has permission for a menu item
+  const hasPermission = (permission) => {
+    if (!userType || !permission) return false;
+
+    // Main Admin has access to everything
+    if (userType === 'MAIN_ADMIN') return true;
+
+    // Get user permissions
+    const userPermissions = ROLE_PERMISSIONS[userType] || [];
+
+    // Check if user has the required permission
+    return userPermissions.includes(permission) || userPermissions.includes('full-access');
+  };
+
+  // Function to filter menu items based on user role
+  const filterMenuItems = (menuItems) => {
+    return menuItems.filter(item => {
+      // If item has no permission requirement, show it
+      if (!item.permission) return true;
+
+      // Check if user has permission for this item
+      if (!hasPermission(item.permission)) return false;
+
+      // If item has subitems, filter them recursively
+      if (item.items) {
+        const filteredSubItems = filterMenuItems(item.items);
+        // Only show parent if it has accessible subitems
+        return filteredSubItems.length > 0;
+      }
+
+      return true;
+    }).map(item => {
+      // If item has subitems, return item with filtered subitems
+      if (item.items) {
+        return {
+          ...item,
+          items: filterMenuItems(item.items)
+        };
+      }
+      return item;
+    });
+  };
+
+  // Get filtered menu items based on user role
+  const filteredItems = filterMenuItems(items);
 
   const getSelectedKey = (item) => {
     if (item.path === currentPath) {
@@ -566,7 +641,7 @@ const SideNav = ({ collapsed, toggleCollapse }) => {
     return null;
   };
 
-  const selectedKey = items.reduce((acc, item) => {
+  const selectedKey = filteredItems.reduce((acc, item) => {
     return acc || getSelectedKey(item);
   }, null);
 
@@ -599,7 +674,7 @@ const SideNav = ({ collapsed, toggleCollapse }) => {
       </Menu.SubMenu>
     );
   };
-  const menuItems = items.map(displaySideNavItems);
+  const menuItems = filteredItems.map(displaySideNavItems);
 
   return (
     <Layout

@@ -610,7 +610,30 @@ const SmsHeatSummary = () => {
     },
     { title: "H2", dataIndex: "hydris", key: "h2" },
     { title: "Stage", dataIndex: "heatStage", key: "stage" },
-    { title: "Heat Remark", dataIndex: "heatRemark", key: "heatRemark" },
+    {
+      title: "Heat Remark",
+      dataIndex: "heatRemark",
+      key: "heatRemark",
+      render: (text, record) => {
+        // Show "Diverted" if heat is marked as diverted
+        if (record.isDiverted) {
+          return <span className="text-red-600 font-semibold">Diverted</span>;
+        }
+
+        // Show rejection-related remarks in red
+        if (text && (
+          text.toLowerCase().includes('reject') ||
+          text.toLowerCase().includes('diverted') ||
+          text.toLowerCase().includes('nitrogen') ||
+          text.toLowerCase().includes('oxygen') ||
+          text.toLowerCase().includes('hydrogen')
+        )) {
+          return <span className="text-red-600 font-semibold">{text}</span>;
+        }
+
+        return text || "-";
+      }
+    },
     {
       title: "Actions",
       fixed: "right",

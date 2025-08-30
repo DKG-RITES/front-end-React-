@@ -91,6 +91,15 @@ const Login = () => {
         </FormBody>
 
         <h2 className='text-gray-500'>Account credentials unavailable ? <br /> Request Admin for your credentials.</h2>
+
+        <div className='text-center'>
+          <button
+            onClick={() => navigate('/change-password')}
+            className='text-blue-600 hover:text-blue-800 underline text-sm font-medium'
+          >
+            Change Password
+          </button>
+        </div>
       </main>
     </FormContainer>
     </>

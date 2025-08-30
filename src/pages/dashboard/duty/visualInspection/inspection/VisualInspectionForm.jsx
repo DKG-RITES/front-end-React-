@@ -451,6 +451,11 @@ useEffect(() => {
       try {
         setInspectionDataLoading(true);
 
+        console.log("=== FETCHING INSPECTION DATA ===");
+        console.log("formData.railId:", formData.railId);
+        console.log("railId type:", typeof formData.railId);
+        console.log("railId length:", formData.railId.length);
+
         const [d1, d2] = await Promise.all([
           apiCall("GET", `/dashboard/getDimensionalInspectionDtlByRailId?railId=${formData.railId}`, token),
           apiCall("GET", `/dashboard/getSurfaceInspectionDtlByRailId?railId=${formData.railId}`, token),
@@ -458,6 +463,12 @@ useEffect(() => {
 
         const data = d1.data
         const data1 = d2.data
+
+        console.log("=== API RESPONSES ===");
+        console.log("Dimensional API response:", data);
+        console.log("Surface API response:", data1);
+        console.log("Dimensional responseData length:", data?.responseData?.length || 0);
+        console.log("Surface responseData length:", data1?.responseData?.length || 0);
 
         // Store raw data for tables
         setDimensionalInspectionData(data?.responseData || []);
@@ -780,9 +791,13 @@ useEffect(() => {
 
   const populateData = async (railId) => {
     try{
+      console.log("=== POPULATE DATA ===");
+      console.log("Initial railId parameter:", railId);
+
       const {data} = await apiCall("GET", `/vi/getDtlByRailId?railId=${railId}`, token)
       if(data?.responseData){
-        console.log("GOT DATA: ", data.responseData)
+        console.log("GOT VI DATA: ", data.responseData)
+        console.log("VI Data railId:", data.responseData.railId)
         setFormData(data.responseData)
       }
     }

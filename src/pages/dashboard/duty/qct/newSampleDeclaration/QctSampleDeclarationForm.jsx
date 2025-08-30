@@ -142,7 +142,13 @@ const QctSampleDeclarationForm = () => {
   };
 
   const { token } = useSelector((state) => state.auth);
-  const qctGeneralInfo = useSelector((state) => state.qctDuty);
+  const {dutyId} = useSelector(state => state.qctDuty)
+  // Use dummy duty ID if no actual duty is started
+  const qctGeneralInfo = {
+    date: new Date().toLocaleDateString('en-GB'),
+    shift: 'A', // Default shift
+    dutyId: dutyId || 'QCT_DUMMY_DUTY_001' // Use dummy duty ID when no actual duty
+  };
 
   // Add this function to handle sample field changes
   const handleSampleFieldChange = (index, field, value) => {
@@ -163,7 +169,8 @@ const QctSampleDeclarationForm = () => {
         ...formData,
         strandNo: sample.strandNo,
         sampleId: sample.sampleId,
-        dutyId: qctGeneralInfo.dutyId,
+        // Use dummy duty ID since QCT works without actual duty
+        dutyId: qctGeneralInfo.dutyId || 'QCT_DUMMY_DUTY_001',
       }));
 
       // Save each sample

@@ -81,30 +81,39 @@ const textVal =
   const ChemicalAnalysis2 = () => {
   const {token} = useSelector(state => state.auth);
   const repRef = useRef();
-  const onFinish = async (formData) => {
-//     try{
-//       const { data } = await apiCall("POST", "/iso/getSmsChemicalAnalysis", token, formData);
+  const onFinish = async (searchFormData) => {
+    // Update formData with search parameters to ensure SMS selection is reflected
+    setFormData(prev => ({
+      ...prev,
+      date: searchFormData.date,
+      shift: searchFormData.shift,
+      sms: searchFormData.sms, // This will update the SMS field for dynamic titles
+    }));
 
-//       setFormData({
-//         date: formData.date,
-//         shift: formData.shift,
-//         sms: formData.sms,
-//         tableData: data?.responseData?.map((item, index) => ({
-//           key: index + 1,  // Adding a key for Ant Design Table
-//           sno: index + 1,
-//           heatNo: item.heatNumber,
-//           seqNo: item.sequenceNumber,
-//           nitrogen: item.nitrogen,
-//           oxygen: item.oxygen,
-//           hydrogen: item.hydris,
-//           degassingVacuum: item.degassingVacuum,
-//           degassingDuration: item.degassingDuration,
-//           remarks: item.heatRemark || "N/A"
-//         }))
-//     })
-//   }catch(error){
-//       console.log(error);
-//     }
+    // Uncomment below when API is ready
+    // try{
+    //   const { data } = await apiCall("POST", "/iso/getSmsChemicalAnalysis", token, searchFormData);
+    //   setFormData(prev => ({
+    //     ...prev,
+    //     date: searchFormData.date,
+    //     shift: searchFormData.shift,
+    //     sms: searchFormData.sms,
+    //     tableData: data?.responseData?.map((item, index) => ({
+    //       key: index + 1,
+    //       sno: index + 1,
+    //       heatNo: item.heatNumber,
+    //       seqNo: item.sequenceNumber,
+    //       nitrogen: item.nitrogen,
+    //       oxygen: item.oxygen,
+    //       hydrogen: item.hydris,
+    //       degassingVacuum: item.degassingVacuum,
+    //       degassingDuration: item.degassingDuration,
+    //       remarks: item.heatRemark || "N/A"
+    //     }))
+    //   }));
+    // }catch(error){
+    //   console.log(error);
+    // }
   };
 
   const [formData, setFormData] = useState({

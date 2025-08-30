@@ -49,7 +49,7 @@ const dutyItemTabs = [
     id: 8,
     title: 'QCT',
     icon: <DatabaseOutlined />,
-    link: '/qct/startDuty'
+    link: '/qct/sampleList'
   },
   {
     id: 9,

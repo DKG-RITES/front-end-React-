@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { apiCall } from '../../../../../utils/CommonFunctions';
 import FormDropdownItem from '../../../../../components/DKG_FormDropdownItem';
 import { Form, Select, Checkbox, Button, message } from 'antd';
@@ -43,11 +44,29 @@ const testTypeDropdown = [
 
   
   
-  const RetestSample = ({railGrade, dutyId}) => {
+  const RetestSample = ({railGrade, dutyId, editMode, editData, generalInfo}) => {
     const [strandList, setStrandList] = useState([]);
     const [form] = Form.useForm();
-    const [formData, setFormData] = useState(null);
+    const [formData, setFormData] = useState(editMode && editData ? {
+        testType: editData.dutyId || null, // Backend passes testType in dutyId field
+        sampleNo: editData.sampleLot || null,
+        heatNo: editData.heatNo || null,
+        selectedStrands: editData.strand ? [editData.strand.toString()] : []
+    } : null);
+
+    // Initialize form data with edit data when in edit mode
+    useEffect(() => {
+        if (editMode && editData) {
+            setFormData({
+                testType: editData.dutyId || null, // Backend passes testType in dutyId field
+                sampleNo: editData.sampleLot || null,
+                heatNo: editData.heatNo || null,
+                selectedStrands: editData.strand ? [editData.strand.toString()] : []
+            });
+        }
+    }, [editMode, editData]);
     const { token } = useSelector((state) => state.auth);
+    const navigate = useNavigate();
 
     const handleChange = (name, value) => {
         setFormData({
@@ -89,28 +108,49 @@ const testTypeDropdown = [
             dutyId: dutyId
         };
 
-        console.log("PYLOAD: ", payload)
-        // return
+        console.log("Retest Sample Payload:", payload);
+        console.log("Rail Grade from props:", railGrade);
 
         try {
-            const response = await apiCall(
-                'POST',
-                '/rolling/saveRetestSample',
-                token,
-                payload
-            );
-            // Handle success
+            if (editMode) {
+                // For retest samples, we'll use the same endpoint but with update logic
+                // Note: You might need to create a separate update endpoint for retest samples
+                await apiCall(
+                    'POST',
+                    '/rolling/updateRetestSample',
+                    token,
+                    payload
+                );
+                message.success("Retest sample updated successfully.");
+            } else {
+                // Create new retest sample
+                await apiCall(
+                    'POST',
+                    '/rolling/saveRetestSample',
+                    token,
+                    payload
+                );
+                message.success("Sample retest successful.");
+            }
 
-            message.success("Sample retest successful.");
+            // Navigate to Test Sample - Declaration page after successful save
+            navigate("/stage/testSampleMarkingList", {
+                state: {
+                    module: "stage",
+                    dutyId: dutyId,
+                    generalInfo: generalInfo, // Preserve the original general info
+                    redirectTo: "/stage/home"
+                }
+            });
         } catch (error) {
-            // Handle error
+            message.error(editMode ? "Failed to update retest sample." : "Failed to save retest sample.");
         }
     };
 
     return (
         <>
             {(railGrade === "880" || railGrade === "R260") && (
-                <R260And880 railGrade={railGrade} dutyId={dutyId} />
+                <R260And880 railGrade={railGrade} dutyId={dutyId} editMode={editMode} editData={editData} />
                 // <Form 
                 //     form={form} 
                 //     layout='vertical'
@@ -146,7 +186,7 @@ const testTypeDropdown = [
 
             {
                 (railGrade === "1080HH" || railGrade==="R350HT") && (
-                  <HH1080 railGrade={railGrade} dutyId={dutyId} />
+                  <HH1080 railGrade={railGrade} dutyId={dutyId} editMode={editMode} editData={editData} />
                 )
             }
         </>

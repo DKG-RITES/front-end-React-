@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'
 import { Input } from 'antd';
+import { useSelector } from 'react-redux';
 import {HomeOutlined, IdcardOutlined, FileTextOutlined, RobotOutlined, LineChartOutlined, ProfileOutlined, UserOutlined} from '@ant-design/icons';
 import Home from './home/Home';
 import Duty from './duty/Duty';
@@ -17,49 +18,71 @@ const dashboardTabItems = [
   {
     id: 1,
     title: 'Home',
-    icon: <HomeOutlined />
+    icon: <HomeOutlined />,
+    roles: ['INSPECTING_ENGINEER', 'MANAGER', 'LOCAL_ADMIN', 'MAIN_ADMIN']
   },
   {
     id: 2,
     title: 'Duty',
-    icon: <IdcardOutlined />
+    icon: <IdcardOutlined />,
+    roles: ['INSPECTING_ENGINEER', 'MANAGER', 'LOCAL_ADMIN', 'MAIN_ADMIN']
   },
   {
     id: 3,
     title: 'Records',
-    icon: <FileTextOutlined />
+    icon: <FileTextOutlined />,
+    roles: ['MANAGER', 'LOCAL_ADMIN', 'MAIN_ADMIN']
   },
   {
     id: 4,
     title: 'AI System',
-    icon: <RobotOutlined />
+    icon: <RobotOutlined />,
+    roles: ['LOCAL_ADMIN', 'MAIN_ADMIN']
   },
   {
     id: 5,
     title: 'Data Analysis',
     icon: <LineChartOutlined />,
+    roles: ['MANAGER', 'LOCAL_ADMIN', 'MAIN_ADMIN']
   },
   {
     id: 6,
     title: 'ISO Reports',
-    icon: <ProfileOutlined />
+    icon: <ProfileOutlined />,
+    roles: ['INSPECTING_ENGINEER', 'MANAGER', 'LOCAL_ADMIN', 'MAIN_ADMIN']
   },
   {
     id: 7,
     title: 'Admin',
-    icon: <UserOutlined />
+    icon: <UserOutlined />,
+    roles: ['LOCAL_ADMIN', 'MAIN_ADMIN']
   },
 ]
 
 const Dashboard = () => {
-  // const [activeTab, setActiveTab] = useState(1)
   const {activeTab, setActiveTab} = useContext(ActiveTabContext)
+  const { userType } = useSelector(state => state.auth);
 
-  const renderDashboardTabItems = () => 
-    dashboardTabItems.map(item=> {
+  // Filter tabs based on user role
+  const getAccessibleTabs = () => {
+    if (!userType) return [];
+
+    return dashboardTabItems.filter(item => {
+      // Main Admin has access to all tabs
+      if (userType === 'MAIN_ADMIN') return true;
+
+      // Check if user's role is in the allowed roles for this tab
+      return item.roles.includes(userType);
+    });
+  };
+
+  const accessibleTabs = getAccessibleTabs();
+
+  const renderDashboardTabItems = () =>
+    accessibleTabs.map(item=> {
       return (
-        <div 
-          key={item.id} 
+        <div
+          key={item.id}
           onClick={() => setActiveTab(item.id)}
           className={`cursor-pointer ${activeTab === item.id ? 'border-b-2 border-pink' : ''}`}
         >
@@ -98,7 +121,12 @@ const Dashboard = () => {
       <Search placeholder='Search' className='dashboard-search' />
     </section>
     <section>
-    <div className="dashboard-tabs grid grid-cols-4 gap-4 bg-darkBlue rounded text-offWhite p-4">
+    <div className={`dashboard-tabs grid gap-4 bg-darkBlue rounded text-offWhite p-4 ${
+      accessibleTabs.length <= 3 ? 'grid-cols-3' :
+      accessibleTabs.length <= 4 ? 'grid-cols-4' :
+      accessibleTabs.length <= 6 ? 'grid-cols-3 md:grid-cols-6' :
+      'grid-cols-2 md:grid-cols-4 lg:grid-cols-7'
+    }`}>
       {renderDashboardTabItems()}
     </div>
     </section>

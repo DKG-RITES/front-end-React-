@@ -25,7 +25,15 @@ const DecarbTest = () => {
     }
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, testName} = state;
+
+    // Determine the display title based on the test name passed from navigation
+    const getTestTitle = () => {
+        if (testName) {
+            return `${testName} Test`;
+        }
+        return "Decarb Test"; // Default fallback
+    };
 
     const [formData, setFormData] = useState({
         heatNumber: heatNo,
@@ -52,7 +60,7 @@ const DecarbTest = () => {
     return (
         <div>
             <SubHeader
-                title="Decarb Test"
+                title={getTestTitle()}
                 link={"/testing/pendingTestSamples"}
             />
             <FormContainer>

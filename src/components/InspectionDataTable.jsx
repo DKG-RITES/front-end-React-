@@ -11,7 +11,7 @@ const InspectionDataTable = ({
 
 
 
-  // Columns for Dimensional Inspection Table (2 columns only)
+  // Columns for Dimensional Inspection Table (3 columns)
   const dimensionalColumns = [
     {
       title: 'Camera Name',
@@ -20,6 +20,21 @@ const InspectionDataTable = ({
       align: 'center',
       width: 120,
       render: (cameraName) => cameraName || 'Unknown',
+    },
+    {
+      title: 'Distance From Head (m)',
+      dataIndex: 'distanceFromHead',
+      key: 'distanceFromHead',
+      align: 'center',
+      width: 150,
+      render: (distanceFromHead) => {
+        if (distanceFromHead === null || distanceFromHead === undefined) {
+          return '-';
+        }
+        // Convert from cm to meters and format to 2 decimal places
+        const distanceInMeters = (parseFloat(distanceFromHead) / 100).toFixed(2);
+        return `${distanceInMeters} m`;
+      },
     },
     {
       title: 'Defect Type',

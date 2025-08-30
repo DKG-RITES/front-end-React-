@@ -223,31 +223,49 @@ const SrNewInspectionForm = () => {
   const stdWt =
     (formData.railSectionInspected === "60E1" || formData.railSectionInspected === "60E1A1") ? 60.21 : 51.89;
 
-  const totalTonnesAccepted = stdWt * (
-    (26 * (getSafeValue(formData?.acceptance26mClA) + getSafeValue(formData?.acceptance26mClA01) + getSafeValue(formData?.acceptance26mClB) + getSafeValue(formData?.acceptance26mIu))) + 
-    (25 * (getSafeValue(formData?.acceptance25mClA) + getSafeValue(formData?.acceptance25mClA01) + getSafeValue(formData?.acceptance25mClB) + getSafeValue(formData?.acceptance25mIu))) + 
-    (24 * (getSafeValue(formData?.acceptance24mClA) + getSafeValue(formData?.acceptance24mClA01) + getSafeValue(formData?.acceptance24mClB) + getSafeValue(formData?.acceptance24mIu))) + 
-    (13 * (getSafeValue(formData?.acceptance13mClA) + getSafeValue(formData?.acceptance13mClA01) + getSafeValue(formData?.acceptance13mClB) + getSafeValue(formData?.acceptance13mIu))) + 
-    (12 * (getSafeValue(formData?.acceptance12mClA) + getSafeValue(formData?.acceptance12mClA01) + getSafeValue(formData?.acceptance12mClB) + getSafeValue(formData?.acceptance12mIu))) + 
-    (11 * (getSafeValue(formData?.acceptance11mClA) + getSafeValue(formData?.acceptance11mClA01) + getSafeValue(formData?.acceptance11mClB) + getSafeValue(formData?.acceptance11mIu))) + 
+  // Only calculate tonnage when both Rail Section and Rail Grade are selected
+  const shouldCalculateTonnage = formData?.railSectionInspected && formData?.railGradeInspected;
+
+  const totalTonnesAccepted = shouldCalculateTonnage ? stdWt * (
+    (26 * (getSafeValue(formData?.acceptance26mClA) + getSafeValue(formData?.acceptance26mClA01) + getSafeValue(formData?.acceptance26mClB) + getSafeValue(formData?.acceptance26mIu))) +
+    (25 * (getSafeValue(formData?.acceptance25mClA) + getSafeValue(formData?.acceptance25mClA01) + getSafeValue(formData?.acceptance25mClB) + getSafeValue(formData?.acceptance25mIu))) +
+    (24 * (getSafeValue(formData?.acceptance24mClA) + getSafeValue(formData?.acceptance24mClA01) + getSafeValue(formData?.acceptance24mClB) + getSafeValue(formData?.acceptance24mIu))) +
+    (13 * (getSafeValue(formData?.acceptance13mClA) + getSafeValue(formData?.acceptance13mClA01) + getSafeValue(formData?.acceptance13mClB) + getSafeValue(formData?.acceptance13mIu))) +
+    (12 * (getSafeValue(formData?.acceptance12mClA) + getSafeValue(formData?.acceptance12mClA01) + getSafeValue(formData?.acceptance12mClB) + getSafeValue(formData?.acceptance12mIu))) +
+    (11 * (getSafeValue(formData?.acceptance11mClA) + getSafeValue(formData?.acceptance11mClA01) + getSafeValue(formData?.acceptance11mClB) + getSafeValue(formData?.acceptance11mIu))) +
     (10 * (getSafeValue(formData?.acceptance10mClA) + getSafeValue(formData?.acceptance10mClA01) + getSafeValue(formData?.acceptance10mClB) + getSafeValue(formData?.acceptance10mIu)))
-  );
-// + getSafeValue(formData?.cutbart26m) + getSafeValue(formData?.refinish26m)
-  const totalTonnesRejected =
-    stdWt * (26 * (getSafeValue(formData?.rejection26m) )) +
-    getSafeValue(formData?.acceptance25mClA) + getSafeValue(formData?.acceptance25mClA01) + 
-    getSafeValue(formData?.acceptance25mClB) + getSafeValue(formData?.acceptance25mIu) +
-    2 * (getSafeValue(formData?.acceptance24mClA) + getSafeValue(formData?.acceptance24mClA01) + 
-        getSafeValue(formData?.acceptance24mClB) + getSafeValue(formData?.acceptance24mIu)) +
-    getSafeValue(formData?.acceptance12mClA) + getSafeValue(formData?.acceptance12mClA01) + 
-    getSafeValue(formData?.acceptance12mClB) + getSafeValue(formData?.acceptance12mIu) +
-    2 * (getSafeValue(formData?.acceptance11mClA) + getSafeValue(formData?.acceptance11mClA01) + 
-        getSafeValue(formData?.acceptance11mClB) + getSafeValue(formData?.acceptance11mIu)) +
-    3 * (getSafeValue(formData?.acceptance10mClA) + getSafeValue(formData?.acceptance10mClA01) + 
-        getSafeValue(formData?.acceptance10mClB) + getSafeValue(formData?.acceptance10mIu));
+  ) : 0;
+  // Calculate rejection weight based on leftover parts from accepted pieces (only if dropdowns are selected)
+  const totalTonnesRejected = shouldCalculateTonnage ? (() => {
+    // Direct rejection pieces
+    const directRejectionWeight = stdWt * (26 * (getSafeValue(formData?.rejection26m))) +
+      stdWt * (13 * (getSafeValue(formData?.rejection13m)));
+
+    // Calculate leftover length from accepted pieces
+    // When we accept shorter pieces from longer rails, the leftover becomes rejection
+    const leftoverLength =
+      // From 26m rails: leftover when accepting 25m, 24m, 13m, 12m, 11m, 10m pieces
+      ((26 - 25) * (getSafeValue(formData?.acceptance25mClA) + getSafeValue(formData?.acceptance25mClA01) +
+          getSafeValue(formData?.acceptance25mClB) + getSafeValue(formData?.acceptance25mIu))) +  // 1m leftover per 25m piece
+      ((26 - 24) * (getSafeValue(formData?.acceptance24mClA) + getSafeValue(formData?.acceptance24mClA01) +
+          getSafeValue(formData?.acceptance24mClB) + getSafeValue(formData?.acceptance24mIu))) +  // 2m leftover per 24m piece
+      ((26 - 13) * (getSafeValue(formData?.acceptance13mClA) + getSafeValue(formData?.acceptance13mClA01) +
+          getSafeValue(formData?.acceptance13mClB) + getSafeValue(formData?.acceptance13mIu))) +  // 13m leftover per 13m piece
+      ((26 - 12) * (getSafeValue(formData?.acceptance12mClA) + getSafeValue(formData?.acceptance12mClA01) +
+          getSafeValue(formData?.acceptance12mClB) + getSafeValue(formData?.acceptance12mIu))) +  // 14m leftover per 12m piece
+      ((26 - 11) * (getSafeValue(formData?.acceptance11mClA) + getSafeValue(formData?.acceptance11mClA01) +
+          getSafeValue(formData?.acceptance11mClB) + getSafeValue(formData?.acceptance11mIu))) +  // 15m leftover per 11m piece
+      ((26 - 10) * (getSafeValue(formData?.acceptance10mClA) + getSafeValue(formData?.acceptance10mClA01) +
+          getSafeValue(formData?.acceptance10mClB) + getSafeValue(formData?.acceptance10mIu)));   // 16m leftover per 10m piece
+
+    // Total rejection weight = direct rejection + leftover weight + additional rejections
+    return directRejectionWeight + (stdWt * leftoverLength) +
+      getSafeValue(formData?.cutbart26m) + getSafeValue(formData?.refinish26m);
+  })() : 0;
 
 
-  const totalTonnesInspected = getSafeValue(totalTonnesAccepted) + getSafeValue(totalTonnesRejected);
+  const totalTonnesInspected = shouldCalculateTonnage ?
+    getSafeValue(totalTonnesAccepted) + getSafeValue(totalTonnesRejected) : 0;
 
   const onFinish = async () => {
     const url = edittable ? "/shortrailinspection/update" : "/shortrailinspection/save";
@@ -316,9 +334,15 @@ const SrNewInspectionForm = () => {
       <SubHeader title='Short Rail Inspection Form' link='/srInspection/home' />
       <GeneralInfo data={sriGeneralInfo} />
 
-      <h3 className='font-bold'>Total Tonnes Accepted: <span className='font-normal'>{totalTonnesAccepted}</span></h3>
-      <h3 className='font-bold'>Total Tonnes Rejected: <span className='font-normal'>{totalTonnesRejected}</span></h3>
-      <h3 className='font-bold'>Total Tonnes Inspected: <span className='font-normal'>{totalTonnesInspected}</span></h3>
+      <h3 className='font-bold'>Total Tonnes Accepted: <span className='font-normal'>
+        {shouldCalculateTonnage ? (totalTonnesAccepted / 1000).toFixed(3) : 'Select Rail Section & Grade'}
+      </span></h3>
+      <h3 className='font-bold'>Total Tonnes Rejected: <span className='font-normal'>
+        {shouldCalculateTonnage ? (totalTonnesRejected / 1000).toFixed(3) : 'Select Rail Section & Grade'}
+      </span></h3>
+      <h3 className='font-bold'>Total Tonnes Inspected: <span className='font-normal'>
+        {shouldCalculateTonnage ? (totalTonnesInspected / 1000).toFixed(3) : 'Select Rail Section & Grade'}
+      </span></h3>
 
       <hr/>
 

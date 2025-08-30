@@ -9,7 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { apiCall } from '../../../../../utils/CommonFunctions';
 
-const N2Test = () => {
+const RSHTest = () => {
     const [form] = Form.useForm();
 
     const navigate = useNavigate();
@@ -23,16 +23,9 @@ const N2Test = () => {
         }
         catch(error){}
     }
-    const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType, testName} = state;
 
-    // Determine the display title based on the test name passed from navigation
-    const getTestTitle = () => {
-        if (testName) {
-            return `${testName} Test`;
-        }
-        return "N2 Test"; // Default fallback
-    };
+    const state = useLocation().state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType} = state;
 
     const [formData, setFormData] = useState({
         heatNumber: heatNo,
@@ -40,9 +33,9 @@ const N2Test = () => {
         sampleId: sampleId,
         sampleLot: sampleLot,
         sampleType: sampleType,
-        testType: "N2",
-        n2Status: "",
-        n2: ""
+        testType: "RSH",
+        rshStatus: "",
+        rshValue: ""
     })
 
     const handleChange = (fieldName, value) => {
@@ -57,7 +50,7 @@ const N2Test = () => {
     return (
         <div>
             <SubHeader
-                title={getTestTitle()}
+                title="RSH Test"
                 link={"/testing/pendingTestSamples"}
             />
             <FormContainer>
@@ -67,14 +60,12 @@ const N2Test = () => {
                     <FormInputItem label="SampleLot" name="sampleLot" disabled />
                     <FormInputItem label="Sample Type" name="sampleType" disabled />
                     <FormInputItem label="Sample ID" name="sampleId" disabled />
-
-                    <FormInputItem label="N2" name="n2" onChange={handleChange}/>
-                    
+                    <FormInputItem label="RSH Value" name="rshValue" onChange={handleChange} />
                     <Form.Item
-                        label="N2 Test Status"
-                        name="n2Status"
+                        label="RSH Test Status"
+                        name="rshStatus"
                     >
-                        <Select options={testStatusDropdown} onChange={(val) => handleChange("n2Status", val)}/>
+                        <Select options={testStatusDropdown} onChange={(val) => handleChange("rshStatus", val)}/>
                     </Form.Item>
 
                     <Btn htmlType='submit' text="SAVE" />
@@ -84,4 +75,4 @@ const N2Test = () => {
     )
 }
 
-export default N2Test
+export default RSHTest

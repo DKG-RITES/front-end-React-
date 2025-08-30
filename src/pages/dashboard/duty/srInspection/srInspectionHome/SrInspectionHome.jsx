@@ -117,17 +117,20 @@ const SrInspectionHome = () => {
     {
       title: "Inspected Tonnage",
       dataIndex: "totalTonnesInspected",
-      key: "totalTonnesInspected"
+      key: "totalTonnesInspected",
+      render: (value) => (value / 1000).toFixed(3) // Convert to tonnes with 3 decimal places
     },
     {
       title: "Accepted Tonnage",
       dataIndex: "totalTonnesAccepted",
       key: "totalTonnesAccepted",
+      render: (value) => (value / 1000).toFixed(3) // Convert to tonnes with 3 decimal places
     },
     {
       title: "Rejected Tonnage",
       dataIndex: "totalTonnesRejected",
       key: "totalTonnesRejected",
+      render: (value) => (value / 1000).toFixed(3) // Convert to tonnes with 3 decimal places
     }
   ];
   const inspectedDataColumns = [

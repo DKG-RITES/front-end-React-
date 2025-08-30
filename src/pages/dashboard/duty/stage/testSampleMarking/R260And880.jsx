@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { apiCall } from '../../../../../utils/CommonFunctions';
 import FormDropdownItem from '../../../../../components/DKG_FormDropdownItem';
 import { Form, Select, Checkbox, message } from 'antd';
@@ -30,11 +31,33 @@ const sampleLotDd = [
     { label: "NA", value: "NA" },
 ];
 
-const R260And880 = ({ railGrade, dutyId }) => {
+const R260And880 = ({ railGrade, dutyId, editMode, editData }) => {
     const [strandList, setStrandList] = useState([]);
     const [form] = Form.useForm();
-    const [formData, setFormData] = useState(null);
+    const [formData, setFormData] = useState(editMode && editData ? {
+        testType: editData.dutyId || null, // Backend passes testType in dutyId field
+        sampleNo: editData.sampleLot || null,
+        heatNo: editData.heatNo || null,
+        selectedStrands: editData.strand ? [editData.strand.toString()] : []
+    } : null);
+
+    // Initialize form data with edit data when in edit mode
+    useEffect(() => {
+        if (editMode && editData) {
+            const newFormData = {
+                testType: editData.dutyId || null, // Backend passes testType in dutyId field
+                sampleNo: editData.sampleLot || null,
+                heatNo: editData.heatNo || null,
+                selectedStrands: editData.strand ? [editData.strand.toString()] : []
+            };
+            setFormData(newFormData);
+
+            // Set form field values
+            form.setFieldsValue(newFormData);
+        }
+    }, [editMode, editData, form]);
     const { token } = useSelector((state) => state.auth);
+    const navigate = useNavigate();
 
     const handleChange = (name, value) => {
         setFormData({
@@ -73,15 +96,37 @@ const R260And880 = ({ railGrade, dutyId }) => {
         };
 
         try {
-            const response = await apiCall(
-                'POST',
-                '/rolling/saveRetestSample',
-                token,
-                payload
-            );
-            message.success("Sample retest successful.");
+            if (editMode) {
+                // Update existing retest sample
+                await apiCall(
+                    'POST',
+                    '/rolling/updateRetestSample',
+                    token,
+                    payload
+                );
+                message.success("Retest sample updated successfully.");
+            } else {
+                // Create new retest sample
+                await apiCall(
+                    'POST',
+                    '/rolling/saveRetestSample',
+                    token,
+                    payload
+                );
+                message.success("Sample retest successful.");
+            }
+
+            // Navigate to Test Sample - Declaration page after successful save
+            navigate("/stage/testSampleMarkingList", {
+                state: {
+                    module: "stage",
+                    dutyId: dutyId,
+                    generalInfo: null, // You may need to pass actual general info if available
+                    redirectTo: "/stage/home"
+                }
+            });
         } catch (error) {
-            message.error("Failed to save retest sample.");
+            message.error(editMode ? "Failed to update retest sample." : "Failed to save retest sample.");
         }
     };
 
@@ -92,13 +137,26 @@ const R260And880 = ({ railGrade, dutyId }) => {
             onFinish={handleSubmit}
         >
             <Form.Item label='Test Type' name='testType'>
-                <Select options={testTypeDropdown} onChange={(e) => handleChange('testType', e)} />
+                <Select
+                    options={testTypeDropdown}
+                    value={formData?.testType}
+                    onChange={(e) => handleChange('testType', e)}
+                />
             </Form.Item>
             <Form.Item label='Sample Lot' name='sampleNo'>
-                <Select options={sampleLotDd} onChange={(e) => handleChange('sampleNo', e)} />
+                <Select
+                    options={sampleLotDd}
+                    value={formData?.sampleNo}
+                    onChange={(e) => handleChange('sampleNo', e)}
+                />
             </Form.Item>
 
-            <FormInputItem label="Heat No." name="heatNo" onChange={handleChange}/>
+            <FormInputItem
+                label="Heat No."
+                name="heatNo"
+                value={formData?.heatNo}
+                onChange={handleChange}
+            />
 
             {strandList.length > 0 && (
                 <Form.Item label="Strand List" name="selectedStrands">
@@ -107,6 +165,7 @@ const R260And880 = ({ railGrade, dutyId }) => {
                             label: strand,
                             value: strand
                         }))}
+                        value={formData?.selectedStrands}
                         onChange={(values) => handleChange('selectedStrands', values)}
                     />
                 </Form.Item>

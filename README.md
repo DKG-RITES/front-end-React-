@@ -71,3 +71,27 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 
 
 To Run in LAN : set HOST=0.0.0.0&&npm start
+
+## User Registration
+
+### Register All 168 Role-Based Users
+
+To register all 168 users (2 Main Admins, 63 Managers, 95 Inspecting Engineers, 8 Local Admins) at once via the registration API, run the following PowerShell command:
+
+```powershell
+.\register_correct_168_users.ps1
+```
+
+**Prerequisites:**
+- Ensure the backend server is running on `http://localhost:8080`
+- Navigate to the deployment directory: `d:\Rites\Deployment`
+- The script will register users with password: `Rites@123`
+
+**User Distribution:**
+- **Main Admin:** 2 users (including Nitin Rajput - ID: 12191)
+- **Manager:** 63 users
+- **Inspecting Engineer:** 95 users (including M Linganna - ID: 100290)
+- **Local Admin:** 8 users
+- **Total:** 168 users
+
+The script will show registration progress and provide a summary of successful/failed registrations.

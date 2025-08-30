@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Form, message, Divider, Button, Checkbox, Modal } from "antd";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -70,10 +70,107 @@ const HeatDtl = () => {
   const [form] = Form.useForm();
   const [formData, setFormData] = useState({});
   const [currentStage, setCurrentStage] = useState(1);
+
+  // State to track out-of-range fields for red highlighting
+  const [outOfRangeFields, setOutOfRangeFields] = useState({});
   const [editableStage, setEditableStage] = useState({
     heatProcurementStageCode: null,
     heatSurrenderStageCode: null,
   });
+
+  // Helper function to get CSS class for out-of-range fields
+  const getFieldClassName = (fieldName) => {
+    return outOfRangeFields[fieldName] ? "out-of-tolerance" : "";
+  };
+
+  // Function to validate all tolerance fields when data is loaded
+  const validateAllToleranceFields = (data, isDiverted = divertedHeat) => {
+    const newOutOfRangeFields = {};
+    let hasOutOfRangeValues = false;
+
+    // Validate Turn Down Temperature (≥ 1630°C)
+    // Show red color for ALL heats (including diverted), but only enforce business logic for non-diverted
+    if (data.turnDownTemp) {
+      const value = parseFloat(data.turnDownTemp);
+      if (value < 1630) {
+        newOutOfRangeFields.turnDownTemp = true;
+        if (!isDiverted) hasOutOfRangeValues = true; // Only count for business logic if not diverted
+      }
+    }
+
+    // Validate Degassing Duration (≥ 10.0 minutes)
+    if (data.degassingDuration) {
+      const value = parseFloat(data.degassingDuration);
+      if (value < 10) {
+        newOutOfRangeFields.degassingDuration = true;
+        if (!isDiverted) hasOutOfRangeValues = true;
+      }
+    }
+
+    // Validate Degassing Vacuum (< 3.0 mbar)
+    if (data.degassingVacuum) {
+      const value = parseFloat(data.degassingVacuum);
+      if (value > 3) {
+        newOutOfRangeFields.degassingVacuum = true;
+        if (!isDiverted) hasOutOfRangeValues = true;
+      }
+    }
+
+    // Validate Casting Temperature 1 (≥ 1480°C)
+    if (data.castingTemp) {
+      const value = parseFloat(data.castingTemp);
+      if (value < 1480) {
+        newOutOfRangeFields.castingTemp = true;
+        if (!isDiverted) hasOutOfRangeValues = true;
+      }
+    }
+
+    // Validate Casting Temperature 2 (≥ 1480°C)
+    if (data.castingTemp2) {
+      const value = parseFloat(data.castingTemp2);
+      if (value < 1480) {
+        newOutOfRangeFields.castingTemp2 = true;
+        if (!isDiverted) hasOutOfRangeValues = true;
+      }
+    }
+
+    // Validate Hydris (≤ 1.6)
+    if (data.hydris) {
+      const value = parseFloat(data.hydris);
+      if (value > 1.6) {
+        newOutOfRangeFields.hydris = true;
+        if (!isDiverted) hasOutOfRangeValues = true;
+      }
+    }
+
+    // Validate Nitrogen (< 0.009%)
+    if (data.nitrogen) {
+      const value = parseFloat(data.nitrogen);
+      if (value > 0.009) {
+        newOutOfRangeFields.nitrogen = true;
+        if (!isDiverted) hasOutOfRangeValues = true;
+      }
+    }
+
+    // Validate Oxygen (≤ 20.0 ppm)
+    if (data.oxygen) {
+      const value = parseFloat(data.oxygen);
+      if (value > 20) {
+        newOutOfRangeFields.oxygen = true;
+        if (!isDiverted) hasOutOfRangeValues = true;
+      }
+    }
+
+    setOutOfRangeFields(newOutOfRangeFields);
+    setIsOutOfRange(hasOutOfRangeValues);
+
+    console.log("Tolerance validation on data load:", {
+      isDiverted: isDiverted,
+      outOfRangeFields: newOutOfRangeFields,
+      hasOutOfRangeValues,
+      loadedData: data
+    });
+  };
 
   const stageValidationRules = useMemo(() => ({
     1: ["turnDownTemp", "turnDownTempWv"],
@@ -143,7 +240,10 @@ const HeatDtl = () => {
         const isStageValid = stageValidationRules[currentStage].every((field) => {
           const value = formData[field];
           if(formData?.heatRemark === "Reject for hydrogen.") return true
+          if(formData?.heatRemark === "Reject for nitrogen.") return true
+          if(formData?.heatRemark === "Reject for oxygen.") return true
           if(currentStage === 4 && field === "oxygen") return true
+          if(currentStage === 4 && field === "nitrogen") return true
           return  value !== undefined && value !== null && (typeof value === "number" || value.toString().trim() !== "");
         });
 
@@ -177,7 +277,10 @@ const HeatDtl = () => {
     else {
       setDegDurRule([]);
       if (parseFloat(value) < 10 && !divertedHeat) {
-        message.warning("Value must be greater than or equal to 10.0", 5);
+        // Use debounced message to prevent spam
+        showValidationMessage('degassingDuration', () => {
+          message.warning("Value must be greater than or equal to 10.0", 5);
+        });
 
         setFormData((prev) => ({
           ...prev,
@@ -185,14 +288,23 @@ const HeatDtl = () => {
         }));
         setHeatRemarkDisabled(true);
         setIsOutOfRange(true);
+        // Mark field as out of range for red highlighting
+        setOutOfRangeFields(prev => ({ ...prev, degassingDuration: true }));
       }
       else {
+        // Clear any pending message for this field
+        if (validationTimeouts.current['degassingDuration']) {
+          clearTimeout(validationTimeouts.current['degassingDuration']);
+        }
+
         setHeatRemarkDisabled(false);
         setFormData((prev) => ({
           ...prev,
           degassingDuration: value,
         }));
         setIsOutOfRange(false);
+        // Remove field from out of range highlighting
+        setOutOfRangeFields(prev => ({ ...prev, degassingDuration: false }));
       }
     }
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
@@ -215,20 +327,38 @@ const HeatDtl = () => {
     else {
       setTurDowTempRule([]);
       if (parseFloat(value) < 1630 && !divertedHeat) {
-        message.warning("Value must be greater than or equal to 1630", 5);
+        // Use debounced message to prevent spam
+        showValidationMessage('turnDownTemp', () => {
+          message.warning("Value must be greater than or equal to 1630", 5);
+        });
 
         setFormData((prev) => ({
           ...prev,
           turnDownTemp: value,
         }));
         setIsOutOfRange(true);
+        // Mark field as out of range for red highlighting
+        setOutOfRangeFields(prev => ({ ...prev, turnDownTemp: true }));
       }
       else {
+        // Clear any pending message for this field
+        if (validationTimeouts.current['turnDownTemp']) {
+          clearTimeout(validationTimeouts.current['turnDownTemp']);
+        }
+
         setFormData((prev) => ({
           ...prev,
           turnDownTemp: value,
         }));
-        setIsOutOfRange(false);
+
+        // Remove field from out of range highlighting
+        setOutOfRangeFields(prev => {
+          const updated = { ...prev, turnDownTemp: false };
+          // Only set isOutOfRange to false if NO fields are out of range
+          const hasAnyOutOfRange = Object.values(updated).some(isOut => isOut === true);
+          setIsOutOfRange(hasAnyOutOfRange);
+          return updated;
+        });
       }
     }
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
@@ -254,7 +384,12 @@ const HeatDtl = () => {
       setHydrisRuleObj([]);
 
       if (parseFloat(value) > 1.6 && !divertedHeat) {
-        message.warning("Value must be smaller or equal to 1.6", 5);
+        console.log("hydris out of range:", value, "setting isOutOfRange to true and heatRemark to Reject for hydrogen");
+        // Use debounced message to prevent spam
+        showValidationMessage('hydris', () => {
+          message.warning("Value must be smaller or equal to 1.6", 5);
+        });
+
         setFormData((prev) => ({
           ...prev,
           heatRemark: "Reject for hydrogen.",
@@ -262,15 +397,30 @@ const HeatDtl = () => {
         }));
         setHeatRemarkDisabled(true);
         setIsOutOfRange(true);
+        // Mark field as out of range for red highlighting
+        setOutOfRangeFields(prev => ({ ...prev, hydris: true }));
       }
       else {
+        // Clear any pending message for this field
+        if (validationTimeouts.current['hydris']) {
+          clearTimeout(validationTimeouts.current['hydris']);
+        }
+
         setHeatRemarkDisabled(false);
         setFormData((prev) => ({
           ...prev,
           heatRemark: null,
           hydris: value,
         }));
-        setIsOutOfRange(false);
+
+        // Remove field from out of range highlighting
+        setOutOfRangeFields(prev => {
+          const updated = { ...prev, hydris: false };
+          // Only set isOutOfRange to false if NO fields are out of range
+          const hasAnyOutOfRange = Object.values(updated).some(isOut => isOut === true);
+          setIsOutOfRange(hasAnyOutOfRange);
+          return updated;
+        });
       }
     }
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
@@ -294,7 +444,10 @@ const HeatDtl = () => {
       setNitrogenRule([]);
 
       if (parseFloat(value) > 0.009 && !divertedHeat) {
-        message.warning("Value must be less than 0.009", 5);
+        // Use debounced message to prevent spam
+        showValidationMessage('nitrogen', () => {
+          message.warning("Value must be less than 0.009", 5);
+        });
 
         setFormData((prev) => ({
           ...prev,
@@ -303,15 +456,30 @@ const HeatDtl = () => {
         }));
         setHeatRemarkDisabled(true);
         setIsOutOfRange(true);
+        // Mark field as out of range for red highlighting
+        setOutOfRangeFields(prev => ({ ...prev, nitrogen: true }));
       }
       else {
+        // Clear any pending message for this field
+        if (validationTimeouts.current['nitrogen']) {
+          clearTimeout(validationTimeouts.current['nitrogen']);
+        }
+
         setHeatRemarkDisabled(false);
         setFormData((prev) => ({
           ...prev,
           heatRemark: null,
           nitrogen: value,
         }));
-        setIsOutOfRange(false);
+
+        // Remove field from out of range highlighting
+        setOutOfRangeFields(prev => {
+          const updated = { ...prev, nitrogen: false };
+          // Only set isOutOfRange to false if NO fields are out of range
+          const hasAnyOutOfRange = Object.values(updated).some(isOut => isOut === true);
+          setIsOutOfRange(hasAnyOutOfRange);
+          return updated;
+        });
       }
     }
 
@@ -345,7 +513,10 @@ const HeatDtl = () => {
     else {
       setOxygenRule([]);
       if (parseFloat(value) > 20 && !divertedHeat) {
-        message.warning("Value must be less than or equal to 20.0", 5);
+        // Use debounced message to prevent spam
+        showValidationMessage('oxygen', () => {
+          message.warning("Value must be less than or equal to 20.0", 5);
+        });
 
         setFormData((prev) => ({
           ...prev,
@@ -354,15 +525,30 @@ const HeatDtl = () => {
         }));
         setHeatRemarkDisabled(true);
         setIsOutOfRange(true);
+        // Mark field as out of range for red highlighting
+        setOutOfRangeFields(prev => ({ ...prev, oxygen: true }));
       }
       else {
+        // Clear any pending message for this field
+        if (validationTimeouts.current['oxygen']) {
+          clearTimeout(validationTimeouts.current['oxygen']);
+        }
+
         setHeatRemarkDisabled(false);
         setFormData((prev) => ({
           ...prev,
           heatRemark: null,
           oxygen: value,
         }));
-        setIsOutOfRange(false);
+
+        // Remove field from out of range highlighting
+        setOutOfRangeFields(prev => {
+          const updated = { ...prev, oxygen: false };
+          // Only set isOutOfRange to false if NO fields are out of range
+          const hasAnyOutOfRange = Object.values(updated).some(isOut => isOut === true);
+          setIsOutOfRange(hasAnyOutOfRange);
+          return updated;
+        });
       }
     }
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
@@ -376,14 +562,18 @@ const HeatDtl = () => {
         token
       );
 
-      setFormData({
+      const loadedData = {
         ...data.responseData,
         heatNo: heatNo,
         sequenceNo1: data?.responseData?.sequenceNo?.split("/")?.[0] || null,
         sequenceNo2: data?.responseData?.sequenceNo?.split("/")?.[1] || null,
-      } || {});
+      } || {};
 
+      setFormData(loadedData);
       setDivertedHeat(data?.responseData?.isDiverted);
+
+      // Validate tolerance fields for loaded data (pass diverted status directly)
+      validateAllToleranceFields(loadedData, data?.responseData?.isDiverted);
 
       // Fetch Procurement & Surrender Stages
       await populateEditableStage();
@@ -406,6 +596,43 @@ const HeatDtl = () => {
           break; // Stop at the first incomplete stage
         }
 
+      }
+
+      // ✅ DIVERTED HEAT LOGIC: If heat is diverted, don't show stages beyond the current stage
+      if (data?.responseData?.isDiverted) {
+        // Find the highest stage that has complete data (this is where heat was diverted)
+        let divertedAtStage = 1;
+        for (let stage = 1; stage <= 5; stage++) {
+          const isStageComplete = stageValidationRules[stage].every(
+            (field) => {
+              if (field !== "sequenceNo1" && field !== "sequenceNo2") {
+                return data.responseData?.[field] !== null && data.responseData?.[field] !== undefined;
+              }
+              return data?.responseData?.sequenceNo?.split("/").length === 2;
+            }
+          );
+          if (isStageComplete) {
+            divertedAtStage = stage;
+          } else {
+            // If stage is not complete, check if it has any data (partially filled)
+            const hasPartialData = stageValidationRules[stage].some(
+              (field) => {
+                if (field !== "sequenceNo1" && field !== "sequenceNo2") {
+                  return data.responseData?.[field] !== null && data.responseData?.[field] !== undefined;
+                }
+                return data?.responseData?.sequenceNo?.split("/").length === 2;
+              }
+            );
+            if (hasPartialData) {
+              divertedAtStage = stage; // Heat was diverted while filling this stage
+            }
+            break; // Stop at first incomplete stage
+          }
+        }
+
+        // Limit currentStage to the diverted stage (allow editing the diverted stage)
+        lastSavedStage = divertedAtStage;
+        console.log(`Heat is diverted at stage ${divertedAtStage}, limiting currentStage to ${lastSavedStage}`);
       }
 
       // ✅ Prevent opening non-existent stage
@@ -432,20 +659,39 @@ const HeatDtl = () => {
     else {
       setCastTempRule([]);
       if (parseFloat(value) < 1480 && !divertedHeat) {
-        message.warning("Value must be greater than or equal to 1480", 5);
+        console.log("castingTemp out of range:", value, "setting isOutOfRange to true");
+        // Use debounced message to prevent spam
+        showValidationMessage('castingTemp', () => {
+          message.warning("Value must be greater than or equal to 1480", 5);
+        });
 
         setFormData((prev) => ({
           ...prev,
           castingTemp: value,
         }));
         setIsOutOfRange(true);
+        // Mark field as out of range for red highlighting
+        setOutOfRangeFields(prev => ({ ...prev, castingTemp: true }));
       }
       else {
+        // Clear any pending message for this field
+        if (validationTimeouts.current['castingTemp']) {
+          clearTimeout(validationTimeouts.current['castingTemp']);
+        }
+
         setFormData((prev) => ({
           ...prev,
           castingTemp: value,
         }));
-        setIsOutOfRange(false);
+
+        // Remove field from out of range highlighting
+        setOutOfRangeFields(prev => {
+          const updated = { ...prev, castingTemp: false };
+          // Only set isOutOfRange to false if NO fields are out of range
+          const hasAnyOutOfRange = Object.values(updated).some(isOut => isOut === true);
+          setIsOutOfRange(hasAnyOutOfRange);
+          return updated;
+        });
       }
     }
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
@@ -468,45 +714,57 @@ const HeatDtl = () => {
     else {
       setCastTemp2Rule([]);
       if (parseFloat(value) < 1480 && !divertedHeat) {
-        message.warning("Value must be greater than or equal to 1480", 5);
+        // Use debounced message to prevent spam
+        showValidationMessage('castingTemp2', () => {
+          message.warning("Value must be greater than or equal to 1480", 5);
+        });
 
         setFormData((prev) => ({
           ...prev,
           castingTemp2: value,
         }));
         setIsOutOfRange(true);
+        // Mark field as out of range for red highlighting
+        setOutOfRangeFields(prev => ({ ...prev, castingTemp2: true }));
       }
       else {
+        // Clear any pending message for this field
+        if (validationTimeouts.current['castingTemp2']) {
+          clearTimeout(validationTimeouts.current['castingTemp2']);
+        }
+
         setFormData((prev) => ({
           ...prev,
           castingTemp2: value,
         }));
-        setIsOutOfRange(false);
+
+        // Remove field from out of range highlighting
+        setOutOfRangeFields(prev => {
+          const updated = { ...prev, castingTemp2: false };
+          // Only set isOutOfRange to false if NO fields are out of range
+          const hasAnyOutOfRange = Object.values(updated).some(isOut => isOut === true);
+          setIsOutOfRange(hasAnyOutOfRange);
+          return updated;
+        });
       }
     }
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
   }
 
-  const onFinish = () => {  
-    if(formData.heatRemark === "Reject for hydrogen."){
+  const onFinish = () => {
+    console.log("onFinish called - isOutOfRange:", isOutOfRange);
+    console.log("onFinish called - outOfRangeFields:", outOfRangeFields);
+    console.log("onFinish called - heatRemark:", formData.heatRemark);
+
+    if(formData.heatRemark === "Reject for hydrogen." ||
+       formData.heatRemark === "Reject for nitrogen." ||
+       formData.heatRemark === "Reject for oxygen."){
       handleSave()
     }
-    if (isOutOfRange) {
+    else if (isOutOfRange) {
       Modal.confirm({
         title: "Warning",
         content: "You are saving some values outside the range, are you sure to continue?",
-        // onOk: async () => {
-        //   try {
-        //     await apiCall("POST", "/sms/updateHeatDtls", token, {
-        //       ...formData,
-        //       dutyId,
-        //     });
-        //     message.success("SMS heat details updated successfully.");
-        //     navigate("/sms/heatSummary");
-        //   } catch (error) {
-        //     message.error("Failed to update heat details.");
-        //   }
-        // },
         onOk: handleSave
       });
     }
@@ -735,18 +993,81 @@ const HeatDtl = () => {
       setDegVacRule([]);
 
       if (parseFloat(value) > 3 && !divertedHeat) {
-        message.warning("Value must be smaller than 3.0 ", 5)
+        // Use debounced message to prevent spam
+        showValidationMessage('degassingVacuum', () => {
+          message.warning("Value must be smaller than 3.0 ", 5);
+        });
+
         setIsOutOfRange(true);
+        // Mark field as out of range for red highlighting
+        setOutOfRangeFields(prev => ({ ...prev, degassingVacuum: true }));
+      } else {
+        // Clear any pending message for this field
+        if (validationTimeouts.current['degassingVacuum']) {
+          clearTimeout(validationTimeouts.current['degassingVacuum']);
+        }
+
+        // Remove field from out of range highlighting
+        setOutOfRangeFields(prev => {
+          const updated = { ...prev, degassingVacuum: false };
+          // Only set isOutOfRange to false if NO fields are out of range
+          const hasAnyOutOfRange = Object.values(updated).some(isOut => isOut === true);
+          setIsOutOfRange(hasAnyOutOfRange);
+          return updated;
+        });
       }
     }
 
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
   };
 
+  // Debounce refs for validation messages
+  const validationTimeouts = useRef({});
+
+  // Debounced validation function to prevent message spam
+  const showValidationMessage = (fieldName, message, delay = 1000) => {
+    // Clear existing timeout for this field
+    if (validationTimeouts.current[fieldName]) {
+      clearTimeout(validationTimeouts.current[fieldName]);
+    }
+
+    // Set new timeout
+    validationTimeouts.current[fieldName] = setTimeout(() => {
+      message();
+    }, delay);
+  };
+
   console.log("FormData: ", formData)
+
+  // Validate tolerance fields whenever formData changes (for initial load and updates)
+  useEffect(() => {
+    if (formData && Object.keys(formData).length > 0) {
+      validateAllToleranceFields(formData);
+    }
+  }, [formData.turnDownTemp, formData.degassingDuration, formData.degassingVacuum,
+      formData.castingTemp, formData.castingTemp2, formData.hydris,
+      formData.nitrogen, formData.oxygen, divertedHeat]);
 
   return (
     <FormContainer>
+      <style>
+        {`
+          .out-of-tolerance .ant-input {
+            color: #ff4d4f !important;
+            border-color: #ff4d4f !important;
+          }
+          .out-of-tolerance .ant-input:focus {
+            border-color: #ff4d4f !important;
+            box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
+          }
+          .out-of-tolerance .ant-input:hover {
+            border-color: #ff4d4f !important;
+          }
+          .out-of-tolerance .ant-form-item-label > label {
+            color: #ff4d4f !important;
+          }
+        `}
+      </style>
       <div className="relative">
         <IconBtn
           icon={ArrowLeftOutlined}
@@ -786,7 +1107,7 @@ const HeatDtl = () => {
     rules={turDowTempRule}
     onChange={handleTurDowTempChange}
     // disabled={isFieldDisabled(1)}
-    className={currentStage >= 1 ? "block" : "hidden"}
+    className={`${currentStage >= 1 ? "block" : "hidden"} ${getFieldClassName('turnDownTemp')}`}
   />
   <FormDropdownItem
     label="Witnessed / Verified"
@@ -808,7 +1129,7 @@ const HeatDtl = () => {
        
 
         {
-          currentStage >= 2 && (
+          currentStage >= 2 && (!divertedHeat || currentStage <= 2) && (
             <>
               <Divider />
 
@@ -820,6 +1141,7 @@ const HeatDtl = () => {
                   placeholder="2.5"
                   rules={degVacRule}
                   onChange={handleDegVacChange}
+                  className={getFieldClassName("degassingVacuum")}
                   // disabled={isFieldDisabled(2)}
                 />
                 <FormDropdownItem
@@ -841,6 +1163,7 @@ const HeatDtl = () => {
                   placeholder="10.0"
                   rules={degDurRule}
                   onChange={handleDegDurChange}
+                  className={getFieldClassName("degassingDuration")}
                   // disabled={isFieldDisabled(2)}
 
                 />
@@ -864,7 +1187,7 @@ const HeatDtl = () => {
 
 
         {
-          currentStage >= 3 && (
+          currentStage >= 3 && (!divertedHeat || currentStage <= 3) && (
             <>
               <Divider />
 
@@ -875,6 +1198,7 @@ const HeatDtl = () => {
             name="castingTemp"
             onChange={handleCastTempChange}
             rules={castTempRule}
+            className={getFieldClassName("castingTemp")}
             // disabled={isFieldDisabled(3)}
           />
           <FormInputItem
@@ -882,6 +1206,7 @@ const HeatDtl = () => {
             name="castingTemp2"
             onChange={handleCastTemp2Change}
             rules={castTemp2Rule}
+            className={getFieldClassName("castingTemp2")}
             // disabled={isFieldDisabled(3)}
           />
           {/* <FormInputItem
@@ -942,6 +1267,7 @@ const HeatDtl = () => {
                   name="hydris"
                   rules={hydrisRuleObj}
                   onChange={handleHydrisChange}
+                  className={getFieldClassName("hydris")}
                   // disabled={isFieldDisabled(3)}
                 />
               </div>
@@ -978,7 +1304,7 @@ const HeatDtl = () => {
 
 
         {
-          currentStage >= 4 && (
+          currentStage >= 4 && (!divertedHeat || currentStage <= 4) && (
             <>
               <Divider />
               <h3 className="font-bold mb-3 underline">Stage 4: Chemical Analysis</h3>
@@ -988,6 +1314,7 @@ const HeatDtl = () => {
                   name="nitrogen"
                   rules={nitrogenRule}
                   onChange={handleNitrogenChange}
+                  className={getFieldClassName("nitrogen")}
                   // disabled={isFieldDisabled(4)}
                 />
                 <FormInputItem
@@ -995,6 +1322,7 @@ const HeatDtl = () => {
                   name="oxygen"
                   rules={oxygenRule}
                   onChange={handleOxygenChange}
+                  className={getFieldClassName("oxygen")}
                   // disabled={isFieldDisabled(4)}
                 />
 
@@ -1024,7 +1352,7 @@ const HeatDtl = () => {
 
 
         {
-          currentStage >= 5 && (
+          currentStage >= 5 && (!divertedHeat || currentStage <= 5) && (
             <>
               <Divider />
 
@@ -1032,9 +1360,9 @@ const HeatDtl = () => {
               <div className="border grid grid-cols-5 divide-x divide-y divide-gray-300">
                 <div></div>
                 <h3 className="p-2">Number</h3>
-                <h3 className="p-2">Length</h3>
-                <h3 className="p-2">Tot. Len.</h3>
-                <h3 className="p-2">Weight</h3>
+                <h3 className="p-2">Length (m)</h3>
+                <h3 className="p-2">Tot. Len. (m)</h3>
+                <h3 className="p-2">Weight (MT)</h3>
 
                 <h3 className="text-center p-2">Prime</h3>
                 <FormInputItem
@@ -1127,7 +1455,7 @@ const HeatDtl = () => {
                   disabled
                 />
 
-                <h3 className="text-center p-2 col-span-4">Total Cast Weight</h3>
+                <h3 className="text-center p-2 col-span-4">Total Cast Weight (MT)</h3>
                 <FormInputItem className="no-border" name="totalCastWt" disabled />
               </div>
 
@@ -1148,6 +1476,24 @@ const HeatDtl = () => {
         >
           Mark as diverted heat.
         </Checkbox>
+
+        {divertedHeat && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm">
+                  <strong>Heat is marked as diverted.</strong> Remaining stages are hidden.
+                  Uncheck "Mark as diverted heat" to access remaining stages.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <FormInputItem
           name="heatRemark"

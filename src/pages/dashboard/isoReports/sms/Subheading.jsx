@@ -128,6 +128,29 @@ const Subheading = ({
   textVis,
   textVal,
 }) => {
+  // Generate dynamic SMS titles based on smsVal
+  const getSmsTitle = (smsValue) => {
+    console.log('Subheading SMS Value received:', smsValue); // Debug log
+    if (smsValue === 'SMS 2' || smsValue === 'SMS2') {
+      return {
+        hindi: 'एस.एम.एस - II',
+        english: 'SMS II'
+      };
+    } else if (smsValue === 'SMS 3' || smsValue === 'SMS3') {
+      return {
+        hindi: 'एस.एम.एस - III',
+        english: 'SMS III'
+      };
+    }
+    // Default fallback
+    console.log('Subheading using default SMS title for value:', smsValue); // Debug log
+    return {
+      hindi: 'एस.एम.एस - II / एस.एम.एस - III',
+      english: 'SMS II / SMS III'
+    };
+  };
+
+  const smsTitle = getSmsTitle(smsVal);
   // Handling line breaks
   const formattedText = textVal?.split("<br />").map((line, index) => (
     <React.Fragment key={index}>
@@ -155,7 +178,7 @@ const Subheading = ({
         )}
 
         {smsVis && (
-          <SubheadingItem title="एस.एम.एस - II / एस.एम.एस - III" subTitle="SMS II / SMS III" value={smsVal} />
+          <SubheadingItem title={smsTitle.hindi} subTitle={smsTitle.english} value={smsVal} />
         )}
 
         {grdVis && (

@@ -28,6 +28,8 @@ const NewTestSampleDeclaration = () => {
   const module = state?.module || null;
   const dutyId = state?.dutyId || null;
   const generalInfo = state?.generalInfo || null;
+  const editMode = state?.editMode || false;
+  const editData = state?.editData || null;
 
 
   const navigate = useNavigate();
@@ -35,33 +37,77 @@ const NewTestSampleDeclaration = () => {
 
 
   const [formData, setFormData] = useState({
-    // test: "",
-    railGrade: "",
-    // sampleType: "",
-    // heatNumber: "",
-    // strand: "",
-    // sampleLot: "",
-    // remarks: "",
-    // sampleID: "",
-    // retestName: "",
-    // retestOne: "",
-    // retestTwo: "",
-    // retestThree: "",
+    test: editMode && editData ? (editData.type === "acceptance" ? "Acceptance Test" : "Retest Samples") : "",
+    railGrade: editMode && editData ? editData.railGrade : "",
   });
 
-  const handleChange = (fieldName, value) => {
-    setFormData((prev) => {
+  // Initialize form data with edit data when in edit mode
+  useEffect(() => {
+    if (editMode && editData) {
+      console.log("Edit data received:", editData); // Debug log
+      setFormData({
+        test: editData.type === "acceptance" ? "Acceptance Test" : "Retest Samples",
+        railGrade: editData.railGrade || "",
+      });
+    }
+  }, [editMode, editData]);
+
+  // Debug log for formData changes
+  useEffect(() => {
+    console.log("FormData updated:", formData);
+  }, [formData]);
+
+  // Get current duty details for display
+  const getCurrentDutyInfo = () => {
+    if (generalInfo) {
       return {
+        date: generalInfo.date || "N/A",
+        startTime: generalInfo.startTime || "N/A",
+        shift: generalInfo.shift || "N/A",
+        railGrade: generalInfo.railGrade || "N/A",
+        railSection: generalInfo.railSection || "N/A",
+        mill: generalInfo.mill || "N/A",
+        dutyId: dutyId || "N/A"
+      };
+    }
+    return {
+      date: "N/A",
+      startTime: "N/A",
+      shift: "N/A",
+      railGrade: "N/A",
+      railSection: "N/A",
+      mill: "N/A",
+      dutyId: dutyId || "N/A"
+    };
+  };
+
+  const handleChange = (fieldName, value) => {
+    console.log("=== PARENT COMPONENT handleChange ===");
+    console.log("handleChange called with:", fieldName, value);
+    setFormData((prev) => {
+      const newData = {
         ...prev,
         [fieldName]: value,
       };
+      console.log("Form data updated:", newData);
+      if (fieldName === 'railGrade') {
+        console.log("Rail grade changed to:", value);
+        console.log("Will pass to AcceptanceTestSample:", value);
+      }
+      return newData;
     });
   };
 
   const handleFormSubmit = () => {
-    message.success("Duty End Called");
-    // needs to be change later on
-    navigate("/");
+    // Navigate back to Test Sample List after form submission
+    navigate("/stage/testSampleMarkingList", {
+      state: {
+        module: module,
+        dutyId: dutyId,
+        generalInfo: generalInfo,
+        redirectTo: "/stage/home"
+      }
+    });
   };
 
   useEffect(() => {
@@ -75,12 +121,16 @@ const NewTestSampleDeclaration = () => {
   return (
     <FormContainer>
       <SubHeader
-        title="New Test Sample - Declaration"
+        title={editMode ? "Edit Test Sample - Declaration" : "New Test Sample - Declaration"}
         link="/stage/home"
       />
-      <GeneralInfo data={generalInfo} />
+      <GeneralInfo data={getCurrentDutyInfo()} />
 
-      <FormBody initialValues={formData} onFinish={handleFormSubmit}>
+      <FormBody
+        key={editMode ? `edit-${JSON.stringify(formData)}` : 'new'}
+        initialValues={formData}
+        onFinish={handleFormSubmit}
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-x-4">
           <FormDropdownItem
             label="Test"
@@ -90,6 +140,7 @@ const NewTestSampleDeclaration = () => {
             onChange={handleChange}
             valueField="key"
             visibleField="value"
+            value={formData.test}
             required
           />
           <FormDropdownItem
@@ -100,6 +151,7 @@ const NewTestSampleDeclaration = () => {
             onChange={handleChange}
             valueField="key"
             visibleField="value"
+            value={formData.railGrade}
             required
           />
         </div>
@@ -107,10 +159,32 @@ const NewTestSampleDeclaration = () => {
         </FormBody>
 
         {
-          formData.test === "Acceptance Test" && <AcceptanceTestSample railGrade={formData.railGrade} dutyId={dutyId} />
+          formData.test === "Acceptance Test" && (
+            <>
+              {console.log("=== RENDERING AcceptanceTestSample ===", {
+                railGrade: formData.railGrade,
+                formData: formData,
+                editMode: editMode,
+                editData: editData
+              })}
+              <AcceptanceTestSample
+                railGrade={formData.railGrade}
+                dutyId={dutyId}
+                editMode={editMode}
+                editData={editData}
+                generalInfo={generalInfo}
+              />
+            </>
+          )
         }
         {
-          formData.test === "Retest Samples" && <RetestSample railGrade={formData.railGrade} dutyId={dutyId} />
+          formData.test === "Retest Samples" && <RetestSample
+            railGrade={formData.railGrade}
+            dutyId={dutyId}
+            editMode={editMode}
+            editData={editData}
+            generalInfo={generalInfo}
+          />
         }
       
     </FormContainer>

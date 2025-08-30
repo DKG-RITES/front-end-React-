@@ -10,10 +10,10 @@ import { Table, Divider, Form, Button } from 'antd';
 import Btn from '../../../../../components/DKG_Btn';
 import { FilterFilled, CloseCircleOutlined } from "@ant-design/icons";
 import { apiCall } from '../../../../../utils/CommonFunctions';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import TableComponent from '../../../../../components/DKG_Table';
 import FormInputItem from '../../../../../components/DKG_FormInputItem';
-import { endQctDuty } from '../../../../../store/slice/qctDutySlice';
+// Removed endQctDuty import - no longer needed
 
 const { millDropdownList, railSectionList, railGradeList, qctList, sampleDeclarationColumns, sampleDeclarationData } = data;
 
@@ -117,7 +117,13 @@ const QctSampleList = () => {
   }
 
   const {token} = useSelector(state => state.auth)
-  const qctGeneralInfo = useSelector(state => state.qctDuty)
+  const {dutyId} = useSelector(state => state.qctDuty)
+  // Use dummy duty ID if no actual duty is started
+  const qctGeneralInfo = {
+    date: new Date().toLocaleDateString('en-GB'),
+    shift: 'A', // Default shift
+    dutyId: dutyId || 'QCT_DUMMY_DUTY_001' // Use dummy duty ID when no actual duty
+  }
 
   const populateData = async () => {
     try {
@@ -129,11 +135,12 @@ const QctSampleList = () => {
     }
   }
 
-  const dispatch = useDispatch();
-  const handleFormSubmit = async () => {
-      await dispatch(endQctDuty(formData)).unwrap();
-      navigate('/')
-    }
+  // Remove end duty functionality - not needed anymore
+  // const dispatch = useDispatch();
+  // const handleFormSubmit = async () => {
+  //     await dispatch(endQctDuty(formData)).unwrap();
+  //     navigate('/')
+  //   }
 
   useEffect(() => {
     populateData();

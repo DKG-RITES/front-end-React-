@@ -38,7 +38,7 @@ const TestingStartDutyForm = () => {
     const handleFormSubmit = async () => {
       await dispatch(startTestingDuty(formData)).unwrap();
       navigate('/testing/home');
-      message.success("Duty started successfully.");
+      // Success message is already shown in Redux slice
       // message.error("Internal server error. Please contact support.")
     };
 

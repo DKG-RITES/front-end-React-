@@ -334,13 +334,36 @@ const RollingControlSample = () => {
 
   const handleFormSubmit = async () => {
     try {
-      await apiCall("POST", "/rolling/saveControlHeat", token, {
+      const payload = {
         ...formData,
         heatNo: String(formData.heatNo).padStart(6, "0"),
         dutyId: rollingGeneralInfo.dutyId,
-      });
+      };
+
+      // Check if this is an edit operation (heatNo and sampleNo exist in navigation state)
+      const isEditMode = state?.heatNo && state?.sampleNo;
+
+      if (isEditMode) {
+        // For edit mode: delete the existing record first, then create new one
+        console.log("Edit mode detected - updating existing record");
+
+        // Delete existing record
+        await apiCall("POST", "/rolling/deleteControlHeat", token, {
+          heatNo: String(state.heatNo).padStart(6, "0"),
+          sampleNo: state.sampleNo,
+        });
+
+        // Create new record with updated data
+        await apiCall("POST", "/rolling/saveControlHeat", token, payload);
+        message.success("Data updated successfully");
+      } else {
+        // For create mode: directly save new record
+        console.log("Create mode - saving new record");
+        await apiCall("POST", "/rolling/saveControlHeat", token, payload);
+        message.success("Data saved successfully");
+      }
+
       localStorage.setItem("lastSampleNo", formData.sampleNo);
-      message.success("Data saved successfully");
       navigate("/stage/rollingControl");
     } catch (error) {}
   };
@@ -365,6 +388,108 @@ const RollingControlSample = () => {
   // console.log("Height rule: ", heightRule);
   // console.log("Flange rule: ", flangeRule);
 
+  // Function to get tolerance range for height based on rail section
+  const getHeightTolerance = () => {
+    if (railSection === "IRS52") {
+      return { floor: 155.6, ceil: 156.8 };
+    } else if (railSection === "60E1") {
+      return { floor: 171.4, ceil: 172.6 };
+    } else if (railSection === "60E1A1") {
+      return { floor: 133.3, ceil: 134.7 };
+    }
+    return null;
+  };
+
+  // Function to get tolerance range for flange based on rail section
+  const getFlangeTolerance = () => {
+    if (railSection === "60E1") {
+      return { floor: 149.0, ceil: 151.0 };
+    } else if (railSection === "IRS52") {
+      return { floor: 135.0, ceil: 137.0 };
+    } else if (railSection === "60E1A1") {
+      return { floor: 139.0, ceil: 141.0 };
+    }
+    return null;
+  };
+
+  // Function to get tolerance range for weight based on rail section
+  const getWeightTolerance = () => {
+    if (railSection === "IRS52") {
+      return { floor: 51.63055, ceil: 52.66835 };
+    } else if (railSection === "60E1") {
+      return { floor: 59.90895, ceil: 61.11315 };
+    } else if (railSection === "60E1A1") {
+      return { floor: 72.60515, ceil: 74.06455 };
+    }
+    return null;
+  };
+
+  // Function to get tolerance range for web based on rail section
+  const getWebTolerance = () => {
+    if (railSection === "IRS52") {
+      return { floor: 15.0, ceil: 16.5 };
+    } else if (railSection === "60E1") {
+      return { floor: 16.0, ceil: 17.5 };
+    } else if (railSection === "60E1A1") {
+      return { floor: 43.3, ceil: 44.7 };
+    }
+    return null;
+  };
+
+  // Function to validate tolerance for a specific field
+  const validateToleranceForField = (value, toleranceData) => {
+    if (!value || !toleranceData) return false;
+
+    const isFloat = regexMatch.floatRegex.test(value);
+    if (!isFloat) return false;
+
+    const numValue = parseFloat(value);
+    const floor = parseFloat(toleranceData.floor);
+    const ceil = parseFloat(toleranceData.ceil);
+
+    return numValue < floor || numValue > ceil;
+  };
+
+  // Function to validate all tolerance fields and update warningFields
+  const validateAllToleranceFields = (data) => {
+    const newWarningFields = [];
+
+    // Validate Height
+    const heightTolerance = getHeightTolerance();
+    if (data.height && heightTolerance) {
+      if (validateToleranceForField(data.height, heightTolerance)) {
+        newWarningFields.push('height');
+      }
+    }
+
+    // Validate Flange
+    const flangeTolerance = getFlangeTolerance();
+    if (data.flange && flangeTolerance) {
+      if (validateToleranceForField(data.flange, flangeTolerance)) {
+        newWarningFields.push('flange');
+      }
+    }
+
+    // Validate Weight
+    const weightTolerance = getWeightTolerance();
+    if (data.weight && weightTolerance) {
+      if (validateToleranceForField(data.weight, weightTolerance)) {
+        newWarningFields.push('weight');
+      }
+    }
+
+    // Validate Web
+    const webTolerance = getWebTolerance();
+    if (data.web && webTolerance) {
+      if (validateToleranceForField(data.web, webTolerance)) {
+        newWarningFields.push('web');
+      }
+    }
+
+    setWarningFields(newWarningFields);
+    console.log("Tolerance validation on load - Warning fields:", newWarningFields);
+  };
+
   const handleDtlSearch = useCallback(
     async (heatNo, sampleNo) => {
       try {
@@ -377,7 +502,7 @@ const RollingControlSample = () => {
 
         const { responseData } = data;
 
-        setFormData({
+        const formDataToSet = {
           sampleNo: responseData?.sampleNo,
           heatNo: responseData?.heatNo,
           timing: responseData?.timing,
@@ -393,10 +518,17 @@ const RollingControlSample = () => {
           fishingHeight: responseData?.fishingHeight,
           footFlatness: responseData?.footFlatness,
           remark: responseData?.remark,
-        });
+        };
+
+        setFormData(formDataToSet);
+
+        // Validate tolerance fields after loading data (with a small delay to ensure tolerance data is loaded)
+        setTimeout(() => {
+          validateAllToleranceFields(formDataToSet);
+        }, 200);
       } catch (error) {}
     },
-    [token]
+    [token, railSection]
   );
 
   const handleTimingChange = (time, timeString) => {
@@ -425,6 +557,24 @@ const RollingControlSample = () => {
 
   return (
     <FormContainer>
+      <style>
+        {`
+          .out-of-tolerance .ant-input {
+            color: #ff4d4f !important;
+            border-color: #ff4d4f !important;
+          }
+          .out-of-tolerance .ant-input:focus {
+            border-color: #ff4d4f !important;
+            box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
+          }
+          .out-of-tolerance .ant-input:hover {
+            border-color: #ff4d4f !important;
+          }
+          .out-of-tolerance .ant-form-item-label > label {
+            color: #ff4d4f !important;
+          }
+        `}
+      </style>
       <SubHeader
         title={`Rolling Control Sample Dimensions - ${railSection}`}
         link="/stage/rollingControl"
@@ -485,6 +635,7 @@ const RollingControlSample = () => {
             rules={heightRule}
             onChange={handleChange}
             required
+            className={warningFields.includes('height') ? 'out-of-tolerance' : ''}
           />
           <FormInputItem
             label="Flange"
@@ -492,6 +643,7 @@ const RollingControlSample = () => {
             rules={flangeRule}
             onChange={handleChange}
             required
+            className={warningFields.includes('flange') ? 'out-of-tolerance' : ''}
           />
 
           <FormInputItem
@@ -499,6 +651,7 @@ const RollingControlSample = () => {
             name="weight"
             onChange={handleChange}
             rules={weightRule}
+            className={warningFields.includes('weight') ? 'out-of-tolerance' : ''}
           />
           <FormInputItem
             label="Web (mm)"
@@ -506,6 +659,7 @@ const RollingControlSample = () => {
             rules={webRule}
             onChange={handleChange}
             required
+            className={warningFields.includes('web') ? 'out-of-tolerance' : ''}
           />
           <FormDropdownItem
             label="Head"

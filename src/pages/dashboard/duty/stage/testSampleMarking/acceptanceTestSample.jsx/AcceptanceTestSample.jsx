@@ -1,10 +1,11 @@
-import { Checkbox, Form, message } from "antd";
+import { Checkbox, Form, message, Tooltip } from "antd";
 import React, { useCallback, useEffect, useState } from "react";
 import FormDropdownItem from "../../../../../../components/DKG_FormDropdownItem";
 import FormInputItem from "../../../../../../components/DKG_FormInputItem";
 import { useSelector } from "react-redux";
 import { apiCall } from "../../../../../../utils/CommonFunctions";
 import Btn from "../../../../../../components/DKG_Btn";
+import { useNavigate } from "react-router-dom";
 import {
   RG_1080HH,
   RG_880,
@@ -13,44 +14,154 @@ import {
   RG_R350HT,
 } from "../../../../../../utils/Constants";
 
-const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
+const AcceptanceTestSample = ({ railGrade, dutyId, retest, editMode, editData, generalInfo }) => {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
+  console.log("AcceptanceTestSample - railGrade prop:", railGrade);
+  console.log("AcceptanceTestSample - editMode:", editMode);
+  console.log("AcceptanceTestSample - editData:", editData);
+
   const [formData, setFormData] = useState({
-    railGrade: railGrade,
-    sampleType: null,
-    sampleId: null,
-    heatNo: null,
-    strand: null,
-    sampleLot: null,
-    chemical: false, // Assuming you want null for Booleans (you can use false if needed)
-    n2: false,
-    fwtSt: false,
-    mechanical: false,
-    sp: false,
-    ir: false,
-    o2: false,
-    fwtHs: false,
-    fwtStSr: false,
-    tensileFoot: false,
-    micro: false,
-    decarb: false,
-    rsh: false,
-    tensile: false,
-    ph: false
+    railGrade: editMode && editData ? editData.railGrade : railGrade,
+    sampleType: editMode && editData ? editData.sampleType : null,
+    sampleId: editMode && editData ? (editData.sampleId || "N/A") : null,
+    heatNo: editMode && editData ? editData.heatNo : null,
+    strand: editMode && editData ? editData.strand : null,
+    sampleLot: editMode && editData ? editData.sampleLot : null,
+    chemical: editMode && editData ? editData.chemical : false,
+    n2: editMode && editData ? editData.n2 : false,
+    fwtSt: editMode && editData ? editData.fwtSt : false,
+    mechanical: editMode && editData ? editData.mechanical : false,
+    sp: editMode && editData ? editData.sp : false,
+    ir: editMode && editData ? editData.ir : false,
+    o2: editMode && editData ? editData.o2 : false,
+    fwtHs: editMode && editData ? editData.fwtHs : false,
+    fwtStSr: editMode && editData ? editData.fwtStSr : false,
+    tensileFoot: editMode && editData ? editData.tensileFoot : false,
+    micro: editMode && editData ? editData.micro : false,
+    decarb: editMode && editData ? editData.decarb : false,
+    rsh: editMode && editData ? editData.rsh : false,
+    tensile: editMode && editData ? editData.tensile : false,
+    ph: editMode && editData ? editData.ph : false
   });
+
+  // Update formData when editData changes
+  useEffect(() => {
+    console.log("AcceptanceTestSample - railGrade prop:", railGrade);
+    console.log("AcceptanceTestSample - editMode:", editMode);
+    console.log("AcceptanceTestSample - editData:", editData);
+
+    if (editMode && editData) {
+      setFormData({
+        railGrade: editData.railGrade || railGrade,
+        sampleType: editData.sampleType || null,
+        sampleId: editData.sampleId || "N/A",
+        heatNo: editData.heatNo || null,
+        strand: editData.strand || null,
+        sampleLot: editData.sampleLot || null,
+        chemical: editData.chemical || false,
+        n2: editData.n2 || false,
+        fwtSt: editData.fwtSt || false,
+        mechanical: editData.mechanical || false,
+        sp: editData.sp || false,
+        ir: editData.ir || false,
+        o2: editData.o2 || false,
+        fwtHs: editData.fwtHs || false,
+        fwtStSr: editData.fwtStSr || false,
+        tensileFoot: editData.tensileFoot || false,
+        micro: editData.micro || false,
+        decarb: editData.decarb || false,
+        rsh: editData.rsh || false,
+        tensile: editData.tensile || false,
+        ph: editData.ph || false
+      });
+    }
+  }, [editMode, editData, railGrade]);
+
+  // Track railGrade prop changes
+  useEffect(() => {
+    console.log("railGrade prop changed to:", railGrade);
+    if (!editMode && railGrade) {
+      console.log("Updating formData.railGrade to:", railGrade);
+      setFormData(prev => ({
+        ...prev,
+        railGrade: railGrade
+      }));
+    }
+  }, [railGrade, editMode]);
+
+  // Check if at least one checkbox is selected
+  const isAtLeastOneCheckboxSelected = () => {
+    const checkboxFields = [
+      'chemical', 'n2', 'fwtSt', 'mechanical', 'sp', 'ir', 'o2',
+      'fwtHs', 'fwtStSr', 'tensileFoot', 'micro', 'decarb', 'rsh', 'tensile', 'ph'
+    ];
+
+    return checkboxFields.some(field => formData[field] === true);
+  };
 
   const onFinish = async () => {
     if(retest){
       message.error("Table retest_rsm03. doesnt exist.")
       return;
     }
+
+    // Debug logging
+    console.log("=== VALIDATION DEBUG ===");
+    console.log("formData.railGrade:", formData.railGrade);
+    console.log("railGrade prop:", railGrade);
+    console.log("formData:", formData);
+
+    // Validate rail grade - check both formData and prop
+    const currentRailGrade = formData.railGrade || railGrade;
+    console.log("currentRailGrade:", currentRailGrade);
+
+    if (!currentRailGrade || currentRailGrade === "") {
+      console.log("VALIDATION FAILED: Rail grade is empty");
+      message.error("Please select a rail grade before submitting.");
+      return;
+    }
+
+    // Validate at least one checkbox is selected
+    if (!isAtLeastOneCheckboxSelected()) {
+      message.error("Please select at least one test to mark.");
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      railGrade: currentRailGrade, // Use the validated rail grade
+      dutyId,
+    };
+
+    console.log("Acceptance Test Sample Payload:", payload);
+    console.log("formData.railGrade:", formData.railGrade);
+    console.log("railGrade prop:", railGrade);
+    console.log("currentRailGrade used:", currentRailGrade);
+
     try {
-      await apiCall("POST", "rolling/saveAcceptanceTestSample", token, {
-        ...formData,
-        dutyId,
+      if (editMode) {
+        // Update existing test sample
+        await apiCall("POST", "rolling/updateTestSample", token, payload);
+        message.success("Test sample updated successfully.");
+      } else {
+        // Create new test sample
+        await apiCall("POST", "rolling/saveAcceptanceTestSample", token, payload);
+        message.success("Data saved successfully.");
+      }
+
+      // Navigate to Test Sample - Declaration page after successful save
+      navigate("/stage/testSampleMarkingList", {
+        state: {
+          module: "stage",
+          dutyId: dutyId,
+          generalInfo: generalInfo, // Preserve the original general info
+          redirectTo: "/stage/home"
+        }
       });
-      message.success("Data saved successfully.");
-    } catch (error) {}
+    } catch (error) {
+      message.error(editMode ? "Failed to update test sample." : "Failed to save test sample.");
+    }
   };
 
   useEffect(() => {
@@ -218,6 +329,43 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
     form.setFieldsValue(formData);
   }, [form, formData]);
 
+  // Set initial form values when in edit mode
+  useEffect(() => {
+    if (editMode && editData) {
+      const initialValues = {
+        sampleType: editData.sampleType || null,
+        sampleId: editData.sampleId || "N/A",
+        heatNo: editData.heatNo || null,
+        strand: editData.strand || null,
+        sampleLot: editData.sampleLot || null,
+        // Set all checkbox values from editData
+        chemical: editData.chemical || false,
+        n2: editData.n2 || false,
+        fwtSt: editData.fwtSt || false,
+        mechanical: editData.mechanical || false,
+        sp: editData.sp || false,
+        ir: editData.ir || false,
+        o2: editData.o2 || false,
+        fwtHs: editData.fwtHs || false,
+        fwtStSr: editData.fwtStSr || false,
+        tensileFoot: editData.tensileFoot || false,
+        micro: editData.micro || false,
+        decarb: editData.decarb || false,
+        rsh: editData.rsh || false,
+        ph: editData.ph || false,
+        tensile: editData.tensile || false
+      };
+
+      form.setFieldsValue(initialValues);
+
+      // Also update formData state to match
+      setFormData(prev => ({
+        ...prev,
+        ...initialValues
+      }));
+    }
+  }, [editMode, editData, form]);
+
   return (
     <Form
       form={form}
@@ -268,9 +416,10 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
         <FormInputItem
           label="Sample ID"
           name="sampleId"
-          rules={sampleIdRule}
+          rules={formData.sampleId === "N/A" ? [] : sampleIdRule}
           onChange={handleChange}
-          disabled={railGrade === "880" || railGrade === "R260"}
+          disabled={railGrade === "880" || railGrade === "R260" || formData.sampleId === "N/A"}
+          placeholder={formData.sampleId === "N/A" ? "N/A" : "Enter Sample ID"}
         />
       </div>
 
@@ -279,7 +428,7 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
           checked={formData.chemical || false}
           onChange={(e) => handleChange("chemical", e.target.checked)}
         >
-          Chemical .(P)
+          CHEMICAL
         </Checkbox>
 
         <Checkbox
@@ -300,14 +449,14 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
           checked={formData.fwtSt || false}
           onChange={(e) => handleChange("fwtSt", e.target.checked)}
         >
-          FWT (HS)
+          FWT (ST)
         </Checkbox>
 
         <Checkbox
           checked={formData.fwtHs || false}
           onChange={(e) => handleChange("fwtHs", e.target.checked)}
         >
-          FWT (St.)
+          FWT (HS)
         </Checkbox>
 
         {(railGrade === RG_880 || railGrade === RG_R260) && (
@@ -315,16 +464,16 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
             checked={formData.fwtStSr || false}
             onChange={(e) => handleChange("fwtStSr", e.target.checked)}
           >
-            FWT (St.) - Sr
+            FWT (ST) - SR
           </Checkbox>
         )}
       {
-        (railGrade === RG_880 || railGrade === RG_R260) && 
+        (railGrade === RG_880 || railGrade === RG_R260) &&
         <Checkbox
           checked={formData.mechanical || false}
           onChange={(e) => handleChange("mechanical", e.target.checked)}
         >
-          Mechanical
+          MECHANICAL
         </Checkbox>
       }
 
@@ -332,7 +481,7 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
           checked={formData.tensileFoot || false}
           onChange={(e) => handleChange("tensileFoot", e.target.checked)}
         >
-          Tensile Foot
+          TENSILE FOOT
         </Checkbox>
 
         <Checkbox
@@ -346,7 +495,7 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
           checked={formData.micro || false}
           onChange={(e) => handleChange("micro", e.target.checked)}
         >
-          Micro
+          MICRO
         </Checkbox>
 
         <Checkbox
@@ -360,7 +509,7 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
           checked={formData.decarb || false}
           onChange={(e) => handleChange("decarb", e.target.checked)}
         >
-          Decarb
+          DECARB
         </Checkbox>
         {(railGrade === RG_1080HH || railGrade === RG_R350HT || railGrade === RG_880NC) && (
           <>
@@ -374,7 +523,7 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
               checked={formData.tensile || false}
               onChange={(e) => handleChange("tensile", e.target.checked)}
             >
-              Tensile
+              TENSILE
             </Checkbox>
             <Checkbox
               checked={formData.ph || false}
@@ -386,10 +535,18 @@ const AcceptanceTestSample = ({ railGrade, dutyId, retest }) => {
         )}
       </div>
 
-      <Btn htmlType="submit" className="flex mx-auto mt-4">
-        {" "}
-        Save{" "}
-      </Btn>
+      <Tooltip
+        title={!isAtLeastOneCheckboxSelected() ? "Please select at least one test checkbox to enable save" : ""}
+        placement="top"
+      >
+        <Btn
+          htmlType="submit"
+          className="flex mx-auto mt-4"
+          disabled={!isAtLeastOneCheckboxSelected()}
+        >
+          {editMode ? "Update" : "Save"}
+        </Btn>
+      </Tooltip>
     </Form>
   );
 };

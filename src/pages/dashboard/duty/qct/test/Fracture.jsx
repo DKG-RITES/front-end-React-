@@ -59,14 +59,21 @@ const Fracture = () => {
       setFormData(prev => ({...prev, [fieldName]: value}))
     }
 
-    const qctGeneralInfo = useSelector(state => state.qctDuty);
+    const {dutyId} = useSelector(state => state.qctDuty)
+    // Use dummy duty ID if no actual duty is started
+    const qctGeneralInfo = {
+      date: new Date().toLocaleDateString('en-GB'),
+      shift: 'A', // Default shift
+      dutyId: dutyId || 'QCT_DUMMY_DUTY_001' // Use dummy duty ID when no actual duty
+    };
 
     const navigate = useNavigate();
 
     const handleSubmit = async () => {
 
       const payload = {
-        dutyId: qctGeneralInfo.dutyId,
+        // Use dummy duty ID since QCT works without actual duty
+        dutyId: qctGeneralInfo.dutyId || 'QCT_DUMMY_DUTY_001',
         remarks: formData.remarks,
         dtlList: [{
           id: formData.qctId,

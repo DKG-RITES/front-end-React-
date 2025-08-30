@@ -8,6 +8,28 @@ import { useReactToPrint } from 'react-to-print';
 
 const VerificationIso = () => {
   const repRef = useRef();
+
+  // Generate dynamic SMS titles based on smsVal
+  const getSmsTitle = (smsValue) => {
+    console.log('SMS Value received:', smsValue); // Debug log
+    if (smsValue === 'SMS 2' || smsValue === 'SMS2') {
+      return {
+        hindi: 'एस.एम.एस - II',
+        english: 'SMS II'
+      };
+    } else if (smsValue === 'SMS 3' || smsValue === 'SMS3') {
+      return {
+        hindi: 'एस.एम.एस - III',
+        english: 'SMS III'
+      };
+    }
+    // Default fallback
+    console.log('Using default SMS title for value:', smsValue); // Debug log
+    return {
+      hindi: 'एस.एम.एस - II / एस.एम.एस - III',
+      english: 'SMS II / SMS III'
+    };
+  };
   const [formData, setFormData] = useState({
     date: null,
     shift: null,
@@ -109,6 +131,20 @@ const VerificationIso = () => {
 
   const {token} = useSelector(state => state.auth);
 
+  // Helper function to prioritize Witnessed over Verified
+  const prioritizeWitnessedVerified = (items) => {
+    return items.sort((a, b) => {
+      // Priority: Witnessed > Verified > others
+      const getPriority = (item) => {
+        if (item.castingTempWv === 'Witnessed') return 1;
+        if (item.castingTempWv === 'Verified') return 2;
+        return 3;
+      };
+
+      return getPriority(a) - getPriority(b);
+    });
+  };
+
   const onFinish = async (formData) => {
     try {
       const { data } = await apiCall("POST", "/iso/getHeatDtls", token, formData);
@@ -182,14 +218,28 @@ const VerificationIso = () => {
         }
       });
 
+      // Apply prioritization to all lists
+      const prioritizedHeatDtlList = prioritizeWitnessedVerified(heatDtlList);
+
+      // Sort degassing list by Witnessed/Verified priority
+      const sortedDegassingDtlList = degassingDtlList.sort((a, b) => {
+        const getPriority = (item) => {
+          if (item.castingTimeWv === 'Witnessed') return 1;
+          if (item.castingTimeWv === 'Verified') return 2;
+          return 3;
+        };
+        return getPriority(a) - getPriority(b);
+      });
+
       setFormData({
-        heatDtlList,
+        heatDtlList: prioritizedHeatDtlList,
         castingDtlList,
-        degassingDtlList,
+        degassingDtlList: sortedDegassingDtlList,
         bloomDtlList,
         date: formData.date,
         shift: formData.shift,
         railGrade: formData.railGrade,
+        sms: formData.sms, // Add SMS field to maintain dropdown selection
         ladleToTundishUsed: data?.responseData[0]?.isLadleToTundishUsed === true ? "Yes" : "No",
         tundishToMouldUsed: data?.responseData[0]?.isTundishToMouldUsed === true? "Yes" : "No",
       });
@@ -232,8 +282,8 @@ const VerificationIso = () => {
         </div>
 
         <div className='text-center'>
-          <h2 className="!text-sm">एस.एम.एस - II / एस.एम.एस - III</h2>
-          <h2 className='font-semibold !text-sm'>SMS II / SMS III</h2>
+          <h2 className="!text-sm">{getSmsTitle(formData.sms).hindi}</h2>
+          <h2 className='font-semibold !text-sm'>{getSmsTitle(formData.sms).english}</h2>
         </div>
 
         <div className='flex gap-2 items-center'>
