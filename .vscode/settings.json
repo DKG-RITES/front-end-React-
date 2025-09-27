@@ -1,0 +1,13 @@
+{
+    "[javascript]": {
+        "editor.maxTokenizationLineLength": 2500,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "never"
+        }
+    },
+    "[javascriptreact]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "never"
+        }
+    }
+}
