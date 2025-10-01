@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Table, Card, Modal, Image, message } from 'antd';
+import { getImageUrl, getFileName, isSupportedImageFormat } from '../utils/imageUtils';
 
 const InspectionDataTable = ({
   dimensionalData = [],
@@ -149,12 +150,29 @@ const InspectionDataTable = ({
           return '-';
         }
 
-        const fileName = annotatedImage.split('/').pop() || annotatedImage;
+        // Check if it's a supported image format
+        if (!isSupportedImageFormat(annotatedImage)) {
+          return (
+            <div style={{
+              width: '60px',
+              height: '40px',
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#f5f5f5',
+              fontSize: '10px',
+              color: '#999',
+              textAlign: 'center'
+            }}>
+              📄<br/>Unsupported
+            </div>
+          );
+        }
 
-        // Construct the proper image URL using public endpoint
-        const imageUrl = annotatedImage.startsWith('http')
-          ? annotatedImage
-          : `http://localhost:8080/public/images?path=${encodeURIComponent(annotatedImage)}`;
+        const fileName = getFileName(annotatedImage);
+        const imageUrl = getImageUrl(annotatedImage);
 
 
 

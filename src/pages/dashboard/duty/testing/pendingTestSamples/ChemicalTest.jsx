@@ -17,22 +17,32 @@ const ChemicalTest = () => {
     const {token} = useSelector(state => state.auth)
     const handleSubmit = async () => {
         try{
+            // Use the same endpoint for both create and update - backend handles the logic
             await apiCall("POST", "/testing/completeTest", token, {...formData, dutyId})
-            message.success("Test Saved Successfully")
+            if (isEditMode) {
+                message.success("Test Updated Successfully")
+            } else {
+                message.success("Test Saved Successfully")
+            }
             navigate("/testing/home")
         }
-        catch(error){}
+        catch(error){
+            message.error(isEditMode ? "Error updating test" : "Error saving test")
+            console.error("Error:", error)
+        }
     }
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType, testName} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, testName, isEditMode, completedTestData} = state;
+
+    console.log("ChemicalTest component loaded with state:", state);
+    console.log("isEditMode:", isEditMode);
+    console.log("completedTestData:", completedTestData);
 
     // Determine the display title based on the test name passed from navigation
     const getTestTitle = () => {
-        if (testName) {
-            return `${testName} Test`;
-        }
-        return "Chemical Test"; // Default fallback
+        const baseTitle = testName ? `${testName} Test` : "Chemical Test";
+        return isEditMode ? `Edit ${baseTitle}` : baseTitle;
     };
 
     const [formData, setFormData] = useState({
@@ -42,8 +52,8 @@ const ChemicalTest = () => {
         sampleLot: sampleLot,
         sampleType: sampleType,
         testType: "CHEMICAL",
-        chemicalLadleStatus: "",
-        chemicalProductStatus: ""
+        chemicalLadleStatus: isEditMode && completedTestData ? completedTestData.chemicalLadleStatus || "" : "",
+        chemicalProductStatus: isEditMode && completedTestData ? completedTestData.chemicalProductStatus || "" : ""
     })
 
     const handleChange = (fieldName, value) => {

@@ -220,8 +220,13 @@ const SrNewInspectionForm = () => {
 
   const getSafeValue = (value) => Number(value) || 0;
 
-  const stdWt =
-    (formData.railSectionInspected === "60E1" || formData.railSectionInspected === "60E1A1") ? 60.21 : 51.89;
+  const stdWt = (() => {
+    if (formData.railSectionInspected === "60E1") return 60.21;
+    if (formData.railSectionInspected === "60E1A1") return 72.97;
+    if (formData.railSectionInspected === "UIC60") return 60.34;
+    if (formData.railSectionInspected === "136RE") return 67.364;
+    return 51.89; // Default for IRS52 and other sections
+  })();
 
   // Only calculate tonnage when both Rail Section and Rail Grade are selected
   const shouldCalculateTonnage = formData?.railSectionInspected && formData?.railGradeInspected;

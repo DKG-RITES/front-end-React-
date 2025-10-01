@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../components/DKG_SubHeader'
 import FormInputItem from '../../../../../components/DKG_FormInputItem'
@@ -27,7 +27,7 @@ const TensileFootTest = () => {
     
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, isEditMode, completedTestData} = state;
 
     const [formData, setFormData] = useState({
         heatNumber: heatNo,
@@ -41,6 +41,34 @@ const TensileFootTest = () => {
         tensileFootUts: "",
         tensileFootEi: ""
     })
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 TensileFootTest component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling Tensile Foot form with completed test data:", completedTestData);
+            setFormData(prev => ({
+                ...prev,
+                tensileFootStatus: completedTestData.tensileFootStatus || "",
+                tensileFootYield: completedTestData.tensileFootYield || "",
+                tensileFootUts: completedTestData.tensileFootUts || "",
+                tensileFootEi: completedTestData.tensileFootEi || ""
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                tensileFootStatus: completedTestData.tensileFootStatus || "",
+                tensileFootYield: completedTestData.tensileFootYield || "",
+                tensileFootUts: completedTestData.tensileFootUts || "",
+                tensileFootEi: completedTestData.tensileFootEi || ""
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
 
     const handleChange = (fieldName, value) => {
       setFormData(prev => {

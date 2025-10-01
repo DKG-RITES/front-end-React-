@@ -18,7 +18,7 @@ import { getOngoingTestingDutyDtls } from './store/slice/testingDutySlice';
 axios.defaults.baseURL =
   window.location.hostname === "localhost"
     ? "http://localhost:8080"
-    : "http://10.145.222.6:8080"; // Static IP
+    : "http://10.145.222.6:8080"; // Current IP
 
 // console.log("accd")
 

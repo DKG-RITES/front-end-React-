@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../components/DKG_SubHeader'
 import FormInputItem from '../../../../../components/DKG_FormInputItem'
@@ -24,7 +24,7 @@ const FWTTest = () => {
         catch(error){}
     }
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType, testName} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, testName, isEditMode, completedTestData} = state;
 
     // Determine the display title based on the test name passed from navigation
     const getTestTitle = () => {
@@ -43,6 +43,28 @@ const FWTTest = () => {
         testType: "FWT",
         fwtTestStatus: ""
     })
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 FWT Test component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling FWT form with completed test data:", completedTestData);
+            setFormData(prev => ({
+                ...prev,
+                fwtTestStatus: completedTestData.fwtStatus || ""
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                fwtTestStatus: completedTestData.fwtStatus || ""
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
 
     const handleChange = (fieldName, value) => {
       setFormData(prev => {

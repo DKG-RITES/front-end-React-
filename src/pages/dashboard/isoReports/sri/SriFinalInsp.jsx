@@ -1241,48 +1241,6 @@ const SriFinalInsp = () => {
                 </td>
               </tr>
 
-							<tr>
-                <td className="cell-style">OL</td>
-                <td className="cell-style">
-                  {" "}
-                  {formData?.cls52?.defect13m?.["OL"] ?? ""}{" "}
-                </td>
-                <td className="cell-style">
-                  {" "}
-                  {formData?.cls52?.defect26m?.["OL"] ?? ""}{" "}
-                </td>
-                <td className="cell-style">OTHER</td>
-                <td className="cell-style">
-                  {" "}
-                  {formData?.cls52?.defect13m?.["Other"] ?? ""}{" "}
-                </td>
-                <td className="cell-style">
-                  {" "}
-                  {formData?.cls52?.defect26m?.["Other"] ?? ""}{" "}
-                </td>
-                <td className="cell-style">OL</td>
-                <td className="cell-style">
-                  {" "}
-                  {formData?.cls60?.defect13m?.["OL"] ?? ""}{" "}
-                </td>
-                <td className="cell-style">
-                  {" "}
-                  {formData?.cls60?.defect26m?.["OL"] ?? ""}{" "}
-                </td>
-                <td className="cell-style">OTHER</td>
-                <td className="cell-style">
-                  {" "}
-                  {formData?.cls60?.defect13m?.["Other"] ?? ""}{" "}
-                </td>
-                <td className="cell-style">
-                  {" "}
-                  {formData?.cls60?.defect26m?.["Other"] ?? ""}{" "}
-                </td>
-              </tr>
-
-
-
-
 
 							<tr>
 								<td  colSpan={3} className="cell-style">REMARKS / ABNORMALITY</td>
