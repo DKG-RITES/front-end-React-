@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Table, Card, Modal, Image, message } from 'antd';
+import { useState, useEffect } from 'react';
+import { Table, Card, Modal, Image, message, Button } from 'antd';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { getImageUrl, getFileName, isSupportedImageFormat } from '../utils/imageUtils';
 
 const InspectionDataTable = ({
@@ -12,9 +13,17 @@ const InspectionDataTable = ({
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState('');
   const [currentImageTitle, setCurrentImageTitle] = useState('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Get all images from surface data for navigation
+  const getImagesWithData = () => {
+    return surfaceData
+      .map((item, index) => ({ ...item, originalIndex: index }))
+      .filter(item => item.annotatedImage && isSupportedImageFormat(item.annotatedImage));
+  };
 
   // Function to handle image viewing
-  const handleImageView = (imagePath, title) => {
+  const handleImageView = (imagePath, title, imageIndex = 0) => {
     if (!imagePath) {
       message.error('Image path not available');
       return;
@@ -31,8 +40,64 @@ const InspectionDataTable = ({
 
     setCurrentImageUrl(imageUrl);
     setCurrentImageTitle(title);
+    setCurrentImageIndex(imageIndex);
     setImageModalVisible(true);
   };
+
+  // Navigation functions
+  const handleNextImage = () => {
+    const images = getImagesWithData();
+    if (images.length <= 1) return;
+
+    const nextIndex = (currentImageIndex + 1) % images.length;
+    const nextImage = images[nextIndex];
+    const fileName = getFileName(nextImage.annotatedImage);
+    const imageUrl = getImageUrl(nextImage.annotatedImage);
+
+    setCurrentImageIndex(nextIndex);
+    setCurrentImageUrl(imageUrl);
+    setCurrentImageTitle(`Surface Inspection - Annotated - ${fileName}`);
+  };
+
+  const handlePrevImage = () => {
+    const images = getImagesWithData();
+    if (images.length <= 1) return;
+
+    const prevIndex = currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1;
+    const prevImage = images[prevIndex];
+    const fileName = getFileName(prevImage.annotatedImage);
+    const imageUrl = getImageUrl(prevImage.annotatedImage);
+
+    setCurrentImageIndex(prevIndex);
+    setCurrentImageUrl(imageUrl);
+    setCurrentImageTitle(`Surface Inspection - Annotated - ${fileName}`);
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (!imageModalVisible) return;
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        handlePrevImage();
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        handleNextImage();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        setImageModalVisible(false);
+      }
+    };
+
+    if (imageModalVisible) {
+      document.addEventListener('keydown', handleKeyPress);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [imageModalVisible, currentImageIndex]);
 
   // Columns for Dimensional Inspection Table (4 columns)
   const dimensionalColumns = [
@@ -145,7 +210,7 @@ const InspectionDataTable = ({
       key: 'annotatedImage',
       align: 'center',
       width: 120,
-      render: (annotatedImage) => {
+      render: (annotatedImage, record) => {
         if (!annotatedImage) {
           return '-';
         }
@@ -174,10 +239,14 @@ const InspectionDataTable = ({
         const fileName = getFileName(annotatedImage);
         const imageUrl = getImageUrl(annotatedImage);
 
-
-
         const handleImageClick = () => {
-          handleImageView(imageUrl, `Surface Inspection - Annotated - ${fileName}`);
+          // Find the index of this image in the filtered images array
+          const images = getImagesWithData();
+          const imageIndex = images.findIndex(img =>
+            img.annotatedImage === annotatedImage &&
+            img.id === record.id
+          );
+          handleImageView(imageUrl, `Surface Inspection - Annotated - ${fileName}`, imageIndex >= 0 ? imageIndex : 0);
         };
 
         return (
@@ -254,7 +323,6 @@ const InspectionDataTable = ({
           rowKey={(record, index) => `dimensional-${record.inspectionId || index}`}
           bordered
           size="small"
-          scroll={{ x: 750 }} // Increased scroll width to accommodate new column
           pagination={{
             pageSize: dimensionalPageSize,
             showSizeChanger: true,
@@ -285,7 +353,6 @@ const InspectionDataTable = ({
           rowKey={(record, index) => `surface-${record.id || index}`}
           bordered
           size="small"
-          scroll={{ x: 800 }} // Increased scroll width to accommodate both image columns
           pagination={{
             pageSize: surfacePageSize,
             showSizeChanger: true,
@@ -304,7 +371,16 @@ const InspectionDataTable = ({
 
       {/* Image Viewer Modal */}
       <Modal
-        title={currentImageTitle}
+        title={
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>{currentImageTitle}</span>
+            {getImagesWithData().length > 1 && (
+              <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#666' }}>
+                {currentImageIndex + 1} of {getImagesWithData().length}
+              </span>
+            )}
+          </div>
+        }
         open={imageModalVisible}
         onCancel={() => setImageModalVisible(false)}
         footer={null}
@@ -313,23 +389,88 @@ const InspectionDataTable = ({
         styles={{
           body: {
             padding: '20px',
-            textAlign: 'center'
+            textAlign: 'center',
+            position: 'relative'
           }
         }}
       >
-        <Image
-          src={currentImageUrl}
-          alt={currentImageTitle}
-          style={{
-            maxWidth: '100%',
-            maxHeight: '70vh',
-            objectFit: 'contain'
-          }}
-          fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
-          preview={{
-            mask: false,
-          }}
-        />
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          {/* Previous Image Button */}
+          {getImagesWithData().length > 1 && (
+            <Button
+              type="text"
+              icon={<LeftOutlined />}
+              onClick={handlePrevImage}
+              style={{
+                position: 'absolute',
+                left: '-50px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 1000,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+              }}
+            />
+          )}
+
+          <Image
+            src={currentImageUrl}
+            alt={currentImageTitle}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '70vh',
+              objectFit: 'contain'
+            }}
+            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+            preview={{
+              mask: false,
+            }}
+          />
+
+          {/* Next Image Button */}
+          {getImagesWithData().length > 1 && (
+            <Button
+              type="text"
+              icon={<RightOutlined />}
+              onClick={handleNextImage}
+              style={{
+                position: 'absolute',
+                right: '-50px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 1000,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+              }}
+            />
+          )}
+        </div>
       </Modal>
     </div>
   );

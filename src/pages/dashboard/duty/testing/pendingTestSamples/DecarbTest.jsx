@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../components/DKG_SubHeader'
 import FormInputItem from '../../../../../components/DKG_FormInputItem'
@@ -25,7 +25,7 @@ const DecarbTest = () => {
     }
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType, testName} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, testName, isEditMode, completedTestData} = state;
 
     // Determine the display title based on the test name passed from navigation
     const getTestTitle = () => {
@@ -56,6 +56,40 @@ const DecarbTest = () => {
         }
       })
     }
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 Decarb Test component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling Decarb form with completed test data:", completedTestData);
+
+            // Convert BigDecimal values to strings for form inputs
+            const decarb1Str = completedTestData.decarb1 ? completedTestData.decarb1.toString() : "";
+            const decarb2Str = completedTestData.decarb2 ? completedTestData.decarb2.toString() : "";
+            const decarb3Str = completedTestData.decarb3 ? completedTestData.decarb3.toString() : "";
+
+            setFormData(prev => ({
+                ...prev,
+                decarbStatus: completedTestData.decarbStatus || "",
+                decarb1: decarb1Str,
+                decarb2: decarb2Str,
+                decarb3: decarb3Str
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                decarbStatus: completedTestData.decarbStatus || "",
+                decarb1: decarb1Str,
+                decarb2: decarb2Str,
+                decarb3: decarb3Str
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
 
     return (
         <div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../components/DKG_SubHeader'
 import FormInputItem from '../../../../../components/DKG_FormInputItem'
@@ -25,7 +25,7 @@ const TensileTest = () => {
     }
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, isEditMode, completedTestData} = state;
 
     const [formData, setFormData] = useState({
         heatNumber: heatNo,
@@ -48,6 +48,40 @@ const TensileTest = () => {
         }
       })
     }
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 Tensile Test component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling Tensile form with completed test data:", completedTestData);
+
+            // Convert BigDecimal values to strings for form inputs
+            const tensileYieldStr = completedTestData.tensileYield ? completedTestData.tensileYield.toString() : "";
+            const tensileUtsStr = completedTestData.tensileUts ? completedTestData.tensileUts.toString() : "";
+            const tensileEiStr = completedTestData.tensileEi ? completedTestData.tensileEi.toString() : "";
+
+            setFormData(prev => ({
+                ...prev,
+                tensileTestStatus: completedTestData.tensileStatus || "",
+                tensileYield: tensileYieldStr,
+                tensileUts: tensileUtsStr,
+                tensileEi: tensileEiStr
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                tensileTestStatus: completedTestData.tensileStatus || "",
+                tensileYield: tensileYieldStr,
+                tensileUts: tensileUtsStr,
+                tensileEi: tensileEiStr
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
 
     return (
         <div>

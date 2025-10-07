@@ -190,7 +190,9 @@ const pendingTestSamplesColumns = (currentPage, pageSize, completedTests, naviga
 
                         // Check if this test is completed
                         const isCompleted = sampleCompletedTests[cleanTestUpper] || false;
-                        console.log("Is completed for", cleanTestUpper, ":", isCompleted);
+                        console.log("🔍 Completion check for", cleanTestUpper, ":", isCompleted);
+                        console.log("🗂️ Available completion keys:", Object.keys(sampleCompletedTests));
+                        console.log("🎯 Sample completed tests object:", sampleCompletedTests);
 
                         // Comprehensive test name mapping with case-insensitive matching
                         const lowerTest = cleanTest.toLowerCase();
@@ -360,8 +362,16 @@ const pendingTestSamplesColumns = (currentPage, pageSize, completedTests, naviga
     const normalizeTestType = (testName) => {
         const upperTest = testName.toUpperCase();
 
-        // Handle FWT variations - all FWT types are stored as 'FWT' in database
+        // Handle FWT variations - each FWT type is stored separately in database
         if (upperTest.includes('FWT')) {
+            if (upperTest.includes('FWT (ST) - SR') || upperTest.includes('FWT(ST)-SR')) {
+                return 'FWT_ST_SR';
+            } else if (upperTest.includes('FWT (HS)') || upperTest.includes('FWT(HS)')) {
+                return 'FWT_HS';
+            } else if (upperTest.includes('FWT (ST)') || upperTest.includes('FWT(ST)')) {
+                return 'FWT_ST';
+            }
+            // Default to FWT for any other FWT variant
             return 'FWT';
         }
 
@@ -370,17 +380,39 @@ const pendingTestSamplesColumns = (currentPage, pageSize, completedTests, naviga
             return 'TENSILE_FOOT';
         }
 
-        // Handle other common test type variations
-        if (upperTest.includes('MECHANICAL') || upperTest.includes('MACRO')) {
+        // Handle TENSILE (but not TENSILE FOOT) - stored as 'TENSILE' in database
+        if (upperTest.includes('TENSILE') && !upperTest.includes('FOOT')) {
+            return 'TENSILE';
+        }
+
+        // Handle MECHANICAL - stored as 'MECHANICAL' in database
+        if (upperTest.includes('MECHANICAL')) {
             return 'MECHANICAL';
         }
 
+        // Handle MACRO - stored as 'MACRO' in database (separate from MECHANICAL)
+        if (upperTest.includes('MACRO')) {
+            return 'MACRO';
+        }
+
+        // Handle MICRO variations - stored as 'MICRO' in database
         if (upperTest.includes('MICROSTRUCTURE') || upperTest.includes('MICRO')) {
             return 'MICRO';
         }
 
+        // Handle CHEMICAL variations - stored as 'CHEMICAL' in database
         if (upperTest.includes('CHEMICAL') || upperTest.includes('CHEMIC')) {
             return 'CHEMICAL';
+        }
+
+        // Handle HARDNESS - stored as 'HARDNESS' in database
+        if (upperTest.includes('HARDNESS') || upperTest.includes('HARD')) {
+            return 'HARDNESS';
+        }
+
+        // Handle DECARB variations - stored as 'DECARB' in database
+        if (upperTest.includes('DECARB')) {
+            return 'DECARB';
         }
 
         // For other test types, use the cleaned version
@@ -391,14 +423,32 @@ const pendingTestSamplesColumns = (currentPage, pageSize, completedTests, naviga
     const checkCompletedTest = async (heatNumber, strandNumber, sampleId, testType) => {
         try {
             const normalizedTestType = normalizeTestType(testType);
-            console.log("Checking completion for:", { heatNumber, strandNumber, sampleId, testType, normalizedTestType });
+            console.log("🔍 Checking completion for:", {
+                heatNumber,
+                strandNumber,
+                sampleId,
+                originalTestType: testType,
+                normalizedTestType
+            });
+
             const { data } = await apiCall("GET", `/testing/isTestCompleted?heatNumber=${heatNumber}&strandNumber=${strandNumber}&sampleId=${sampleId}&testType=${normalizedTestType}`, token);
-            console.log("API response for completion check:", data);
+            console.log("📡 API response for completion check:", data);
+            console.log("🔍 Raw API response data:", JSON.stringify(data, null, 2));
+
             const isCompleted = data.responseData === true;
-            console.log("Test completed status:", isCompleted);
+            console.log(`✅ Test ${testType} → ${normalizedTestType} completed status:`, isCompleted);
+
+            if (testType.toUpperCase().includes('PH')) {
+                console.log("🧪 PH TEST DEBUG:");
+                console.log("   Original testType:", testType);
+                console.log("   Normalized testType:", normalizedTestType);
+                console.log("   API response:", data);
+                console.log("   Is completed:", isCompleted);
+            }
+
             return isCompleted;
         } catch (error) {
-            console.error("Error checking completed test:", error);
+            console.error("❌ Error checking completed test:", error);
             return false;
         }
     };
@@ -434,12 +484,14 @@ const pendingTestSamplesColumns = (currentPage, pageSize, completedTests, naviga
         const results = await Promise.all(apiPromises);
 
         // Map results back to the completedTestsMap
+        console.log("📊 Processing completion check results:");
         results.forEach((isCompleted, index) => {
             const { sampleKey, cleanTest } = promiseMetadata[index];
             completedTestsMap[sampleKey][cleanTest] = isCompleted;
+            console.log(`   ${sampleKey} → ${cleanTest}: ${isCompleted ? '✅ COMPLETED' : '❌ PENDING'}`);
         });
 
-        console.log("Completed tests map:", completedTestsMap);
+        console.log("🗺️ Final completed tests map:", completedTestsMap);
         return completedTestsMap;
     };
 

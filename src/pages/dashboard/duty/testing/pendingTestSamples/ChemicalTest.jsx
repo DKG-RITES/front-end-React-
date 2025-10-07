@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../components/DKG_SubHeader'
 import FormInputItem from '../../../../../components/DKG_FormInputItem'
@@ -52,8 +52,8 @@ const ChemicalTest = () => {
         sampleLot: sampleLot,
         sampleType: sampleType,
         testType: "CHEMICAL",
-        chemicalLadleStatus: isEditMode && completedTestData ? completedTestData.chemicalLadleStatus || "" : "",
-        chemicalProductStatus: isEditMode && completedTestData ? completedTestData.chemicalProductStatus || "" : ""
+        chemicalLadleStatus: "",
+        chemicalProductStatus: ""
     })
 
     const handleChange = (fieldName, value) => {
@@ -64,6 +64,31 @@ const ChemicalTest = () => {
         }
       })
     }
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 Chemical Test component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling Chemical form with completed test data:", completedTestData);
+
+            setFormData(prev => ({
+                ...prev,
+                chemicalLadleStatus: completedTestData.chemicalLadleStatus || "",
+                chemicalProductStatus: completedTestData.chemicalProductStatus || ""
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                chemicalLadleStatus: completedTestData.chemicalLadleStatus || "",
+                chemicalProductStatus: completedTestData.chemicalProductStatus || ""
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
   return (
     <div>
         <SubHeader
@@ -87,7 +112,7 @@ const ChemicalTest = () => {
           label="Chemical Product Status"
           name="chemicalProductStatus"
           >
-        <Select options={testStatusDropdown} onChange={(val) => handleChange("chemicalLadleStatus", val)}/>
+        <Select options={testStatusDropdown} onChange={(val) => handleChange("chemicalProductStatus", val)}/>
         </Form.Item>
 
         <Btn htmlType='submit' text="SAVE" />

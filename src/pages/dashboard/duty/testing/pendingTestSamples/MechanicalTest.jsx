@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../components/DKG_SubHeader'
 import FormInputItem from '../../../../../components/DKG_FormInputItem'
@@ -25,7 +25,7 @@ const MechanicalTest = () => {
     }
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType, testName} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, testName, isEditMode, completedTestData} = state;
 
     // Determine the display title based on the test name passed from navigation
     const getTestTitle = () => {
@@ -53,6 +53,29 @@ const MechanicalTest = () => {
         }
       })
     }
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 Mechanical Test component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling Mechanical form with completed test data:", completedTestData);
+
+            setFormData(prev => ({
+                ...prev,
+                mechanicalTestStatus: completedTestData.mechanicalTestStatus || ""
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                mechanicalTestStatus: completedTestData.mechanicalTestStatus || ""
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
 
     return (
         <div>

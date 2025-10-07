@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../components/DKG_SubHeader'
 import FormInputItem from '../../../../../components/DKG_FormInputItem'
@@ -24,7 +24,7 @@ const N2Test = () => {
         catch(error){}
     }
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType, testName} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, testName, isEditMode, completedTestData} = state;
 
     // Determine the display title based on the test name passed from navigation
     const getTestTitle = () => {
@@ -53,6 +53,34 @@ const N2Test = () => {
         }
       })
     }
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 N2 Test component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling N2 form with completed test data:", completedTestData);
+
+            // Convert BigDecimal values to strings for form inputs
+            const n2Str = completedTestData.n2 ? completedTestData.n2.toString() : "";
+
+            setFormData(prev => ({
+                ...prev,
+                n2Status: completedTestData.n2Status || "",
+                n2: n2Str
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                n2Status: completedTestData.n2Status || "",
+                n2: n2Str
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
 
     return (
         <div>

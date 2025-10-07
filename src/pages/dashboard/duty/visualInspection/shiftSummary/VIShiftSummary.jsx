@@ -35,7 +35,6 @@ const rejectionColumns = [
 
 const compiledColumns = [
   { title: "", dataIndex: "description", key: "description", align: "left", width: 200 },
-  { title: "No.", dataIndex: "number", key: "number", align: "center", width: 80 },
   { title: "Tonnes", dataIndex: "tonnes", key: "tonnes", align: "center", width: 80 }
 ];
 
@@ -302,13 +301,14 @@ const VIShiftSummary = () => {
     navigate('/visual/home');
   };
 
-  // New API function for date and shift-based filtering
-  const fetchViDataByDateAndShift = async (date, shift, lineNumber = null) => {
+  // New API function for date, shift, and mill-based filtering
+  const fetchViDataByDateAndShift = async (date, shift, lineNumber = null, mill = null) => {
     try {
       const requestBody = {
         date: date,
         shift: shift,
-        lineNumber: lineNumber // null for all lines, specific number for filtered
+        lineNumber: lineNumber, // null for all lines, specific number for filtered
+        mill: mill // mill from ongoing duty details
       };
 
       const { data } = await apiCall(
@@ -358,29 +358,25 @@ const VIShiftSummary = () => {
 
   // Process acceptance data into Length Wise Acceptance Summary (pivot table format)
   const processLengthWiseAcceptanceSummary = (rawData) => {
-
-
-    // First, collect all unique lengths from the data
-    const allLengths = new Set();
+    // Use predefined standard rail lengths (as per your expected format)
+    const standardLengths = [130, 117, 86.67, 65, 52, 26, 25, 24, 13, 12, 11, 10];
     const summaryData = {};
 
-    // First pass: collect all unique lengths and rail classes
-    rawData.forEach((item) => {
-      if (item.acptDataList && item.acptDataList.length > 0) {
-        item.acptDataList.forEach(acpt => {
-          const acceptedLength = parseFloat(acpt.acceptedLength || 0);
-          if (acceptedLength > 0) {
-            allLengths.add(acceptedLength);
-          }
-        });
-      }
+    // Initialize rail classes with standard lengths
+    const railClasses = ['A', 'A + 0.1'];
+    railClasses.forEach(railClass => {
+      summaryData[railClass] = {
+        key: railClass,
+        railClass: railClass,
+        inspected: '-' // Show dash for individual classes
+      };
+      // Initialize all standard length columns to 0
+      standardLengths.forEach(length => {
+        summaryData[railClass][`length${length}`] = 0;
+      });
     });
 
-    // Sort lengths in descending order
-    const sortedLengths = Array.from(allLengths).sort((a, b) => b - a);
-
-
-    // Second pass: process the data
+    // Process the data
     rawData.forEach((item) => {
       if (item.acptDataList && item.acptDataList.length > 0) {
         item.acptDataList.forEach(acpt => {
@@ -388,48 +384,71 @@ const VIShiftSummary = () => {
           const acceptedLength = parseFloat(acpt.acceptedLength || 0);
           const acceptedNo = parseInt(acpt.acceptedNo || 0);
 
-          // Initialize rail class if not exists
-          if (!summaryData[railClass]) {
-            summaryData[railClass] = { railClass: railClass };
-            // Initialize all length columns to 0
-            sortedLengths.forEach(length => {
-              summaryData[railClass][`length${length}`] = 0;
-            });
-          }
-
-          // Add the count to the appropriate length column
-          if (acceptedLength > 0) {
-            summaryData[railClass][`length${acceptedLength}`] += acceptedNo;
+          // Add the count to the appropriate length column if it matches a standard length
+          if (acceptedLength > 0 && summaryData[railClass]) {
+            const matchingLength = standardLengths.find(len => Math.abs(len - acceptedLength) < 0.01);
+            if (matchingLength) {
+              summaryData[railClass][`length${matchingLength}`] += acceptedNo;
+            }
           }
         });
       }
     });
 
-    // Convert to array and add totals row
-    const summaryArray = Object.values(summaryData);
+    // Convert to array and sort by class (A first, then A + 0.1)
+    const summaryArray = Object.values(summaryData).sort((a, b) => {
+      if (a.railClass === 'A') return -1;
+      if (b.railClass === 'A') return 1;
+      return a.railClass.localeCompare(b.railClass);
+    });
 
     // Calculate totals
-    const totals = { railClass: 'Tot.' };
-    sortedLengths.forEach(length => {
+    const totals = {
+      key: 'total',
+      railClass: 'Total',
+      inspected: 0
+    };
+    standardLengths.forEach(length => {
       totals[`length${length}`] = 0;
     });
 
+    // Calculate totals by summing up the length columns
     summaryArray.forEach(row => {
-      sortedLengths.forEach(length => {
+      standardLengths.forEach(length => {
         totals[`length${length}`] += row[`length${length}`] || 0;
       });
     });
 
+    // Calculate total inspected from length columns
+    let totalInspectedCount = 0;
+    standardLengths.forEach(length => {
+      totalInspectedCount += totals[`length${length}`];
+    });
+    totals.inspected = totalInspectedCount; // Just the number, no descriptive text
+
     summaryArray.push(totals);
 
-
-    return { data: summaryArray, lengths: sortedLengths };
+    return { data: summaryArray, lengths: standardLengths };
   };
 
   // Create dynamic columns based on actual lengths found in data
   const createLengthWiseAcceptanceColumns = (lengths) => {
     const columns = [
-      { title: "Insp.", dataIndex: "railClass", key: "railClass", align: "center", width: 80, fixed: 'left' }
+      {
+        title: "Class",
+        dataIndex: "railClass",
+        key: "railClass",
+        align: "center",
+        width: 80,
+        fixed: 'left'
+      },
+      {
+        title: "Inspected",
+        dataIndex: "inspected",
+        key: "inspected",
+        align: "center",
+        width: 120
+      }
     ];
 
     // Add columns for each unique length
@@ -524,8 +543,13 @@ const VIShiftSummary = () => {
     rawData.forEach(item => {
       if (item.defectDataList && item.defectDataList.length > 0) {
         item.defectDataList.forEach(defect => {
-          const type = defect.defectType || 'Unknown';
+          const type = defect.defectType;
           const category = defect.defectCategory || 'Others';
+
+          // Skip defects without a valid defectType (don't create "Unknown" column)
+          if (!type || type.trim() === '') {
+            return;
+          }
 
           allDefectTypes.add(type);
           allDefectCategories.add(category);
@@ -634,7 +658,7 @@ const VIShiftSummary = () => {
             }
         }
 
-        rawData = await fetchViDataByDateAndShift(viGeneralInfo.date, viGeneralInfo.shift, lineNumberFilter);
+        rawData = await fetchViDataByDateAndShift(viGeneralInfo.date, viGeneralInfo.shift, lineNumberFilter, viGeneralInfo.mill);
       } else if (viGeneralInfo.dutyId) {
         // Fallback to duty-based API
         rawData = await fetchViData();
@@ -663,7 +687,7 @@ const VIShiftSummary = () => {
           { title: 'Total', dataIndex: 'total', key: 'total', align: 'center' }
         ]);
         setRejectionData([{ key: 1, description: 'No Data Available', count: 'N/A' }]);
-        setCompiledData([{ key: 1, description: 'No Data Available', no: 'N/A', tonnes: 'N/A' }]);
+        setCompiledData([{ key: 1, description: 'No Data Available', tonnes: 'N/A' }]);
         setDefectAnalysisData([{ key: 1, defectCategory: 'N/A', total: 'N/A' }]);
         setDefectAnalysisColumns([
           { title: 'Defect Category', dataIndex: 'defectCategory', key: 'defectCategory', align: 'center' },
@@ -689,11 +713,13 @@ const VIShiftSummary = () => {
       // Create compiled summary from raw data with tonnage calculations
       const totalRails = rawData.length;
 
-      // Calculate acceptance data by rail class
+      // Calculate acceptance data by rail class with separate length tracking
       let railsAcceptedA = 0;
       let railsAcceptedAPlus01 = 0;
       let totalAcceptedLength = 0;
       let totalRejectedLength = 0;
+      let acceptedLengthA = 0;        // Track length for A class separately
+      let acceptedLengthAPlus01 = 0;  // Track length for A+0.1 class separately
 
       rawData.forEach(item => {
         // Process acceptance data
@@ -702,20 +728,30 @@ const VIShiftSummary = () => {
             const railClass = acpt.railClass || 'A';
             const acceptedLength = parseFloat(acpt.acceptedLength || 0);
             const acceptedNo = parseInt(acpt.acceptedNo || 0);
+            const totalLengthForThisEntry = acceptedLength * acceptedNo;
 
             if (railClass === 'A') {
               railsAcceptedA += acceptedNo;
+              acceptedLengthA += totalLengthForThisEntry;
             } else if (railClass === 'A + 0.1' || railClass === '+0.1') {
               railsAcceptedAPlus01 += acceptedNo;
+              acceptedLengthAPlus01 += totalLengthForThisEntry;
             }
 
-            totalAcceptedLength += acceptedLength * acceptedNo;
+            totalAcceptedLength += totalLengthForThisEntry;
           });
         }
 
-        // Process rejection data (estimate rejected length from rejCompLength)
+        // Process rejection data (include both standard pieces and component length)
+        const rej13 = item.rej13 || 0;
+        const rej12 = item.rej12 || 0;
+        const rej11 = item.rej11 || 0;
+        const rej10 = item.rej10 || 0;
         const rejCompLength = item.rejCompLength || 0;
-        totalRejectedLength += rejCompLength;
+
+        // Calculate total rejected length for this rail
+        const railRejectedLength = (rej13 * 13) + (rej12 * 12) + (rej11 * 11) + (rej10 * 10) + rejCompLength;
+        totalRejectedLength += railRejectedLength;
       });
 
       const totalAcceptedRails = railsAcceptedA + railsAcceptedAPlus01;
@@ -728,43 +764,71 @@ const VIShiftSummary = () => {
         return rej13 > 0 || rej12 > 0 || rej11 > 0 || rej10 > 0 || rejCompLength > 0;
       }).length;
 
-      // Standard rail weight calculation (assuming 60kg/m for standard rails)
-      const railWeightPerMeter = 60; // kg/m
-      const totalAcceptedTonnes = (totalAcceptedLength * railWeightPerMeter) / 1000; // Convert to tonnes
-      const totalRejectedTonnes = (totalRejectedLength * railWeightPerMeter) / 1000; // Convert to tonnes
+      // Dynamic rail weight calculation based on rail section (in tonnes per metre)
+      const getRailWeightPerMeter = (railSection) => {
+        if (!railSection) return 0.06021; // Default fallback (60.21 kg/m = 0.06021 tonnes/m)
+        switch (railSection.trim().toUpperCase()) {
+          case "60E1":
+            return 0.06021;  // 60.21 kg/m = 0.06021 tonnes/m
+          case "60E1A1":
+            return 0.07297;  // 72.97 kg/m = 0.07297 tonnes/m
+          case "UIC60":
+            return 0.06034;  // 60.34 kg/m = 0.06034 tonnes/m
+          case "136RE":
+            return 0.067364; // 67.364 kg/m = 0.067364 tonnes/m
+          case "52E1":
+            return 0.05151;  // 51.51 kg/m = 0.05151 tonnes/m
+          case "IRS52":
+            return 0.05189;  // 51.89 kg/m = 0.05189 tonnes/m
+          default:
+            return 0.06021;  // Default for unknown sections
+        }
+      };
+
+      // Get the most common rail section from the data, or use default
+      const railSections = rawData.map(item => item.railSection).filter(Boolean);
+      const mostCommonRailSection = railSections.length > 0
+        ? railSections.reduce((a, b, i, arr) =>
+            arr.filter(v => v === a).length >= arr.filter(v => v === b).length ? a : b
+          )
+        : null;
+
+      const railWeightPerMeter = getRailWeightPerMeter(mostCommonRailSection);
+      const totalAcceptedTonnes = totalAcceptedLength * railWeightPerMeter; // Direct calculation in tonnes
+      const totalRejectedTonnes = totalRejectedLength * railWeightPerMeter; // Direct calculation in tonnes
       const totalInspectedTonnes = totalAcceptedTonnes + totalRejectedTonnes;
 
+      // Log the rail weight being used for transparency
+      console.log(`Using rail weight: ${railWeightPerMeter} tonnes/m for rail section: ${mostCommonRailSection || 'Default'}`);
 
+      // Calculate tonnage for each class using correct formulas (direct multiplication)
+      const tonnesAcceptedA = acceptedLengthA * railWeightPerMeter;
+      const tonnesAcceptedAPlus01 = acceptedLengthAPlus01 * railWeightPerMeter;
 
       const compiled = [
         {
           key: 'rails_inspected',
           description: 'Rails Inspected',
-          number: totalRails,
           tonnes: totalInspectedTonnes.toFixed(2)
         },
         {
           key: 'rails_accepted_a',
           description: 'Rails Accepted (A)',
-          number: railsAcceptedA,
-          tonnes: (railsAcceptedA > 0 ? (totalAcceptedLength * railsAcceptedA / totalAcceptedRails * railWeightPerMeter / 1000) : 0).toFixed(2)
+          tonnes: tonnesAcceptedA.toFixed(2)
         },
         {
           key: 'rails_accepted_a_plus_01',
           description: 'Rails Accepted (A + 0.1)',
-          number: railsAcceptedAPlus01,
-          tonnes: (railsAcceptedAPlus01 > 0 ? (totalAcceptedLength * railsAcceptedAPlus01 / totalAcceptedRails * railWeightPerMeter / 1000) : 0).toFixed(2)
+          tonnes: tonnesAcceptedAPlus01.toFixed(2)
         },
         {
           key: 'rails_accepted_total',
           description: 'Rails Accepted (Total)',
-          number: totalAcceptedRails,
           tonnes: totalAcceptedTonnes.toFixed(2)
         },
         {
           key: 'rails_rejected',
           description: 'Rails Rejected',
-          number: totalRejectedRails,
           tonnes: totalRejectedTonnes.toFixed(2)
         }
       ];
@@ -784,7 +848,7 @@ const VIShiftSummary = () => {
     } finally {
       setLoading(false);
     }
-  }, [viGeneralInfo.date, viGeneralInfo.shift, formData.lineNumber, formData.summary, viGeneralInfo.dutyId, token]);
+  }, [viGeneralInfo.date, viGeneralInfo.shift, viGeneralInfo.mill, formData.lineNumber, formData.summary, viGeneralInfo.dutyId, token]);
 
   // Initial data fetch and when filters change
   useEffect(() => {
@@ -854,6 +918,7 @@ const VIShiftSummary = () => {
                 <Divider>
                   Length Wise Acceptance Summary
                   {viGeneralInfo.date && viGeneralInfo.shift ? ` - ${viGeneralInfo.date} Shift ${viGeneralInfo.shift}` : ''}
+                  {viGeneralInfo.mill ? ` - ${viGeneralInfo.mill}` : ''}
                   {formData.lineNumber && formData.lineNumber !== '' ? ` - ${formData.lineNumber}` : ' - All Lines'}
                 </Divider>
 
@@ -917,6 +982,7 @@ const VIShiftSummary = () => {
                 <Divider>
                   Defect Analysis Summary
                   {viGeneralInfo.date && viGeneralInfo.shift ? ` - ${viGeneralInfo.date} Shift ${viGeneralInfo.shift}` : ''}
+                  {viGeneralInfo.mill ? ` - ${viGeneralInfo.mill}` : ''}
                   {formData.lineNumber ? ` - ${formData.lineNumber}` : ' - All Lines'}
                 </Divider>
 
@@ -945,6 +1011,7 @@ const VIShiftSummary = () => {
                 <Divider>
                   Inspected Railwise Summary
                   {viGeneralInfo.date && viGeneralInfo.shift ? ` - ${viGeneralInfo.date} Shift ${viGeneralInfo.shift}` : ''}
+                  {viGeneralInfo.mill ? ` - ${viGeneralInfo.mill}` : ''}
                   {formData.lineNumber ? ` - ${formData.lineNumber}` : ' - All Lines'}
                 </Divider>
 

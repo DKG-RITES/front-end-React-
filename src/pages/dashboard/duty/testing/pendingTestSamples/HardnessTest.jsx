@@ -21,7 +21,7 @@ const HardnessTest = () => {
     });
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, isEditMode, completedTestData} = state;
 
     const [formData, setFormData] = useState({
         heatNumber: heatNo,
@@ -45,6 +45,58 @@ const HardnessTest = () => {
     useEffect(() => {
         calculateValues();
     }, [formData]);
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 Hardness Test component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling Hardness form with completed test data:", completedTestData);
+
+            // Convert BigDecimal values to strings for form inputs
+            const hardness1aStr = completedTestData.hardness1a ? completedTestData.hardness1a.toString() : "";
+            const hardness1bStr = completedTestData.hardness1b ? completedTestData.hardness1b.toString() : "";
+            const hardness1cStr = completedTestData.hardness1c ? completedTestData.hardness1c.toString() : "";
+            const hardness2aStr = completedTestData.hardness2a ? completedTestData.hardness2a.toString() : "";
+            const hardness2bStr = completedTestData.hardness2b ? completedTestData.hardness2b.toString() : "";
+            const hardness3Str = completedTestData.hardness3 ? completedTestData.hardness3.toString() : "";
+            const hardness4aStr = completedTestData.hardness4a ? completedTestData.hardness4a.toString() : "";
+            const hardness4bStr = completedTestData.hardness4b ? completedTestData.hardness4b.toString() : "";
+            const hardnessRsStr = completedTestData.hardnessRs ? completedTestData.hardnessRs.toString() : "";
+
+            setFormData(prev => ({
+                ...prev,
+                hardnessTestStatus: completedTestData.harnessStatus || "",
+                hardness1a: hardness1aStr,
+                hardness1b: hardness1bStr,
+                hardness1c: hardness1cStr,
+                hardness2a: hardness2aStr,
+                hardness2b: hardness2bStr,
+                hardness3: hardness3Str,
+                hardness4a: hardness4aStr,
+                hardness4b: hardness4bStr,
+                hardnessRs: hardnessRsStr
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                hardnessTestStatus: completedTestData.harnessStatus || "",
+                hardness1a: hardness1aStr,
+                hardness1b: hardness1bStr,
+                hardness1c: hardness1cStr,
+                hardness2a: hardness2aStr,
+                hardness2b: hardness2bStr,
+                hardness3: hardness3Str,
+                hardness4a: hardness4aStr,
+                hardness4b: hardness4bStr,
+                hardnessRs: hardnessRsStr
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
 
     const calculateValues = () => {
         const values = {

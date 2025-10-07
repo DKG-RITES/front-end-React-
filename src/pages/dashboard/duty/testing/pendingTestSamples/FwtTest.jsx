@@ -34,13 +34,32 @@ const FWTTest = () => {
         return "FWT Test"; // Default fallback
     };
 
+    // Determine the correct test type based on the test name
+    const getTestType = () => {
+        if (!testName) return "FWT"; // Default fallback
+
+        const upperTestName = testName.toUpperCase();
+
+        // Map specific FWT variants to their database test types
+        if (upperTestName.includes('FWT (ST) - SR') || upperTestName.includes('FWT(ST)-SR')) {
+            return "FWT_ST_SR";
+        } else if (upperTestName.includes('FWT (HS)') || upperTestName.includes('FWT(HS)')) {
+            return "FWT_HS";
+        } else if (upperTestName.includes('FWT (ST)') || upperTestName.includes('FWT(ST)')) {
+            return "FWT_ST";
+        }
+
+        // Default to FWT for any other FWT variant
+        return "FWT";
+    };
+
     const [formData, setFormData] = useState({
         heatNumber: heatNo,
         strandNumber: strand,
         sampleId: sampleId,
         sampleLot: sampleLot,
         sampleType: sampleType,
-        testType: "FWT",
+        testType: getTestType(),
         fwtTestStatus: ""
     })
 

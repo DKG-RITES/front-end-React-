@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../components/DKG_SubHeader'
 import FormInputItem from '../../../../../components/DKG_FormInputItem'
@@ -24,7 +24,7 @@ const MacroTest = () => {
     }
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, isEditMode, completedTestData} = state;
 
     const [formData, setFormData] = useState({
         heatNumber: heatNo,
@@ -44,6 +44,29 @@ const MacroTest = () => {
         }
       })
     }
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 Macro Test component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling Macro form with completed test data:", completedTestData);
+
+            setFormData(prev => ({
+                ...prev,
+                macroTestStatus: completedTestData.macroStatus || ""
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                macroTestStatus: completedTestData.macroStatus || ""
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
 
     return (
         <div>

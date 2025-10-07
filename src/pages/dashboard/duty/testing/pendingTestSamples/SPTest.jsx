@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from '../../../../../components/DKG_FormContainer'
 import SubHeader from '../../../../../components/DKG_SubHeader'
 import FormInputItem from '../../../../../components/DKG_FormInputItem'
@@ -25,7 +25,7 @@ const SPTest = () => {
     }
 
     const state = useLocation().state;
-    const {heatNo, strand, sampleId, sampleLot, sampleType} = state;
+    const {heatNo, strand, sampleId, sampleLot, sampleType, isEditMode, completedTestData} = state;
 
     const [formData, setFormData] = useState({
         heatNumber: heatNo,
@@ -46,6 +46,34 @@ const SPTest = () => {
         }
       })
     }
+
+    // Effect to pre-fill form data when in edit mode
+    useEffect(() => {
+        console.log("🔍 SP Test component mounted with state:", {
+            isEditMode,
+            completedTestData,
+            state
+        });
+
+        if (isEditMode && completedTestData) {
+            console.log("📝 Pre-filling SP form with completed test data:", completedTestData);
+
+            // Convert BigDecimal values to strings for form inputs
+            const spValueStr = completedTestData.spValue ? completedTestData.spValue.toString() : "";
+
+            setFormData(prev => ({
+                ...prev,
+                spStatus: completedTestData.spStatus || "",
+                spValue: spValueStr
+            }));
+
+            // Also set form values for Ant Design form
+            form.setFieldsValue({
+                spStatus: completedTestData.spStatus || "",
+                spValue: spValueStr
+            });
+        }
+    }, [isEditMode, completedTestData, form]);
 
     return (
         <div>
