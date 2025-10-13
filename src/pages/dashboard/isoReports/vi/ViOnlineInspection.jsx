@@ -79,25 +79,25 @@ const ViOnlineInspection = () => {
       children: [
         {
           title: "Class A",
-          dataIndex: "",
-          render: (_, record) =>
-            record.railClass === "A" ? record.totalAcceptedLength : "",
+          dataIndex: "acceptanceClassA",
+          render: (text) => text || "",
         },
         {
           title: "Class A + 0.1",
-          dataIndex: "",
-          render: (_, record) =>
-            record.railClass === "A + 0.1" ? record.totalAcceptedLength : "",
+          dataIndex: "acceptanceClassAPlus",
+          render: (text) => text || "",
         },
       ],
     },
     {
       title: "अस्वीकृत लंबाई (मीटर) \n Rejected Length (metres)",
-      dataIndex: "totalRejectedLength",
+      dataIndex: "rejectedLengthDetails",
+      render: (text) => text || "No rejections",
     },
     {
       title: "दोष विश्लेषण \n Defect Analysis",
       dataIndex: "defectAnalysis",
+      render: (text) => text || "No defects",
     },
     {
       title: "टिप्पणियाँ \n Remarks",

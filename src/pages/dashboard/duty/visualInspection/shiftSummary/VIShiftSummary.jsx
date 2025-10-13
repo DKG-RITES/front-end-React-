@@ -364,6 +364,7 @@ const VIShiftSummary = () => {
 
     // Initialize rail classes with standard lengths
     const railClasses = ['A', 'A + 0.1'];
+
     railClasses.forEach(railClass => {
       summaryData[railClass] = {
         key: railClass,
@@ -419,12 +420,9 @@ const VIShiftSummary = () => {
       });
     });
 
-    // Calculate total inspected from length columns
-    let totalInspectedCount = 0;
-    standardLengths.forEach(length => {
-      totalInspectedCount += totals[`length${length}`];
-    });
-    totals.inspected = totalInspectedCount; // Just the number, no descriptive text
+    // Calculate total inspected as the count of unique rail IDs
+    const uniqueRailIds = new Set(rawData.map(item => item.railId));
+    totals.inspected = uniqueRailIds.size; // Count of unique rail IDs inspected
 
     summaryArray.push(totals);
 
@@ -809,27 +807,27 @@ const VIShiftSummary = () => {
         {
           key: 'rails_inspected',
           description: 'Rails Inspected',
-          tonnes: totalInspectedTonnes.toFixed(2)
+          tonnes: totalInspectedTonnes.toFixed(3)
         },
         {
           key: 'rails_accepted_a',
           description: 'Rails Accepted (A)',
-          tonnes: tonnesAcceptedA.toFixed(2)
+          tonnes: tonnesAcceptedA.toFixed(3)
         },
         {
           key: 'rails_accepted_a_plus_01',
           description: 'Rails Accepted (A + 0.1)',
-          tonnes: tonnesAcceptedAPlus01.toFixed(2)
+          tonnes: tonnesAcceptedAPlus01.toFixed(3)
         },
         {
           key: 'rails_accepted_total',
           description: 'Rails Accepted (Total)',
-          tonnes: totalAcceptedTonnes.toFixed(2)
+          tonnes: totalAcceptedTonnes.toFixed(3)
         },
         {
           key: 'rails_rejected',
           description: 'Rails Rejected',
-          tonnes: totalRejectedTonnes.toFixed(2)
+          tonnes: totalRejectedTonnes.toFixed(3)
         }
       ];
 
@@ -927,7 +925,11 @@ const VIShiftSummary = () => {
                     columns={lengthWiseAcceptanceColumns}
                     scroll={{ x: true }}
                     bordered
-                    pagination={false}
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      pageSizeOptions: ["5", "10", "20", "50"],
+                    }}
                     locale={{
                       emptyText: loading ? "Loading..." : "No acceptance data available"
                     }}

@@ -141,8 +141,8 @@ const {
   shiftList,
   visualInspectionAcceptanceData,
   visualInspectionDefectData,
-} = data;
-const { railClassList } = visualInspectionAcceptanceData;
+} = data || {};
+const { railClassList } = visualInspectionAcceptanceData || {};
 
 const viRejectionDetailsColumns = [
   { title: "Length", dataIndex: "length", key: "length", align: "center" },
@@ -301,7 +301,7 @@ const VisualInspectionForm = () => {
   // };
 
   const viGeneralInfo = useSelector((state) => state.viDuty);
-  const { stdOffLength } = viGeneralInfo;
+  const { stdOffLength, railGrade } = viGeneralInfo;
 
   const [heatRule, setHeatRule] = useState([]);
 
@@ -384,10 +384,17 @@ const VisualInspectionForm = () => {
           const [day, month, year] = updatedForm.date.split("/");
           const formattedDate = `${day}${month}${year.slice(-2)}`;
 
-          if (mill === "RSM") {
+          // Check if this is a special rail grade that needs "H" prefix
+          const needsHPrefix = railGrade === "350HT" || railGrade === "1080HH";
+
+          if (needsHPrefix) {
+            // For rail grades 350HT and 1080HH, always use "H" prefix regardless of mill
+            updatedForm.railId = `H${formattedDate}${updatedForm.shift}${updatedForm.serialNo}`;
+          } else if (mill === "RSM") {
+            // For RSM mill with other rail grades, use no prefix (original behavior)
             updatedForm.railId = `${formattedDate}${updatedForm.shift}${updatedForm.serialNo}`;
-          }
-          else {
+          } else {
+            // For other mills with other rail grades, use mill's first character
             updatedForm.railId = `${mill[0]}${formattedDate}${updatedForm.shift}${updatedForm.serialNo}`;
           }
 
@@ -665,19 +672,25 @@ useEffect(() => {
   };
 
   const populateDefectDataList = useCallback(() => {
-    const defCat = Object.keys(visualInspectionDefectData).map((item) => {
-      return {
-        key: item,
-        value: item,
-      };
-    });
-    setDefectCategoryList([...defCat]);
+    if (visualInspectionDefectData && typeof visualInspectionDefectData === 'object') {
+      const defCat = Object.keys(visualInspectionDefectData).map((item) => {
+        return {
+          key: item,
+          value: item,
+        };
+      });
+      setDefectCategoryList([...defCat]);
+    } else {
+      setDefectCategoryList([]);
+    }
   }, []);
 
   const handleDefectCategoryChange = (index, fieldName, value) => {
     setFormData((prev) => {
-      const defDatLst = prev.defectDataList;
-      defDatLst[index][fieldName] = value;
+      const defDatLst = prev?.defectDataList || [];
+      if (defDatLst[index]) {
+        defDatLst[index][fieldName] = value;
+      }
       return {
         ...prev,
         defectDataList: defDatLst,
@@ -686,20 +699,26 @@ useEffect(() => {
 
     setDefectTypeList((prev) => {
       const temp = prev;
-      temp[index] = visualInspectionDefectData[value].map((item) => {
-        return {
-          key: item,
-          value: item,
-        };
-      });
+      if (visualInspectionDefectData && visualInspectionDefectData[value]) {
+        temp[index] = visualInspectionDefectData[value].map((item) => {
+          return {
+            key: item,
+            value: item,
+          };
+        });
+      } else {
+        temp[index] = [];
+      }
       return temp;
     });
   };
 
   const handleDefectDataChange = (index, fieldName, value) => {
     setFormData((prev) => {
-      const defDatList = prev.defectDataList;
-      defDatList[index][fieldName] = value;
+      const defDatList = prev?.defectDataList || [];
+      if (defDatList[index]) {
+        defDatList[index][fieldName] = value;
+      }
       return {
         ...prev,
         defectDataList: defDatList,
